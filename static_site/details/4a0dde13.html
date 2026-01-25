@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中小市值轮动+风控策略 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>中小市值轮动+风控策略</h1>
+        <p class="meta">
+            ID: 4a0dde13 | 
+            类型: 小市值轮动 / 多因子选股（简化为市值排序） | 
+            来源: 31 中小市值-Clone.txt |
+            分析日期: 2026-01-10 20:56:22
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>主要通过每周选择中小板指数（399101.XSHE）中市值最小的 7 只股票买入，利用小盘股可能存在的估值提升与资金关注带来的超额收益；同时通过止损、指数级风险控制、4 月+1 月空仓及涨停/放量信号等措施降低回撤。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>先取中小板综指成分 → 剔除上市≤375天、ST/*/退市、科创板/北交所/400*股票、停牌、涨跌停股票。最后按市值升序取 14 只，再截取前 7 只作为目标组合。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>每周二 10:30，对最新筛选出的最小市值前 7 只股票中未持有的标的等权买入（余钱则次日 9:05 后补买）。, （可选开关）若前一日涨停且当日 14:30 打开涨停，则卖出该股并在次日早盘把余额继续买入目标池其余标的。</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>周二调仓：不在目标池且昨日未涨停的个股全部卖出。, 止盈止损：①个股涨幅 ≥100% 全清；②价格跌破成本 *0.88；③指数成分今开-今收均值 ≤0.94 时全部清仓；④尾盘（14:30）昨日曾涨停但当日不再涨停、或出现天量（&gt;0.9×120 日最大量）则卖出。</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>目标持仓 7 只股票，等权分配现金；空仓期为每年 1 月与 4 月（pass_april 开关）。全仓止损/市场崩溃止损清仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>周度主要调仓（周二 10:30），但止损/风控可触发日内 10:00 或 14:30 卖出；卖出后次日 9:05/10:30 可能补买。平均周换手率接近 100%。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>1) 周二 10:25 前获取最新中小板成分并计算市值排名；2) 10:30 市价等权买入前 7 只目标股；3) 每日 10:00 检查个股/指数止损；4) 14:30 检查昨日涨停股是否开板及天量卖出；5) 尾盘 14:50 若处于 1 月/4 月则清仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>在 get_stock_list 中调用 get_index_stocks(MKT_index) 未传入 date 参数。回测时会使用“当前最新”成分股，导致在历史日期提前看到未来的指数调样信息，构成典型的未来函数。其余模块开启了 set_option(&#x27;avoid_future_data&#x27;, True)，但这一调用绕过了披露时点限制。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>14:30 使用 include_now=True 取日线 volume 与历史完整日量比较，放大卖出信号概率，回测偏乐观。, 将滑点固定为 0.03% 对小盘股显著低估真实交易冲击。, 一次性等权买入小盘股在 10:30 可能打穿涨停价，回测按收盘价成交或较低滑点，实盘易偏差。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小资金（≤500 万）尚可；大资金易产生冲击。滑点假设过低。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>可实现，单票 1~2 万元，冲击可忽略；信号执行简单。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>仍可操作，但需要分批下单以避免冲击；部分标的成交可能不足。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>流动性风险高，小盘股深度不足，可能需多日建仓，跟不上周调节节奏。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>基本无法执行，持仓与交易冲击巨大，需换策略或扩展到更大市值池。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>依赖极小市值股票、成交量可能不足，容量上限低。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用小盘股估值偏低+题材炒作带来的动量与情绪，但未显式量化情绪。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>收益依赖于小市值风格存在超额；对风格切换与监管环境较敏感；1、4 月空仓规则带来过拟合嫌疑。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>小盘股流动性枯竭或被严格监管、IPO 冻结期, 系统性暴跌期间，指数止损可能过迟造成大亏</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>在中小创风格大于大盘风格时表现好, 1、4 月份空仓可显著降低回撤, 单个持仓超 100%收益时市值增长有限，收益前后右偏</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>依靠‘中小市值+防呆风控’的轮动逻辑，但存在未来函数（指数成分前视）及实盘滑点偏差，需大幅修正后方可评估真实有效性。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 修正 get_index_stocks 前视问题；2) 引入流动性与质量等更多因子提高稳健性；3) 使用前一交易日收盘价做筛选，避免盘中数据偏差；4) 调高滑点及分批下单；5) 去除或参数化‘4 月空仓’等可能过拟合规则。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>默认使用 JoinQuant 标准撮合，未在代码中看到自定义成交模式，实际滑点假设为 3bp；若实盘可能更高。, 未给出资金规模，执行难度评估按常见 10w~1 亿四档假设；佣金按 2.5bp，印花税 1‰（与代码一致）。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>8</td></tr>
+                <tr><td>滑点</td><td>6</td></tr>
+                <tr><td>成本</td><td>5</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>6</td></tr>
+                <tr><td>综合可执行性</td><td>5.5</td></tr>
+                <tr><td>大资金不友好</td><td>7</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>5.3</td></tr>
+                <tr><td>总分</td><td>53.7</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;中小市值轮动+风控策略&quot;,
+    &quot;strategy_type&quot;: &quot;小市值轮动 / 多因子选股（简化为市值排序）&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;主要通过每周选择中小板指数（399101.XSHE）中市值最小的 7 只股票买入，利用小盘股可能存在的估值提升与资金关注带来的超额收益；同时通过止损、指数级风险控制、4 月+1 月空仓及涨停/放量信号等措施降低回撤。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 价格、涨跌停价、成交量（日频 / 分钟级）；2) 基本面数据 valuation.market_cap、indicator.eps（季频，实则只用到市值排序，eps 未被使用）；3) 指数成分（get_index_stocks）。&quot;,
+        &quot;stock_pool&quot;: &quot;先取中小板综指成分 → 剔除上市≤375天、ST/*/退市、科创板/北交所/400*股票、停牌、涨跌停股票。最后按市值升序取 14 只，再截取前 7 只作为目标组合。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;每周二 10:30，对最新筛选出的最小市值前 7 只股票中未持有的标的等权买入（余钱则次日 9:05 后补买）。&quot;,
+            &quot;（可选开关）若前一日涨停且当日 14:30 打开涨停，则卖出该股并在次日早盘把余额继续买入目标池其余标的。&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;周二调仓：不在目标池且昨日未涨停的个股全部卖出。&quot;,
+            &quot;止盈止损：①个股涨幅 ≥100% 全清；②价格跌破成本 *0.88；③指数成分今开-今收均值 ≤0.94 时全部清仓；④尾盘（14:30）昨日曾涨停但当日不再涨停、或出现天量（&gt;0.9×120 日最大量）则卖出。&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;目标持仓 7 只股票，等权分配现金；空仓期为每年 1 月与 4 月（pass_april 开关）。全仓止损/市场崩溃止损清仓。&quot;,
+        &quot;trading_frequency&quot;: &quot;周度主要调仓（周二 10:30），但止损/风控可触发日内 10:00 或 14:30 卖出；卖出后次日 9:05/10:30 可能补买。平均周换手率接近 100%。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;1) 周二 10:25 前获取最新中小板成分并计算市值排名；2) 10:30 市价等权买入前 7 只目标股；3) 每日 10:00 检查个股/指数止损；4) 14:30 检查昨日涨停股是否开板及天量卖出；5) 尾盘 14:50 若处于 1 月/4 月则清仓。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;是&quot;,
+        &quot;risk_level&quot;: &quot;高&quot;,
+        &quot;risk_score&quot;: 8,
+        &quot;risk_score_reason&quot;: &quot;在 get_stock_list 中调用 get_index_stocks(MKT_index) 未传入 date 参数。回测时会使用“当前最新”成分股，导致在历史日期提前看到未来的指数调样信息，构成典型的未来函数。其余模块开启了 set_option(&#x27;avoid_future_data&#x27;, True)，但这一调用绕过了披露时点限制。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;未发现明显用未来价格，但 filter_limitup_stock 使用 history(1,&#x27;1m&#x27;) 在 10:30 选股时调用，价格取到当天早盘 10:29 的成交价，仍在当日交易前的盘中信息，存在同频数据挖掘但非未来。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals 未指定 date；在回测时默认取当天可得最新财报并受 avoid_future_data 控制，理论上不泄漏。但依赖于 JQ 实现，风险中等。&quot;,
+            &quot;index_component_leak&quot;: &quot;使用 get_index_stocks 无日期参数 → 未来成分完全泄漏。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无明显使用回测引擎 BUG，但指数成分问题已构成重大泄漏。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;在 get_index_stocks 调用中加入 date=context.previous_date 或用 get_index_weights(date=...) 的成分表；避免在 10:30 使用当日 1 分钟价格作为筛选条件；考虑将调仓信号全部使用上一交易日收盘数据。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;14:30 使用 include_now=True 取日线 volume 与历史完整日量比较，放大卖出信号概率，回测偏乐观。&quot;,
+            &quot;将滑点固定为 0.03% 对小盘股显著低估真实交易冲击。&quot;,
+            &quot;一次性等权买入小盘股在 10:30 可能打穿涨停价，回测按收盘价成交或较低滑点，实盘易偏差。&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 6,
+        &quot;slippage_reason&quot;: &quot;交易集中于 10:30 与 14:30，且买入/卖出主要为中小板低市值股，真实冲击远高于 3bp。滑点被低估。&quot;,
+        &quot;cost_score&quot;: 5,
+        &quot;cost_reason&quot;: &quot;周度换手 + 可能的日内止损清仓，综合看换手中等偏高，相当于日均 20%~30%。&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;小盘股流动性一般，等权分配可能导致买不到或吃到涨停板；成交需要拆单和耐心。&quot;,
+        &quot;time_sensitivity_score&quot;: 6,
+        &quot;time_sensitivity_reason&quot;: &quot;核心买入在 10:30，当日分钟级依赖；尾盘 14:30 卖出信号需要及时响应。&quot;,
+        &quot;overall_executability&quot;: 5,
+        &quot;overall_reason&quot;: &quot;小资金（≤500 万）尚可；大资金易产生冲击。滑点假设过低。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;可实现，单票 1~2 万元，冲击可忽略；信号执行简单。&quot;,
+            &quot;100w&quot;: &quot;仍可操作，但需要分批下单以避免冲击；部分标的成交可能不足。&quot;,
+            &quot;1000w&quot;: &quot;流动性风险高，小盘股深度不足，可能需多日建仓，跟不上周调节节奏。&quot;,
+            &quot;1y&quot;: &quot;基本无法执行，持仓与交易冲击巨大，需换策略或扩展到更大市值池。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;提高滑点/冲击模型；实时成交量控制下单量。&quot;,
+            &quot;引入流动性过滤（如近 20 日成交额均值&gt;5000 万）以提升可交易性。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 7,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;依赖极小市值股票、成交量可能不足，容量上限低。&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;利用小盘股估值偏低+题材炒作带来的动量与情绪，但未显式量化情绪。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;收益依赖于小市值风格存在超额；对风格切换与监管环境较敏感；1、4 月空仓规则带来过拟合嫌疑。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.3,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;小盘股流动性枯竭或被严格监管、IPO 冻结期&quot;,
+            &quot;系统性暴跌期间，指数止损可能过迟造成大亏&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;在中小创风格大于大盘风格时表现好&quot;,
+            &quot;1、4 月份空仓可显著降低回撤&quot;,
+            &quot;单个持仓超 100%收益时市值增长有限，收益前后右偏&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;依靠‘中小市值+防呆风控’的轮动逻辑，但存在未来函数（指数成分前视）及实盘滑点偏差，需大幅修正后方可评估真实有效性。&quot;,
+        &quot;recommendation&quot;: &quot;继续研究&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 修正 get_index_stocks 前视问题；2) 引入流动性与质量等更多因子提高稳健性；3) 使用前一交易日收盘价做筛选，避免盘中数据偏差；4) 调高滑点及分批下单；5) 去除或参数化‘4 月空仓’等可能过拟合规则。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 8,
+        &quot;slippage&quot;: 6,
+        &quot;cost&quot;: 5,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 6,
+        &quot;executability&quot;: 5,
+        &quot;effectiveness_a&quot;: 7,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 5.3
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;默认使用 JoinQuant 标准撮合，未在代码中看到自定义成交模式，实际滑点假设为 3bp；若实盘可能更高。&quot;,
+        &quot;未给出资金规模，执行难度评估按常见 10w~1 亿四档假设；佣金按 2.5bp，印花税 1‰（与代码一致）。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

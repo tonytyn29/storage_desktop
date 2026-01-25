@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单票MACD满仓进出 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>单票MACD满仓进出</h1>
+        <p class="meta">
+            ID: e63c2176 | 
+            类型: 趋势跟踪 | 
+            来源: 9 简单策略大收益-10W本金利滚利-Clone-Clone.txt |
+            分析日期: 2026-01-10 20:58:07
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>只交易一只指定股票。每天盘前用该股最近约36个交易日的收盘价计算MACD；当 DIF 上穿 DEA 时全仓买入，DIF 下穿 DEA 时清仓。策略试图捕捉中短期上涨趋势，避开下跌段。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>固定单只股票 g.stocks = [&#x27;601127.XSHG&#x27;]（代码中可手动改成其他个股）。没有任何过滤：不排除 ST、停牌、涨跌停、上市天数限制，也不判断流动性。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>当最新 DIF &gt; DEA（上一交易日数据），触发买入, 目标仓位 = 组合总市值 / 股票数 → 即把全部资金等权买入（由于只有一只股票，等于满仓）</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>当最新 DIF &lt; DEA，触发卖出, 目标仓位 = 0 → 全部卖出清仓</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>始终在 0% 或 100% 两档切换；不限制单笔/单日成交量；无止损、无回撤控制；无持仓数量/市值上限；未检测停牌/涨跌停状态。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>平均每出现一次金叉/死叉就调仓，MACD(12,26,9)在单只股票上通常一年 2-6 次；所有下单均在 before_trading_start 执行，按集合竞价（开盘价格）报单。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>1) 每个交易日开盘前计算 MACD；2) 若 DIF&gt;DEA，直接把账户全部买入该股；若 DIF&lt;DEA，清空该股；3) 挂集合竞价单或开盘市价单；4) 盘中无需操作。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>使用 get_price(..., end_date=context.current_dt.date()) 可能在极端情况下拉取到当日早盘尚未产生的日线，但在聚宽引擎中 before_trading_start 默认只返回上一交易日已收盘数据，未来函数风险较低。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>策略宣传声称“6年 3.6 万 % 收益”，极大概率因幸存者偏差或参数过拟合；实盘难以复制。, 单票满仓带来高个股风险，若出现长时间停牌或连续跌停将难以及时退出。, 未处理除权除息事件后价格跳空可能对 MACD 计算产生误导</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小资金可操作；大资金或遇跌停/停牌场景执行困难；缺乏流动性与风控处理。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>可一次性报单成交；冲击可忽略。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>需拆单或分批下单，开盘成交价可能被拉升 5-10bp。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>单票容量受限，高开盘冲击+流动性风险，策略不可用。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>基本无法在单票实现建仓/清仓，需改用 ETF 或多标的。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>固定单只中小盘股，上下车容量有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>MACD 主要跟踪趋势，部分捕捉市场动量/追涨杀跌行为，但非专门利用情绪。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>仅在一只个股上做技术指标，缺乏跨样本验证，易受个股特定行情驱动。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>个股长期横盘震荡，频繁产生伪金叉/死叉, 个股突发利空导致连续跌停或长期停牌</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>当该股出现月度级上升趋势时，本策略能获取超额收益, 在震荡市，策略可能出现频繁进出且亏损, 单票容量对资金规模高度敏感，资金增加后收益-回撤比显著下降</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>这是一个极简的单票 MACD 满仓策略，可作为教学示例，但实际投资风险/容量问题严重。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 扩展到多只流动性好的品种并做资金均分；2) 加入基本风控（停牌、涨跌停、限价、仓位控制、资金分级）。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>默认按聚宽回测环境，before_trading_start 获取的日线数据为 T-1 收盘价而非未来数据。, 未给出资金规模、滑点模型、交易成本之外的参数，以上分析使用代码默认(20bps滑点、千一佣金)；实际环境可能不同。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>6</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>6.2</td></tr>
+                <tr><td>大资金不友好</td><td>8</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>3</td></tr>
+                <tr><td>有效性总分</td><td>5.0</td></tr>
+                <tr><td>总分</td><td>55.2</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;单票MACD满仓进出&quot;,
+    &quot;strategy_type&quot;: &quot;趋势跟踪&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;只交易一只指定股票。每天盘前用该股最近约36个交易日的收盘价计算MACD；当 DIF 上穿 DEA 时全仓买入，DIF 下穿 DEA 时清仓。策略试图捕捉中短期上涨趋势，避开下跌段。&quot;,
+        &quot;data_and_indicators&quot;: &quot;仅使用日线收盘价（frequency=&#x27;daily&#x27;，pre 复权）。技术指标为 TALib-MACD（12,26,9）。数据每天盘前更新一次。&quot;,
+        &quot;stock_pool&quot;: &quot;固定单只股票 g.stocks = [&#x27;601127.XSHG&#x27;]（代码中可手动改成其他个股）。没有任何过滤：不排除 ST、停牌、涨跌停、上市天数限制，也不判断流动性。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;当最新 DIF &gt; DEA（上一交易日数据），触发买入&quot;,
+            &quot;目标仓位 = 组合总市值 / 股票数 → 即把全部资金等权买入（由于只有一只股票，等于满仓）&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;当最新 DIF &lt; DEA，触发卖出&quot;,
+            &quot;目标仓位 = 0 → 全部卖出清仓&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;始终在 0% 或 100% 两档切换；不限制单笔/单日成交量；无止损、无回撤控制；无持仓数量/市值上限；未检测停牌/涨跌停状态。&quot;,
+        &quot;trading_frequency&quot;: &quot;平均每出现一次金叉/死叉就调仓，MACD(12,26,9)在单只股票上通常一年 2-6 次；所有下单均在 before_trading_start 执行，按集合竞价（开盘价格）报单。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;1) 每个交易日开盘前计算 MACD；2) 若 DIF&gt;DEA，直接把账户全部买入该股；若 DIF&lt;DEA，清空该股；3) 挂集合竞价单或开盘市价单；4) 盘中无需操作。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;不确定&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;使用 get_price(..., end_date=context.current_dt.date()) 可能在极端情况下拉取到当日早盘尚未产生的日线，但在聚宽引擎中 before_trading_start 默认只返回上一交易日已收盘数据，未来函数风险较低。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;get_price 在 before_trading_start 正常返回 T-1 日收盘价 → 风险低&quot;,
+            &quot;financial_data_leak&quot;: &quot;未使用财务/公告数据 → 无风险&quot;,
+            &quot;index_component_leak&quot;: &quot;固定单票，无排名/权重计算 → 无风险&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无复盘函数或 look_forward 调用 → 无明显隐性泄漏&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;将 end_date 改为 context.previous_date 或移除 end_date 参数，确保明确使用上一交易日收盘价。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;策略宣传声称“6年 3.6 万 % 收益”，极大概率因幸存者偏差或参数过拟合；实盘难以复制。&quot;,
+            &quot;单票满仓带来高个股风险，若出现长时间停牌或连续跌停将难以及时退出。&quot;,
+            &quot;未处理除权除息事件后价格跳空可能对 MACD 计算产生误导&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 6,
+        &quot;slippage_reason&quot;: &quot;固定 20bps 仅为假设。目标股票 601127 日均成交额有限，开盘价冲击明显，满仓一笔下单极易打穿盘口。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;MACD 频率较低，年换手 2-6 次，佣金约 0.1%*2；成本压力不大。&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;单票满仓对资金容量敏感；小资金易成交，中大资金需拆单并关注涨跌停。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;在开盘价成交即可，时效性中等；盘中延迟不会严重影响日线级策略。&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;小资金可操作；大资金或遇跌停/停牌场景执行困难；缺乏流动性与风控处理。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;可一次性报单成交；冲击可忽略。&quot;,
+            &quot;100w&quot;: &quot;需拆单或分批下单，开盘成交价可能被拉升 5-10bp。&quot;,
+            &quot;1000w&quot;: &quot;单票容量受限，高开盘冲击+流动性风险，策略不可用。&quot;,
+            &quot;1y&quot;: &quot;基本无法在单票实现建仓/清仓，需改用 ETF 或多标的。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;改成多只流动性良好的股票或 ETF 进行分散，降低滑点与容量限制。&quot;,
+            &quot;加入涨跌停/停牌检查与成交量过滤，避免无法成交或无端挂单。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 8,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;固定单只中小盘股，上下车容量有限。&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;MACD 主要跟踪趋势，部分捕捉市场动量/追涨杀跌行为，但非专门利用情绪。&quot;,
+        &quot;cross_period_robustness_score&quot;: 3,
+        &quot;cross_period_robustness_reason&quot;: &quot;仅在一只个股上做技术指标，缺乏跨样本验证，易受个股特定行情驱动。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.1,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;个股长期横盘震荡，频繁产生伪金叉/死叉&quot;,
+            &quot;个股突发利空导致连续跌停或长期停牌&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;当该股出现月度级上升趋势时，本策略能获取超额收益&quot;,
+            &quot;在震荡市，策略可能出现频繁进出且亏损&quot;,
+            &quot;单票容量对资金规模高度敏感，资金增加后收益-回撤比显著下降&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;这是一个极简的单票 MACD 满仓策略，可作为教学示例，但实际投资风险/容量问题严重。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测后再决定，或直接放弃单票做法，转型多标的/ETF。&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 扩展到多只流动性好的品种并做资金均分；2) 加入基本风控（停牌、涨跌停、限价、仓位控制、资金分级）。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 6,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 8,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 3,
+        &quot;effectiveness_total&quot;: 4.1
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;默认按聚宽回测环境，before_trading_start 获取的日线数据为 T-1 收盘价而非未来数据。&quot;,
+        &quot;未给出资金规模、滑点模型、交易成本之外的参数，以上分析使用代码默认(20bps滑点、千一佣金)；实际环境可能不同。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PEG-成长多因子 + RSRS 择时四股轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>PEG-成长多因子 + RSRS 择时四股轮动</h1>
+        <p class="meta">
+            ID: 8a63bec1 | 
+            类型: 多因子选股 + 趋势择时 | 
+            来源: b2324_44.分享一个兼顾业绩增长和PEG指标的股票策略.txt |
+            分析日期: 2026-01-11 18:17:26
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>先在全市场中找出业绩高增长且估值便宜(PEG低)的股票，再用成交稳定度(TVSTD20)、市值、60日涨幅、5日成交量等因子打分，选出排名靠前的 4 只小盘股；随后用指数(沪深300)的 RSRS 标准分因子做大盘趋势判断：当 RSRS&gt;0.7 时允许买入/持有，&lt;-0.7 时空仓，以期在大盘上行阶段持有高成长低估值的小市值个股获取超额收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>起点= get_all_securities()（无日期参数，理论上拿到全历史股票）→ 过滤上市不足250日、科创板、ST/停牌/涨跌停等 → 中证800 大小盘不限但随后偏向流通市值最小的100 只。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>指数 RSRS 评分 &gt; 0.7（看多）, 在综合打分中排名 ≤ buyrank(9) 且当前持仓未满 4 只</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>指数 RSRS 评分 &lt; -0.7（看空） — 全部清仓, 个股不再位于 buy list（调仓时个股被排除）</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多持 4 只股票，现金等权分配；未设止损/止盈；无单票或组合风险控制。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>run_daily 09:30 调仓，理论上日频，但如果 buy list 无变化则不动；择时信号也每天评估。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>若人工执行，可在 09:25-09:30 读取昨日收盘后最新财报数据与当日开盘价，按脚本计算名单后在集合竞价或开盘即时下单。择时空仓时全部卖出。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>未对 get_all_securities 指定 date，回测时会包含未来上市股票；attribute_history/volume1200 1m 用于早盘 09:30 也可能取到当天尚未发生的分钟数据(视引擎实现)，存在潜在前视。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>小样本(仅4只股)导致漂移风险大, minute 数据大量循环严重放大回测与实盘性能差异, 避开集合竞价成交价带来的高滑点未处理</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小规模(&lt;100 万)较易执行，放大后滑点与冲击显著，仍可工程化解决。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>几乎无冲击，成交 OK</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>需分单但可成交</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>部分标的日成交额低于 5000 万，冲击明显，需换股/限价</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>组合容量不足，无法大规模部署</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>主动选择流通市值最小的 100 股并再优选，容量极小。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>RSRS 利用趋势-高低价行为，PEG+成长抓估值错配，存在情绪 / 行为因子，但非极端。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>参数繁多(N,M,权重、阈值)且 hard-code，环境变化易失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>整体小盘股流动性枯竭/涨跌停频繁, 大盘单边下跌同时无显著反弹</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>沪深300 RSRS &gt; 0.7 时组合收益应明显跑赢指数, 当 PEG 分位&lt;50% 的小盘股未来一季收益率高于市场, RSRS&lt;-0.7 空仓阶段组合最大回撤收敛至 0</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>逻辑可自洽且具有一定超额来源，但含明显前视风险与容量局限，需严肃修正后小资金试验。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>修补前视问题、减少 minute 级循环、增加仓位数及流动性过滤、加入组合风险控制</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>默认采用市价单，代码未显式指定；如非市价则需补充限价逻辑, 资金规模、滑点模型使用聚宽默认 — 本分析按≤100 万规模推断</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>8</td></tr>
+                <tr><td>滑点</td><td>5</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>4</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>6.8</td></tr>
+                <tr><td>大资金不友好</td><td>8</td></tr>
+                <tr><td>行为偏差利用</td><td>6</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>5.8</td></tr>
+                <tr><td>总分</td><td>62.7</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;PEG-成长多因子 + RSRS 择时四股轮动&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股 + 趋势择时&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;先在全市场中找出业绩高增长且估值便宜(PEG低)的股票，再用成交稳定度(TVSTD20)、市值、60日涨幅、5日成交量等因子打分，选出排名靠前的 4 只小盘股；随后用指数(沪深300)的 RSRS 标准分因子做大盘趋势判断：当 RSRS&gt;0.7 时允许买入/持有，&lt;-0.7 时空仓，以期在大盘上行阶段持有高成长低估值的小市值个股获取超额收益。&quot;,
+        &quot;data_and_indicators&quot;: &quot;①价格/成交量分钟级、日级历史行情；②财报字段(income、indicator)季度级(TTM)；③聚宽内置因子TVSTD20、valuation(市值)；④RSRS(高低点OLS斜率) 日级计算。&quot;,
+        &quot;stock_pool&quot;: &quot;起点= get_all_securities()（无日期参数，理论上拿到全历史股票）→ 过滤上市不足250日、科创板、ST/停牌/涨跌停等 → 中证800 大小盘不限但随后偏向流通市值最小的100 只。&quot;,
+        &quot;buy_signals&quot;: [&quot;指数 RSRS 评分 &gt; 0.7（看多）&quot;, &quot;在综合打分中排名 ≤ buyrank(9) 且当前持仓未满 4 只&quot;],
+        &quot;sell_signals&quot;: [&quot;指数 RSRS 评分 &lt; -0.7（看空） — 全部清仓&quot;, &quot;个股不再位于 buy list（调仓时个股被排除）&quot;],
+        &quot;position_and_risk&quot;: &quot;最多持 4 只股票，现金等权分配；未设止损/止盈；无单票或组合风险控制。&quot;,
+        &quot;trading_frequency&quot;: &quot;run_daily 09:30 调仓，理论上日频，但如果 buy list 无变化则不动；择时信号也每天评估。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;若人工执行，可在 09:25-09:30 读取昨日收盘后最新财报数据与当日开盘价，按脚本计算名单后在集合竞价或开盘即时下单。择时空仓时全部卖出。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;是&quot;,
+        &quot;risk_level&quot;: &quot;高&quot;,
+        &quot;risk_score&quot;: 8,
+        &quot;risk_score_reason&quot;: &quot;未对 get_all_securities 指定 date，回测时会包含未来上市股票；attribute_history/volume1200 1m 用于早盘 09:30 也可能取到当天尚未发生的分钟数据(视引擎实现)，存在潜在前视。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;在 09:30 调用 attribute_history(...,&#x27;1m&#x27;) 可能把 09:30 之前尚未产生的分钟K 包含进来（引擎通常在分钟回测内会发生），风险中等。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals 在打开 avoid_future_data=True 后通常会做披露日处理，风险较低。&quot;,
+            &quot;index_component_leak&quot;: &quot;因子排名逻辑使用当日全部股票(含未来上市) → 看涨日前未上市个股会进入备选，属于严重前视。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;大量循环 attribute_history 单独调用(1200×100) 会触发隐式聚宽回测引擎缓存差异，但非前视。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;在 get_all_securities(date=context.previous_date) 或今天之前的日期；改用 history_bars(now) 避免取未来分钟；对财报使用 fundamental/fin_date 参数二次确认。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;小样本(仅4只股)导致漂移风险大&quot;, &quot;minute 数据大量循环严重放大回测与实盘性能差异&quot;, &quot;避开集合竞价成交价带来的高滑点未处理&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 5,
+        &quot;slippage_reason&quot;: &quot;每天 09:30 市价(or 限价缺失信息)买卖小盘低流动股，集合流动性一般，滑点中等偏高。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;日频调仓但只有 4 只股票，大盘空仓/满仓切换频率有限，总换手低-中。&quot;,
+        &quot;execution_score&quot;: 4,
+        &quot;execution_reason&quot;: &quot;目标股多为流动性较差的小盘，需拆单；1000 万以上资金容易冲击交易。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;仅 09:30 触发，下单晚一点影响有限；但当日即时价仍有差异。&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;小规模(&lt;100 万)较易执行，放大后滑点与冲击显著，仍可工程化解决。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;几乎无冲击，成交 OK&quot;,
+            &quot;100w&quot;: &quot;需分单但可成交&quot;,
+            &quot;1000w&quot;: &quot;部分标的日成交额低于 5000 万，冲击明显，需换股/限价&quot;,
+            &quot;1y&quot;: &quot;组合容量不足，无法大规模部署&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;将 volume/std、流通市值约束阈值上调，提升容量&quot;, &quot;改为集合竞价后逐笔 VWAP 下单分散滑点&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 8,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;主动选择流通市值最小的 100 股并再优选，容量极小。&quot;,
+        &quot;behavioral_bias_score&quot;: 6,
+        &quot;behavioral_bias_reason&quot;: &quot;RSRS 利用趋势-高低价行为，PEG+成长抓估值错配，存在情绪 / 行为因子，但非极端。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;参数繁多(N,M,权重、阈值)且 hard-code，环境变化易失效。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.6,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;整体小盘股流动性枯竭/涨跌停频繁&quot;, &quot;大盘单边下跌同时无显著反弹&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;沪深300 RSRS &gt; 0.7 时组合收益应明显跑赢指数&quot;, &quot;当 PEG 分位&lt;50% 的小盘股未来一季收益率高于市场&quot;, &quot;RSRS&lt;-0.7 空仓阶段组合最大回撤收敛至 0&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;逻辑可自洽且具有一定超额来源，但含明显前视风险与容量局限，需严肃修正后小资金试验。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;修补前视问题、减少 minute 级循环、增加仓位数及流动性过滤、加入组合风险控制&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 8,
+        &quot;slippage&quot;: 5,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 4,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 8,
+        &quot;effectiveness_b&quot;: 6,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 5.6
+    },
+    
+    &quot;assumptions&quot;: [&quot;默认采用市价单，代码未显式指定；如非市价则需补充限价逻辑&quot;, &quot;资金规模、滑点模型使用聚宽默认 — 本分析按≤100 万规模推断&quot;]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

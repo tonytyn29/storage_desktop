@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARBR-小市值三股轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>ARBR-小市值三股轮动</h1>
+        <p class="meta">
+            ID: 4fe65535 | 
+            类型: 多因子选股（情绪+小市值轮动） | 
+            来源: b2324_15.10年52倍，年化59%，全新因子方法超稳定.txt |
+            分析日期: 2026-01-11 14:52:00
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>每周一 09:30 依据前一交易日截面的 ARBR 情绪因子和小市值 + 正 EPS 过滤，从全市场（剔除 ST/停牌/新股/涨跌停开盘/创业板等）挑出市值最小的 3 只股票等权买入；4 月 5-30 日强行清仓并空仓；若昨日涨停的持仓在当日 14:00 打开涨停则先行卖出。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全 A 股（剔除代码首位 3/4/8/68、停牌、ST、退市、新股&lt;~1 年、开盘即涨跌停）；行业无特别限制，缺失值用行业/全市场均值填补。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>满足 ARBR ∈ [-0.9996, 0.9986]（阈值极宽，几乎全部通过）, 在通过 ARBR 的池子里，正 EPS，流通市值最小的前 3 名</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>周一调仓时不在最新 target_list 且昨日未涨停, 昨日涨停但今日 14:00 打开涨停, 每年 4-5 至 4-30 期间全仓卖出</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多 3 只股票，等权（按剩余现金均分新买股票），不强制再平衡老仓；未设止损/风控；无杠杆。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>周频调仓（每周一 09:30）；14:00 可能额外卖出昨日涨停；4 月份可能一次性清仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前准备候选池；周一 09:25-09:35 按市价/限价买入目标 3 只；14:00 查看昨日涨停是否打开；4 月 5-30 若持仓需清仓在 14:30 前完成。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有因子、行情均以 context.previous_date 或 end_date=yesterday 取值；财务数据使用 get_fundamentals(当前日) 在 09:30 调用，JoinQuant 回测引擎会按披露日对齐，存在极小的 T+0 披露时间灰区，但整体可接受。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>财务披露日 T+0 时间点的不确定性, set_slippage(0) 会低估回测风险, 流动性过滤缺少成交额约束</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小资金可直接跟随，千万级以上受到成交量约束；滑点与冲击需专业执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>基本无压力，可一次性市价成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>需对单票成交额做容错，部分极小市值票要拆单或挂限价。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>容量吃紧；可能无法买入榜单最小市值股票，需限制日均成交额&gt;3000 万过滤。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>几乎无法落地，需改为更多成分股或提高流动性门槛。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>策略核心在超小市值，容量天然受限；3 只股票集中度高。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>ARBR 属于情绪/行为指标；但阈值过宽，收益更多来自小市值溢价而非情绪极值。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>逻辑简单但择时清仓（4 月）属 curve fitting；对熊市/流动性紧缩期脆弱。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>小盘股连续跌停/流动性枯竭, 监管对壳资源、壳溢价持续打压导致小市值失效</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>持仓市值将显著低于中位数流通市值, 收益在小盘/高情绪阶段显著超基准, 4-5 月空仓期收益显著低于满仓期（若逻辑正确）</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>本策略本质是『选最小市值正盈利股 + 简单情绪过滤』的周频轮动，小资金可尝试但回测滑点被严重低估。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>加入流动性过滤、真实滑点模型、财务数据 T+1 处理，并验证 4 月空仓是否必要。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供资金规模，默认使用聚宽回测初始 100 万。, order_target_value 默认以一次性市价成交；无滑点模型（已在分析中单独讨论）。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>6</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>6</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>5.7</td></tr>
+                <tr><td>大资金不友好</td><td>7</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>5.7</td></tr>
+                <tr><td>总分</td><td>57.0</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;ARBR-小市值三股轮动&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股（情绪+小市值轮动）&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;每周一 09:30 依据前一交易日截面的 ARBR 情绪因子和小市值 + 正 EPS 过滤，从全市场（剔除 ST/停牌/新股/涨跌停开盘/创业板等）挑出市值最小的 3 只股票等权买入；4 月 5-30 日强行清仓并空仓；若昨日涨停的持仓在当日 14:00 打开涨停则先行卖出。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) jqfactor.ARBR（日频，上一交易日值）；2) 基础行情（日频 OHLC, 高低停价, 1 分钟快照用于 14:00 判断）；3) 基础财务：valuation.circulating_market_cap、indicator.eps（日更，取最新已披露）&quot;,
+        &quot;stock_pool&quot;: &quot;全 A 股（剔除代码首位 3/4/8/68、停牌、ST、退市、新股&lt;~1 年、开盘即涨跌停）；行业无特别限制，缺失值用行业/全市场均值填补。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;满足 ARBR ∈ [-0.9996, 0.9986]（阈值极宽，几乎全部通过）&quot;,
+            &quot;在通过 ARBR 的池子里，正 EPS，流通市值最小的前 3 名&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;周一调仓时不在最新 target_list 且昨日未涨停&quot;,
+            &quot;昨日涨停但今日 14:00 打开涨停&quot;,
+            &quot;每年 4-5 至 4-30 期间全仓卖出&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;最多 3 只股票，等权（按剩余现金均分新买股票），不强制再平衡老仓；未设止损/风控；无杠杆。&quot;,
+        &quot;trading_frequency&quot;: &quot;周频调仓（每周一 09:30）；14:00 可能额外卖出昨日涨停；4 月份可能一次性清仓。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前准备候选池；周一 09:25-09:35 按市价/限价买入目标 3 只；14:00 查看昨日涨停是否打开；4 月 5-30 若持仓需清仓在 14:30 前完成。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有因子、行情均以 context.previous_date 或 end_date=yesterday 取值；财务数据使用 get_fundamentals(当前日) 在 09:30 调用，JoinQuant 回测引擎会按披露日对齐，存在极小的 T+0 披露时间灰区，但整体可接受。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;未使用当前日收盘价/全天最高价等未来价格；get_price(…,end_date=context.previous_date) 合规。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals 在当日 09:30 调用，若回测日期=披露日且实际披露时间&gt;09:30 则有轻微提前；属于灰区但非确定未来函数。&quot;,
+            &quot;index_component_leak&quot;: &quot;无指数权重等未来信息引用。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未直接用 history 等已知未来 bug 函数。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;对财务表使用 shift(1) 或 add_info_date_filter=True 保守处理。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;财务披露日 T+0 时间点的不确定性&quot;, &quot;set_slippage(0) 会低估回测风险&quot;, &quot;流动性过滤缺少成交额约束&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 6,
+        &quot;slippage_reason&quot;: &quot;买入/卖出往往是极小市值股票，且 09:30 开盘价撮合单，实盘滑点可能 ≥1-2%/单次；回测设置 0 滑点与现实差距大。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;周频调仓 + 可能额外卖出涨停打开的票，年换手大约 50-150%；按千三手续费计为中低。&quot;,
+        &quot;execution_score&quot;: 6,
+        &quot;execution_reason&quot;: &quot;一次只买 3 只小盘股，单票容量有限；资金&gt;1000 万需拆单并择时。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;固定在周一 09:30 下单；非高频，但若错过开盘价影响选股市值排序。&quot;,
+        &quot;overall_executability&quot;: 5,
+        &quot;overall_reason&quot;: &quot;小资金可直接跟随，千万级以上受到成交量约束；滑点与冲击需专业执行。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;基本无压力，可一次性市价成交。&quot;,
+            &quot;100w&quot;: &quot;需对单票成交额做容错，部分极小市值票要拆单或挂限价。&quot;,
+            &quot;1000w&quot;: &quot;容量吃紧；可能无法买入榜单最小市值股票，需限制日均成交额&gt;3000 万过滤。&quot;,
+            &quot;1y&quot;: &quot;几乎无法落地，需改为更多成分股或提高流动性门槛。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;加入成交额/换手率过滤提升容量&quot;, &quot;采用 VWAP 或分批算法+真实滑点模型&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 7,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;策略核心在超小市值，容量天然受限；3 只股票集中度高。&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;ARBR 属于情绪/行为指标；但阈值过宽，收益更多来自小市值溢价而非情绪极值。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;逻辑简单但择时清仓（4 月）属 curve fitting；对熊市/流动性紧缩期脆弱。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.4,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40%+行为利用30%+跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;小盘股连续跌停/流动性枯竭&quot;, &quot;监管对壳资源、壳溢价持续打压导致小市值失效&quot;],
+        &quot;verifiable_predictions&quot;: [
+            &quot;持仓市值将显著低于中位数流通市值&quot;,
+            &quot;收益在小盘/高情绪阶段显著超基准&quot;,
+            &quot;4-5 月空仓期收益显著低于满仓期（若逻辑正确）&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;本策略本质是『选最小市值正盈利股 + 简单情绪过滤』的周频轮动，小资金可尝试但回测滑点被严重低估。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;加入流动性过滤、真实滑点模型、财务数据 T+1 处理，并验证 4 月空仓是否必要。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 6,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 6,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 5,
+        &quot;effectiveness_a&quot;: 7,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.4
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供资金规模，默认使用聚宽回测初始 100 万。&quot;,
+        &quot;order_target_value 默认以一次性市价成交；无滑点模型（已在分析中单独讨论）。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

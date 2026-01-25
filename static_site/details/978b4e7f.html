@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单票DQN全仓策略 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>单票DQN全仓策略</h1>
+        <p class="meta">
+            ID: 978b4e7f | 
+            类型: 其他（单标的强化学习趋势尝试） | 
+            来源: b2324_41.人工智能强化学习DQN交易智能体（回馈社区公开训练代码）.txt |
+            分析日期: 2026-01-11 18:16:21
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>用七个交易日的收盘价涨跌幅（6 个数据点）作为输入，由预先训练好的 DQN 模型输出三类动作（买入 / 卖出 / 持有）。如果模型给出“买入”就把全部现金一次性买入 000065.XSHE；给出“卖出”就一次性清仓；其他情况下保持现有仓位。策略试图通过强化学习模型捕捉该票短期价格动量方向获利。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>固定只交易 000065.XSHE；无 ST、停牌、市值、流动性等过滤。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>DQN 输出 == 1</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>DQN 输出 == 2</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>单票全仓，无分散。未设止损、未设资金上限，风险完全依赖模型输出。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>run_daily，每个交易日 09:30 触发一次决策与下单。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>若人工执行，可在 09:25-09:30 观察昨日收盘价后于集合竞价挂单；盘中 09:30 后按模型指令一次性买入或卖出当日剩余可交易量。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>仅用 attribute_history 获取过去数据；无 today/forward looking 财务字段；无 pipeline；无 future 函数。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>模型文件可能在训练时用到了未来数据，聚宽回测无法察觉。, 将滑点强行设为 0、佣金极低，实盘误差可能极大。, 固定单票策略若对外披露模型权重文件，易被反向套利。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小资金可做；中等以上资金易引起冲击且换手高。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>可基本按市价成交，滑点&lt;5bp。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>若个股成交额&gt;2000w，可接受；否则需拆单。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>对单票容量形成明显冲击，需分时成交并承受显著滑点。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>近乎无法在单票上安全成交，容量瓶颈致策略失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>单票全仓决定了容量极低。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>侧重短期动量但未显式刻画情绪或偏差。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>黑箱模型针对特定时期训练，稳健性未知；一旦风格变化容易失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>目标股票长期横盘或低波动, 目标股票流动性骤降或长期停牌</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>当模型输出买入后接下来若 5 日内上涨，则模型捕捉到正向动量。, 若连续两天输出买入但价格下跌，则模型表现不佳并可能反转。, 在高波动行情中胜率应明显高于低波动行情。</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>策略极简、全仓单票、过度依赖黑箱模型，回测可观但实盘容量与滑点风险大。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>引入多标的、增加风险控制（停牌/跌停保护）、设真实滑点模型与动态拆单。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供资金规模，以上容量评估基于正常市值 100 亿、日成交额 2-5 亿的中盘股。, 佣金税费使用代码给定值；实盘滑点按 5-20bp 估计。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>5</td></tr>
+                <tr><td>成本</td><td>6</td></tr>
+                <tr><td>执行难度</td><td>6</td></tr>
+                <tr><td>时间敏感性</td><td>6</td></tr>
+                <tr><td>综合可执行性</td><td>5.4</td></tr>
+                <tr><td>大资金不友好</td><td>7</td></tr>
+                <tr><td>行为偏差利用</td><td>3</td></tr>
+                <tr><td>跨阶段稳健性</td><td>2</td></tr>
+                <tr><td>有效性总分</td><td>4.0</td></tr>
+                <tr><td>总分</td><td>46.3</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;单票DQN全仓策略&quot;,
+    &quot;strategy_type&quot;: &quot;其他（单标的强化学习趋势尝试）&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;用七个交易日的收盘价涨跌幅（6 个数据点）作为输入，由预先训练好的 DQN 模型输出三类动作（买入 / 卖出 / 持有）。如果模型给出“买入”就把全部现金一次性买入 000065.XSHE；给出“卖出”就一次性清仓；其他情况下保持现有仓位。策略试图通过强化学习模型捕捉该票短期价格动量方向获利。&quot;,
+        &quot;data_and_indicators&quot;: &quot;仅使用 000065.XSHE 的收盘价（attribute_history，&#x27;1d&#x27;，过去 7 天，日频）。无任何财务或量价因子。&quot;,
+        &quot;stock_pool&quot;: &quot;固定只交易 000065.XSHE；无 ST、停牌、市值、流动性等过滤。&quot;,
+        &quot;buy_signals&quot;: [&quot;DQN 输出 == 1&quot;],
+        &quot;sell_signals&quot;: [&quot;DQN 输出 == 2&quot;],
+        &quot;position_and_risk&quot;: &quot;单票全仓，无分散。未设止损、未设资金上限，风险完全依赖模型输出。&quot;,
+        &quot;trading_frequency&quot;: &quot;run_daily，每个交易日 09:30 触发一次决策与下单。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;若人工执行，可在 09:25-09:30 观察昨日收盘价后于集合竞价挂单；盘中 09:30 后按模型指令一次性买入或卖出当日剩余可交易量。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;仅用 attribute_history 获取过去数据；无 today/forward looking 财务字段；无 pipeline；无 future 函数。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;attribute_history 返回截止上一交易日的数据，属于合法历史调用。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未使用财务数据。&quot;,
+            &quot;index_component_leak&quot;: &quot;无需排名/成分，故无泄漏。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未见借助持仓或定价未来信息。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;已较安全，仅需注意 DQN 训练阶段是否使用未来信息（代码未提供）。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;模型文件可能在训练时用到了未来数据，聚宽回测无法察觉。&quot;,
+            &quot;将滑点强行设为 0、佣金极低，实盘误差可能极大。&quot;,
+            &quot;固定单票策略若对外披露模型权重文件，易被反向套利。&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 5,
+        &quot;slippage_reason&quot;: &quot;全仓单笔冲击，且 09:30 开盘阶段流动性相对薄弱；代码设定 0 滑点与真实偏差中等。&quot;,
+        &quot;cost_score&quot;: 6,
+        &quot;cost_reason&quot;: &quot;理论上每日可能调仓一次（买入或清仓），换手高。&quot;,
+        &quot;execution_score&quot;: 6,
+        &quot;execution_reason&quot;: &quot;单票易成交，但大单一次性全仓可能吃深度；停牌/涨跌停无法处理。&quot;,
+        &quot;time_sensitivity_score&quot;: 6,
+        &quot;time_sensitivity_reason&quot;: &quot;依赖 09:30 即时成交价；若错过开盘，信号失效概率高。&quot;,
+        &quot;overall_executability&quot;: 4,
+        &quot;overall_reason&quot;: &quot;小资金可做；中等以上资金易引起冲击且换手高。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;可基本按市价成交，滑点&lt;5bp。&quot;,
+            &quot;100w&quot;: &quot;若个股成交额&gt;2000w，可接受；否则需拆单。&quot;,
+            &quot;1000w&quot;: &quot;对单票容量形成明显冲击，需分时成交并承受显著滑点。&quot;,
+            &quot;1y&quot;: &quot;近乎无法在单票上安全成交，容量瓶颈致策略失效。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;加入成交量过滤及动态拆单，减少冲击成本。&quot;,
+            &quot;考虑多标的分散降低单票容量限制；设定合理滑点模型。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 7,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;单票全仓决定了容量极低。&quot;,
+        &quot;behavioral_bias_score&quot;: 3,
+        &quot;behavioral_bias_reason&quot;: &quot;侧重短期动量但未显式刻画情绪或偏差。&quot;,
+        &quot;cross_period_robustness_score&quot;: 2,
+        &quot;cross_period_robustness_reason&quot;: &quot;黑箱模型针对特定时期训练，稳健性未知；一旦风格变化容易失效。&quot;,
+        &quot;effectiveness_total_score&quot;: 3.2,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为逻辑30% + 跨期稳健30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;目标股票长期横盘或低波动&quot;,
+            &quot;目标股票流动性骤降或长期停牌&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;当模型输出买入后接下来若 5 日内上涨，则模型捕捉到正向动量。&quot;,
+            &quot;若连续两天输出买入但价格下跌，则模型表现不佳并可能反转。&quot;,
+            &quot;在高波动行情中胜率应明显高于低波动行情。&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;策略极简、全仓单票、过度依赖黑箱模型，回测可观但实盘容量与滑点风险大。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;引入多标的、增加风险控制（停牌/跌停保护）、设真实滑点模型与动态拆单。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 5,
+        &quot;cost&quot;: 6,
+        &quot;execution&quot;: 6,
+        &quot;time_sensitivity&quot;: 6,
+        &quot;executability&quot;: 4,
+        &quot;effectiveness_a&quot;: 7,
+        &quot;effectiveness_b&quot;: 3,
+        &quot;effectiveness_c&quot;: 2,
+        &quot;effectiveness_total&quot;: 3.2
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供资金规模，以上容量评估基于正常市值 100 亿、日成交额 2-5 亿的中盘股。&quot;,
+        &quot;佣金税费使用代码给定值；实盘滑点按 5-20bp 估计。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

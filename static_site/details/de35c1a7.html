@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETF动量轮动+成交量风控 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>ETF动量轮动+成交量风控</h1>
+        <p class="meta">
+            ID: de35c1a7 | 
+            类型: 动量策略 | 
+            来源: b2324_6.21年度6.为了挣点积分自己实盘的策略分享出来.txt |
+            分析日期: 2026-01-11 18:22:57
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>只在市场“情绪”正常（目标指数最近连续 g.lag=5 天日成交量未显著低于 g.lag0=7 天均量）时参与风险资产；情绪不佳时全部换成货币/国债 ETF 保本。情绪正常时，在预设 11 只宽基/行业 ETF 中，优先买入近 13 个交易日涨幅最高且现价高于 13 日均价的 1~3 只 ETF，等权持有，形成典型的短周期相对强势轮动组合。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>固定 ETF 池：510050,510180,510880,159905,159915,510300,510500,159949,162605,161005,159901 共 11 只；无 ST/停牌过滤；对指数成分或财务无要求。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>市场情绪监控函数 EmotionMonitor 返回 1 或 0（即没有连续成交量低迷）, ETF 近 13 日涨幅 &gt; 0.1% 且现价高于 13 日均价，按涨幅排序后满足阈值的前 1~3 名</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>EmotionMonitor 返回 -1（连续成交量低迷 ≥5 天）, 轮动打分不足（13 日涨幅&lt;=0.1% 或 均线差值&lt;=0）, 所持 ETF 不再位列最新买入名单</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多持 3 只 ETF，等权；其余资金全部持有货币基金 511880；无单只/总仓位上限控制；无止损/止盈；无指数对冲。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>每日两次：11:30 计算信号；14:40（写死）下单；全部为市价 order_value/order_target，频率≈日级。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前：无需操作；11:25-11:30 跑脚本收集数据；14:30-14:40 根据最新 buy/sell 列单等权下单；若触发空仓可 13:00 先行卖出（但代码逻辑存在定时 bug，实际全部在 14:40 执行）。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有历史数据通过 attribute_history，且已 set_option(&#x27;avoid_future_data&#x27;,True)。未出现直接引用今日收盘价/财务公告等未来信息，仅在盘中使用 get_current_data(last_price) 属于实盘可得信息。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>盘中 last_price 用于筛选，回测使用昨收仍能运行，但与实盘存在价差, 对交易量情绪判断只用前一日数据，实盘午盘时尚未看到当日量，可能与真实场景不同, 动态 target_market 由当日最差 ETF 反推指数，理论依据薄弱</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>流动性优秀、仓位简单、日级频率，人工或半自动均可实现。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>几乎无冲击，买一价成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>单笔 30~50 万成交量占市场不足 0.1%，无压力。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>仍在 ETF 深度内，可一次成交或分两笔。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>部分 ETF（162605/161005）日成交额仅几亿，需拆单但可以完成。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>宽基 ETF 容量大，对 10 亿以内资金友好。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用短期动量及市场情绪，但无更深层行为模型。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>单一 13 日窗口 + 严格阈值 &gt;12 条件，参数脆弱；对牛熊切换敏感。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>震荡市且板块快速轮换（动量失效）, 成交量持续低迷导致长期空仓，踏空上涨</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>大盘量能连续 5 日低迷后持仓收益率下降, 近 13 日涨幅排名越靠前的 ETF 下阶段收益更高, 市场情绪转暖后第一周动量策略显著跑赢基准</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>简洁的 ETF 日级动量轮动策略，执行易、未来函数风险低，但参数与过滤条件较生硬，长期稳健性存疑。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 放宽 g.df.shape 条件；2) 引入风险平滑（如波动率加权）；3) 增加止损/再入规则避免踏空</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>假设1: 资金规模&lt;10亿元，ETF流动性足够，不需要分级成交模型, 假设2: 聚宽回测环境设置的手续费、滑点即代码中的 PerTrade(0.0005,0.0005,5) 与 FixedSlippage(0)；未考虑实际买卖价差</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>3</td></tr>
+                <tr><td>滑点</td><td>2</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>2</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>8.3</td></tr>
+                <tr><td>大资金不友好</td><td>2</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>3.3</td></tr>
+                <tr><td>总分</td><td>55.5</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;ETF动量轮动+成交量风控&quot;,
+    &quot;strategy_type&quot;: &quot;动量策略&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;只在市场“情绪”正常（目标指数最近连续 g.lag=5 天日成交量未显著低于 g.lag0=7 天均量）时参与风险资产；情绪不佳时全部换成货币/国债 ETF 保本。情绪正常时，在预设 11 只宽基/行业 ETF 中，优先买入近 13 个交易日涨幅最高且现价高于 13 日均价的 1~3 只 ETF，等权持有，形成典型的短周期相对强势轮动组合。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 指数与 ETF 日线收盘价、实时 last_price（盘中 11:30）\n2) 指数与 ETF 日成交量\n3) 13 日简单移动均线\n数据全部为行情数据，日频，盘中再次取得实时价用于当日决策。&quot;,
+        &quot;stock_pool&quot;: &quot;固定 ETF 池：510050,510180,510880,159905,159915,510300,510500,159949,162605,161005,159901 共 11 只；无 ST/停牌过滤；对指数成分或财务无要求。&quot;,
+        &quot;buy_signals&quot;: [&quot;市场情绪监控函数 EmotionMonitor 返回 1 或 0（即没有连续成交量低迷）&quot;, &quot;ETF 近 13 日涨幅 &gt; 0.1% 且现价高于 13 日均价，按涨幅排序后满足阈值的前 1~3 名&quot;],
+        &quot;sell_signals&quot;: [&quot;EmotionMonitor 返回 -1（连续成交量低迷 ≥5 天）&quot;, &quot;轮动打分不足（13 日涨幅&lt;=0.1% 或 均线差值&lt;=0）&quot;,&quot;所持 ETF 不再位列最新买入名单&quot;],
+        &quot;position_and_risk&quot;: &quot;最多持 3 只 ETF，等权；其余资金全部持有货币基金 511880；无单只/总仓位上限控制；无止损/止盈；无指数对冲。&quot;,
+        &quot;trading_frequency&quot;: &quot;每日两次：11:30 计算信号；14:40（写死）下单；全部为市价 order_value/order_target，频率≈日级。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前：无需操作；11:25-11:30 跑脚本收集数据；14:30-14:40 根据最新 buy/sell 列单等权下单；若触发空仓可 13:00 先行卖出（但代码逻辑存在定时 bug，实际全部在 14:40 执行）。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 3,
+        &quot;risk_score_reason&quot;: &quot;所有历史数据通过 attribute_history，且已 set_option(&#x27;avoid_future_data&#x27;,True)。未出现直接引用今日收盘价/财务公告等未来信息，仅在盘中使用 get_current_data(last_price) 属于实盘可得信息。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;未见 bar.close_after 之类；attribute_history 默认不含今日盘后价，安全。&quot;,
+            &quot;financial_data_leak&quot;: &quot;无财务数据使用。&quot;,
+            &quot;index_component_leak&quot;: &quot;固定 ETF 列表，无动态选股组件，安全。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未使用 pipeline/因子提前暴露等，安全。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;保持 avoid_future_data 设置；如要扩展至财务因子，务必使用预估披露日过滤。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;盘中 last_price 用于筛选，回测使用昨收仍能运行，但与实盘存在价差&quot;, &quot;对交易量情绪判断只用前一日数据，实盘午盘时尚未看到当日量，可能与真实场景不同&quot;, &quot;动态 target_market 由当日最差 ETF 反推指数，理论依据薄弱&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 2,
+        &quot;slippage_reason&quot;: &quot;交易标的是大市值高流动性的宽基/行业 ETF，日均成交额数十亿，冲击极小。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;日级调仓、人均 1~3 只 ETF；佣金 0.05%，买卖各一次，换手中等。&quot;,
+        &quot;execution_score&quot;: 2,
+        &quot;execution_reason&quot;: &quot;市价单在 14:40 ETF 流动性仍充足；大资金亦可一笔成交。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;需当日盘中执行；但 14:40 至收盘尚有 20 分钟，容错较高。&quot;,
+        &quot;overall_executability&quot;: 8,
+        &quot;overall_reason&quot;: &quot;流动性优秀、仓位简单、日级频率，人工或半自动均可实现。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;几乎无冲击，买一价成交。&quot;,
+            &quot;100w&quot;: &quot;单笔 30~50 万成交量占市场不足 0.1%，无压力。&quot;,
+            &quot;1000w&quot;: &quot;仍在 ETF 深度内，可一次成交或分两笔。&quot;,
+            &quot;1y&quot;: &quot;部分 ETF（162605/161005）日成交额仅几亿，需拆单但可以完成。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;修复 run_daily 定时逻辑：卖出信号应在 13:00 执行&quot;, &quot;增加挂单/限价保护，避免尾盘异动&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 2,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;宽基 ETF 容量大，对 10 亿以内资金友好。&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;利用短期动量及市场情绪，但无更深层行为模型。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;单一 13 日窗口 + 严格阈值 &gt;12 条件，参数脆弱；对牛熊切换敏感。&quot;,
+        &quot;effectiveness_total_score&quot;: 3.3,
+        &quot;weight_explanation&quot;: &quot;大资金不友好20% + 行为偏差30% + 跨阶段稳健50%&quot;,
+        &quot;worst_environments&quot;: [&quot;震荡市且板块快速轮换（动量失效）&quot;, &quot;成交量持续低迷导致长期空仓，踏空上涨&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;大盘量能连续 5 日低迷后持仓收益率下降&quot;, &quot;近 13 日涨幅排名越靠前的 ETF 下阶段收益更高&quot;, &quot;市场情绪转暖后第一周动量策略显著跑赢基准&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;简洁的 ETF 日级动量轮动策略，执行易、未来函数风险低，但参数与过滤条件较生硬，长期稳健性存疑。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 放宽 g.df.shape 条件；2) 引入风险平滑（如波动率加权）；3) 增加止损/再入规则避免踏空&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 3,
+        &quot;slippage&quot;: 2,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 2,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 8,
+        &quot;effectiveness_a&quot;: 2,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 3.3
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;假设1: 资金规模&lt;10亿元，ETF流动性足够，不需要分级成交模型&quot;,
+        &quot;假设2: 聚宽回测环境设置的手续费、滑点即代码中的 PerTrade(0.0005,0.0005,5) 与 FixedSlippage(0)；未考虑实际买卖价差&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

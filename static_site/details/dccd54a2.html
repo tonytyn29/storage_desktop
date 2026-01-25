@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首板次日低开博弈 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>首板次日低开博弈</h1>
+        <p class="meta">
+            ID: dccd54a2 | 
+            类型: 事件驱动 / 情绪动量 | 
+            来源: b2324_4.首板低开策略.txt |
+            分析日期: 2026-01-11 18:16:12
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>博弈昨日首板（首次涨停）个股在次日出现 3% 左右低开后被资金再次拉升的情绪反包机会。低开过滤掉一字封单的强势连板，避免追高；同时利用首板后筹码未充分获利抛压较小、存在短线资金接力的市场行为来获利。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全 A 股（剔除科创 68/北交 4,8 开头），去掉上市 &lt;250 天、新股、ST、停牌。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>昨日收盘价=涨停价（涨停股）且不是最近 10 日的连板股（首板）, 60 日高低区间相对位置 ≤0.5（处于箱体下半区，后排补涨）, 当日 9:25~9:30 开盘价 / 昨收 ∈ [0.96,0.97] （低开 3%±1%）</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>11:28 若未封涨停且浮盈&gt;0 全部止盈, 14:50 若仍未封涨停则无条件清仓止损, （若当日封板则继续持有，直至某天触发上述条件）</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>满仓等权，持仓数量=当日满足条件的股票数，当 portfolio 为空时才建仓；未设置单票或组合最大资金上限、未设置熔断/跌停风险控制。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>理想状态几乎『日内』：绝大多数持仓隔日买入后最迟当日下午卖出；只有封板成功才隔夜持仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前准备昨日涨停与过滤列表；9:25 看到各标的开盘价即下单；11:28 检查浮盈未封板的持仓全部卖出；14:50 再检查一次未封板全部卖出。封板股收盘后留仓至次日继续观察。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有历史指标均基于 context.previous_date（T-1），实时只用当前价/开盘价，未看到 look-ahead。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>高低板判断依赖 high_limit 字段，若 T 日涨跌幅限制规则变更需同步逻辑。, sell 逻辑使用 avg_cost，实盘手续费差异可能导致盈亏判定偏差。, 若集合竞价无法全部成交，9:30 再发单可能错失计划价格。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>需要盘中盯盘 + 高频指令 + 小资金环境，可执行性中等偏下。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>滑点容忍度足够，流动性 OK，策略可完整执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>需部分拆单，仍可执行，但遇到 1~2 只成交不充分的票容量已显不足。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>集合竞价成交占比过低，不封板时盘中冲高成交或导致价格冲击，收益-损耗倒挂。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>几乎无法进入，大额流动性冲击与涨跌停限制使策略失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>标的成交额低、涨跌停制度封单小，容量极有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用短线涨停情绪与低开恐慌心理，属于典型资金行为/羊群效应。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>情绪驱动策略与监管/市场情绪高度相关，2015-2020 与 2021 之后表现差异较大。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>监管加强打击短线炒作、涨跌停连板极少的低波环境, 极端熊市连续跌停或大盘闪崩导致低开后无资金承接</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>高开（非低开）次日首板在本策略中几乎不会被买入且收益显著低于低开样本, 若开盘后 30 分钟内成交额占昨日成交额比重过高，则次日冲高回落概率增加, 监管对涨停封单限制一旦收紧（提高 20cm 占比），策略月度胜率下滑</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>典型首板低开反包日内策略，小资金可玩，大资金难以落地，执行与滑点要求高。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>加入流动性/成交额过滤、使用分时成交量配合判断是否快速拉板、设定止盈止损的动态阈值。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未给出资金规模、佣金和滑点模型，默认聚宽回测缺省值（佣金 0.0003 / 印花税 0.001 / 无滑点）。, order_target_value 默认以市价成交，不考虑冲击成本；实盘需自行拆单。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>7</td></tr>
+                <tr><td>成本</td><td>7</td></tr>
+                <tr><td>执行难度</td><td>6</td></tr>
+                <tr><td>时间敏感性</td><td>8</td></tr>
+                <tr><td>综合可执行性</td><td>4.2</td></tr>
+                <tr><td>大资金不友好</td><td>8</td></tr>
+                <tr><td>行为偏差利用</td><td>6</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>6.3</td></tr>
+                <tr><td>总分</td><td>53.2</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;首板次日低开博弈&quot;,
+    &quot;strategy_type&quot;: &quot;事件驱动 / 情绪动量&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;博弈昨日首板（首次涨停）个股在次日出现 3% 左右低开后被资金再次拉升的情绪反包机会。低开过滤掉一字封单的强势连板，避免追高；同时利用首板后筹码未充分获利抛压较小、存在短线资金接力的市场行为来获利。&quot;,
+        &quot;data_and_indicators&quot;: &quot;仅用行情数据（open/close/high/low/high_limit/paused）与基础证券信息；全部为日频，买入时额外读取当日 9:30 的实时开盘价。&quot;,
+        &quot;stock_pool&quot;: &quot;全 A 股（剔除科创 68/北交 4,8 开头），去掉上市 &lt;250 天、新股、ST、停牌。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;昨日收盘价=涨停价（涨停股）且不是最近 10 日的连板股（首板）&quot;,
+            &quot;60 日高低区间相对位置 ≤0.5（处于箱体下半区，后排补涨）&quot;,
+            &quot;当日 9:25~9:30 开盘价 / 昨收 ∈ [0.96,0.97] （低开 3%±1%）&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;11:28 若未封涨停且浮盈&gt;0 全部止盈&quot;,
+            &quot;14:50 若仍未封涨停则无条件清仓止损&quot;,
+            &quot;（若当日封板则继续持有，直至某天触发上述条件）&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;满仓等权，持仓数量=当日满足条件的股票数，当 portfolio 为空时才建仓；未设置单票或组合最大资金上限、未设置熔断/跌停风险控制。&quot;,
+        &quot;trading_frequency&quot;: &quot;理想状态几乎『日内』：绝大多数持仓隔日买入后最迟当日下午卖出；只有封板成功才隔夜持仓。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前准备昨日涨停与过滤列表；9:25 看到各标的开盘价即下单；11:28 检查浮盈未封板的持仓全部卖出；14:50 再检查一次未封板全部卖出。封板股收盘后留仓至次日继续观察。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有历史指标均基于 context.previous_date（T-1），实时只用当前价/开盘价，未看到 look-ahead。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;get_price(end_date = previous_date) 不含未来，安全。&quot;,
+            &quot;financial_data_leak&quot;: &quot;无财务数据调用。&quot;,
+            &quot;index_component_leak&quot;: &quot;无排名基于未来价格。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未使用 pipeline/alpha191 等可能产生未来偏差的接口。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;在初始化里显式 set_option(&#x27;avoid_future_data&#x27;,True) 已设置；保持即可。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;高低板判断依赖 high_limit 字段，若 T 日涨跌幅限制规则变更需同步逻辑。&quot;,
+            &quot;sell 逻辑使用 avg_cost，实盘手续费差异可能导致盈亏判定偏差。&quot;,
+            &quot;若集合竞价无法全部成交，9:30 再发单可能错失计划价格。&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 7,
+        &quot;slippage_reason&quot;: &quot;目标股多为小盘情绪票，集合竞价成交量低，9:30 市价买极易被抢跑或吃到向上快速拉升导致 2~3% 以上滑点。&quot;,
+        &quot;cost_score&quot;: 7,
+        &quot;cost_reason&quot;: &quot;几乎日内全仓换手，年化换手&gt;2000%；按千 1 手续费与双边千 2 印花税计，成本偏高。&quot;,
+        &quot;execution_score&quot;: 6,
+        &quot;execution_reason&quot;: &quot;小资金 (&lt;500 万) 尚可；大资金需要拆单且对价格敏感。&quot;,
+        &quot;time_sensitivity_score&quot;: 8,
+        &quot;time_sensitivity_reason&quot;: &quot;买点仅限 9:30 开盘后极短窗口；卖点 11:28/14:50 固定时间段，错过易导致大幅回撤。&quot;,
+        &quot;overall_executability&quot;: 5,
+        &quot;overall_reason&quot;: &quot;需要盘中盯盘 + 高频指令 + 小资金环境，可执行性中等偏下。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;滑点容忍度足够，流动性 OK，策略可完整执行。&quot;,
+            &quot;100w&quot;: &quot;需部分拆单，仍可执行，但遇到 1~2 只成交不充分的票容量已显不足。&quot;,
+            &quot;1000w&quot;: &quot;集合竞价成交占比过低，不封板时盘中冲高成交或导致价格冲击，收益-损耗倒挂。&quot;,
+            &quot;1y&quot;: &quot;几乎无法进入，大额流动性冲击与涨跌停限制使策略失效。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;引入分级资金管理与单票最大成交额限制，避免流动性踩踏。&quot;,
+            &quot;采用限价单或 VWAP 拆单方式降低集合竞价与早盘拉升阶段滑点。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 8,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;标的成交额低、涨跌停制度封单小，容量极有限。&quot;,
+        &quot;behavioral_bias_score&quot;: 6,
+        &quot;behavioral_bias_reason&quot;: &quot;利用短线涨停情绪与低开恐慌心理，属于典型资金行为/羊群效应。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;情绪驱动策略与监管/市场情绪高度相关，2015-2020 与 2021 之后表现差异较大。&quot;,
+        &quot;effectiveness_total_score&quot;: 6.5,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为驱动30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;监管加强打击短线炒作、涨跌停连板极少的低波环境&quot;,
+            &quot;极端熊市连续跌停或大盘闪崩导致低开后无资金承接&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;高开（非低开）次日首板在本策略中几乎不会被买入且收益显著低于低开样本&quot;,
+            &quot;若开盘后 30 分钟内成交额占昨日成交额比重过高，则次日冲高回落概率增加&quot;,
+            &quot;监管对涨停封单限制一旦收紧（提高 20cm 占比），策略月度胜率下滑&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;典型首板低开反包日内策略，小资金可玩，大资金难以落地，执行与滑点要求高。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;加入流动性/成交额过滤、使用分时成交量配合判断是否快速拉板、设定止盈止损的动态阈值。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 7,
+        &quot;cost&quot;: 7,
+        &quot;execution&quot;: 6,
+        &quot;time_sensitivity&quot;: 8,
+        &quot;executability&quot;: 5,
+        &quot;effectiveness_a&quot;: 8,
+        &quot;effectiveness_b&quot;: 6,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 6.5
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未给出资金规模、佣金和滑点模型，默认聚宽回测缺省值（佣金 0.0003 / 印花税 0.001 / 无滑点）。&quot;,
+        &quot;order_target_value 默认以市价成交，不考虑冲击成本；实盘需自行拆单。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

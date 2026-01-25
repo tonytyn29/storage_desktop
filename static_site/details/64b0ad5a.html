@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETF动量-RSRS轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>ETF动量-RSRS轮动</h1>
+        <p class="meta">
+            ID: 64b0ad5a | 
+            类型: 动量策略 | 
+            来源: b2324_50.ETF动量轮动RSRS择时-V2.1.txt |
+            分析日期: 2026-01-11 18:20:13
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>在有限的宽基/行业 ETF 池里（50、300、创业板500、消费）寻找最近 20 交易日乖离动量最强的一只；若大盘(沪深300指数) 的 RSRS 指标显示无明显下行风险，则满仓持有该 ETF，否则清仓。盘中若价格跌破 60 分钟 MA20 则止损。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>固定 4 只高流动性 ETF。代码未做 ST/停牌/涨跌停过滤，仅依赖聚宽撮合自动忽略停牌/跌停，手动过滤需补充。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>开盘(09:30) 计算得到的动量排名第 1 的 ETF, RSRS 信号为 BUY (rsrs_score &gt; -0.7) 且未触发 SELL 条件</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>RSRS 信号 SELL：rsrs_score &lt;= -0.7 或 (rsrs_slope &lt; 0 且 rsrs_score &gt; 0), 盘中 13:00 60 分钟价 &lt; 60 分钟 MA20, 持仓 ETF 不再是当日动量第一且 RSRS 允许持仓时会换仓</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>只持 1 只 ETF，仓位=100%；风险控制：RSRS 空仓、盘中跌破 MA20 止损、开盘检查极端亏损(但函数有 bug)。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>日级；9:30 开盘下单；13:00 可能止损；每天最多 1 次换仓+1 次盘中卖出。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前：准备昨日收盘数据计算动量与 RSRS；09:25 挂单等开盘；13:00 检查 MA20 止损；收盘复核持仓与次日候选。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>initial_slope_series 中 zscore 计算使用 r2s[i-g.K] 产生负索引，等同于引用未来 r2 值，对最初 K 天存在前视；之后影响衰减。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>rsrs_score_hisitory 使用全局变量，重启/切换环境需持久化。, check_lose 函数引用未定义变量 value，实盘会报错导致自动卖出失败。, 没有对停牌/流动性极差 ETF 过滤，若未来池子扩大需注意。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>低滑点+低成本+高流动性；需要简单自动化即可。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>可完全成交，几乎无冲击。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>依旧轻松成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>单笔占成交额低于 1%，可行。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>需分批，但 ETF 深度足够；冲击可控。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>ETF 容量大，对大资金友好。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>主要基于趋势/动量，弱利用情绪偏差。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>RSRS+动量属于常见逻辑，但参数依赖历史阶段，稳健性中等。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>快速 V 型反转, 长时间震荡市导致误判趋势</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>当沪深300 RSRS&lt;-0.7 时空仓能降低回撤, 动量乖离斜率排名第 1 的 ETF 在随后一个月超额收益为正, 60 分钟价跌破 MA20 的盘中卖出可减少日内深度回撤</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>简单可执行的 ETF 动量+RSRS 时序策略，前视风险有限但需修正，适合小试。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>修正前视索引、增加多 ETF 分散与再平衡周期测试、补充异常处理与风控。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供初始资金规模，默认聚宽回测默认 1,000,000 元。, 滑点模型 FixedSlippage(0.001) 已写死；实际市场滑点可能更低。, 未提供是否使用限价/市价，默认 order_target_value 聚宽撮合以当前价成交。, 未提供交易费率，代码中 commission=0.03%。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>4</td></tr>
+                <tr><td>滑点</td><td>2</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>2</td></tr>
+                <tr><td>时间敏感性</td><td>5</td></tr>
+                <tr><td>综合可执行性</td><td>8.4</td></tr>
+                <tr><td>大资金不友好</td><td>2</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>3.7</td></tr>
+                <tr><td>总分</td><td>58.5</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;ETF动量-RSRS轮动&quot;,
+    &quot;strategy_type&quot;: &quot;动量策略&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;在有限的宽基/行业 ETF 池里（50、300、创业板500、消费）寻找最近 20 交易日乖离动量最强的一只；若大盘(沪深300指数) 的 RSRS 指标显示无明显下行风险，则满仓持有该 ETF，否则清仓。盘中若价格跌破 60 分钟 MA20 则止损。&quot;,
+        &quot;data_and_indicators&quot;: &quot;价格(日线 high/low/close, 60 分钟 close)、成交量(日线)、计算频率：日更；指标：90 日均线乖离动量、RSRS(z-score 600 日) 及其 8 日斜率、一阶均线止损。&quot;,
+        &quot;stock_pool&quot;: &quot;固定 4 只高流动性 ETF。代码未做 ST/停牌/涨跌停过滤，仅依赖聚宽撮合自动忽略停牌/跌停，手动过滤需补充。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;开盘(09:30) 计算得到的动量排名第 1 的 ETF&quot;,
+            &quot;RSRS 信号为 BUY (rsrs_score &gt; -0.7) 且未触发 SELL 条件&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;RSRS 信号 SELL：rsrs_score &lt;= -0.7 或 (rsrs_slope &lt; 0 且 rsrs_score &gt; 0)&quot;,
+            &quot;盘中 13:00 60 分钟价 &lt; 60 分钟 MA20&quot;,
+            &quot;持仓 ETF 不再是当日动量第一且 RSRS 允许持仓时会换仓&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;只持 1 只 ETF，仓位=100%；风险控制：RSRS 空仓、盘中跌破 MA20 止损、开盘检查极端亏损(但函数有 bug)。&quot;,
+        &quot;trading_frequency&quot;: &quot;日级；9:30 开盘下单；13:00 可能止损；每天最多 1 次换仓+1 次盘中卖出。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前：准备昨日收盘数据计算动量与 RSRS；09:25 挂单等开盘；13:00 检查 MA20 止损；收盘复核持仓与次日候选。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;不确定&quot;,
+        &quot;risk_level&quot;: &quot;中&quot;,
+        &quot;risk_score&quot;: 4,
+        &quot;risk_score_reason&quot;: &quot;initial_slope_series 中 zscore 计算使用 r2s[i-g.K] 产生负索引，等同于引用未来 r2 值，对最初 K 天存在前视；之后影响衰减。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;attribute_history 本身安全，但初始阶段使用未来 r2 值。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未使用财务数据，安全。&quot;,
+            &quot;index_component_leak&quot;: &quot;固定 ETF，无指数成分前视。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无可见风险。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;初始化时仅保留完全可得的历史窗口或把 r2s 对齐正索引；从第 N+M 日开始回测可完全消除前视。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;rsrs_score_hisitory 使用全局变量，重启/切换环境需持久化。&quot;,
+            &quot;check_lose 函数引用未定义变量 value，实盘会报错导致自动卖出失败。&quot;,
+            &quot;没有对停牌/流动性极差 ETF 过滤，若未来池子扩大需注意。&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 2,
+        &quot;slippage_reason&quot;: &quot;交易对象为高流动性 ETF；FixedSlippage 仅 0.1%。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;日级换手且只 1 只 ETF；买卖佣金 0.03%/边。&quot;,
+        &quot;execution_score&quot;: 2,
+        &quot;execution_reason&quot;: &quot;盘中成交量充裕，满仓成交容易；止损单也容易全部成交。&quot;,
+        &quot;time_sensitivity_score&quot;: 5,
+        &quot;time_sensitivity_reason&quot;: &quot;需 09:30 开盘价及时下单；13:00 需及时盘中止损。&quot;,
+        &quot;overall_executability&quot;: 8,
+        &quot;overall_reason&quot;: &quot;低滑点+低成本+高流动性；需要简单自动化即可。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;可完全成交，几乎无冲击。&quot;,
+            &quot;100w&quot;: &quot;依旧轻松成交。&quot;,
+            &quot;1000w&quot;: &quot;单笔占成交额低于 1%，可行。&quot;,
+            &quot;1y&quot;: &quot;需分批，但 ETF 深度足够；冲击可控。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;补充涨跌停/停牌过滤，防止 order 失败。&quot;,
+            &quot;将盘中止损逻辑改为价格触发限价单，减少滑点。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 2,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;ETF 容量大，对大资金友好。&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;主要基于趋势/动量，弱利用情绪偏差。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;RSRS+动量属于常见逻辑，但参数依赖历史阶段，稳健性中等。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.0,
+        &quot;weight_explanation&quot;: &quot;大资金友好20%+行为利用30%+稳健性50%&quot;,
+        &quot;worst_environments&quot;: [&quot;快速 V 型反转&quot;, &quot;长时间震荡市导致误判趋势&quot;],
+        &quot;verifiable_predictions&quot;: [
+            &quot;当沪深300 RSRS&lt;-0.7 时空仓能降低回撤&quot;,
+            &quot;动量乖离斜率排名第 1 的 ETF 在随后一个月超额收益为正&quot;,
+            &quot;60 分钟价跌破 MA20 的盘中卖出可减少日内深度回撤&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;简单可执行的 ETF 动量+RSRS 时序策略，前视风险有限但需修正，适合小试。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;修正前视索引、增加多 ETF 分散与再平衡周期测试、补充异常处理与风控。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 4,
+        &quot;slippage&quot;: 2,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 2,
+        &quot;time_sensitivity&quot;: 5,
+        &quot;executability&quot;: 8,
+        &quot;effectiveness_a&quot;: 2,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.0
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供初始资金规模，默认聚宽回测默认 1,000,000 元。&quot;,
+        &quot;滑点模型 FixedSlippage(0.001) 已写死；实际市场滑点可能更低。&quot;,
+        &quot;未提供是否使用限价/市价，默认 order_target_value 聚宽撮合以当前价成交。&quot;,
+        &quot;未提供交易费率，代码中 commission=0.03%。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

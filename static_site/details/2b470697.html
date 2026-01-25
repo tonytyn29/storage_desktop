@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多子账户分仓综合轮动/价值/小市值/高股息策略 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>多子账户分仓综合轮动/价值/小市值/高股息策略</h1>
+        <p class="meta">
+            ID: 2b470697 | 
+            类型: 组合型（ETF动量轮动 + 价值因子 + 机器学习多因子小市值 + 高股息低价股） | 
+            来源: b25_12用子账户模拟多策略分仓.txt |
+            分析日期: 2026-01-10 22:03:59
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>通过把资金分为四个子账户，分别执行风格差异较大的子策略（ETF动量轮动、低PB大市值价值、机器学习小市值、低价高股息）以实现资产配置与分散化。各子策略利用不同的市场异象：ETF趋势/动量、价值回归、小市值与多因子溢价、以及高分红＋价格错配，期望在不同市场环境下互补获利。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全体A股（剔除 ST、*、退市、停牌、涨跌停、科创板 68/北交 8、4 开头）+ 四只指定ETF。小市值策略再剔除上市不足 400 天与未来 120 天内大额解禁。高股息策略仅保留过去一年股息率前 25%且股价 &lt;9 元并按流通市值升序筛选。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>ETF 子账户：四只 ETF 按 25 日动量×R² − (反转因子) 评分且通过 RSRS 多头过滤，取分数最高的 1 只；, 其他子账户：各自选股函数返回的前 N 只（低 PB &amp; 高 ROA；多因子打分最高小市值；高股息+低价+小市值）</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>调仓时不在最新 top-list 的持仓全部卖出（先卖后买）, 任一持仓跌破买入价 20% 触发全仓止损并进入 20 交易日禁买期, 持仓股昨日涨停且当日开板，盘中 14:00 &amp; 14:50 市价卖出（order_target_value 0）, 若处于指定空仓月份（小市值 April），开盘立即清仓</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>初始资金按 [20%,20%,30%,30%] 分配到 4 个子账户。每子账户等权分配到 max_hold_count 只股票/ETF。止损、空仓月、涨停开板卖出、多空独立子账户共同控制风险。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>ETF: 每日 10:00 检查并可能换仓；PB: 月初 9:35 调仓；小市值: 每周一 9:35 调仓；大妈: 每月 15 号 10:30 调仓；止损/开板卖出在每日 9:30/14:00/14:50 执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前（7:30~7:40）完成选股逻辑；开盘 9:30 根据开盘价检查止损/空仓；9:35/10:00/10:30 按子策略各自时间段下单；14:00/14:50 监控开板卖出；收盘后检查成交记录。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有历史/因子/财务查询均以 context.previous_date 或省略 date（默认当前交易日 T，JoinQuant 会做公告日对齐）。未发现使用未来已知数据。Intraday get_price 在 9:35/14:00 仅使用当前已产生分钟线，无越界。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>get_current_data 在 7:30 调用时的高/低停价与停牌字段在回测引擎与实盘可能不完全一致, RSRS 阈值以历史250日回溯，极端停牌/复权处理可能与实盘有差异, 止损使用 1 分钟线 history，分钟回测流畅但实盘易受脉冲噪音影响</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小规模账户可较好执行；大资金受容量及冲击成本限制；需盘中监控。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>基本无成交压力，成本可控，易于人工执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>仍可执行，但小市值/低价股可能需要分批下单避免拉升。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>流动性瓶颈明显，特别是小市值与高股息低价组合；ETF 与大市值子账户尚可。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>整体容量不足，除非大幅调高大市值/ETF权重，建议放弃原样执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>30%权重分配给小市值+30%给低价小市值策略，容量有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用动量、情绪因子（ARBR、VOL120）及涨停后开板卖出等行为驱动机制，但也含价值/分红成分。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>多策略组合提升稳健性；但机器学习系数静态且来源不明，ETF轮动参数固定，可能对样本外失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>单边极端牛市（价值/高股息/止损策略掉队）, 流动性枯竭或小盘股持续下跌导致频繁止损</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>在横盘震荡市，ETF动量轮动子策略收益低于基准, 小市值子账户在4月空仓可减少回撤, 组合整体回撤应低于任何单一子策略</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>结构清晰的多子账户组合，未来函数风险低，但小市值与低价股子策略的实际交易成本与容量是主要瓶颈。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 引入流动性过滤或买卖量限制；2) 动态调整子账户权重；3) 定期更新机器学习因子系数以避免过拟合；4) 显式用 previous_date 调用财务数据防止潜在前视。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供初始资金规模，假设为100万人民币；若更大需按容量重新评估, 默认佣金0.03%，印花税0.1%，与 set_order_cost 一致；其它费用未在代码给出, 采用 JoinQuant默认的撮合&amp;滑点机制（PriceRelatedSlippage(0.01)）, 订单均为 order_target_value，默认市价成交；实际环境可能需要限价/分单</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>3</td></tr>
+                <tr><td>滑点</td><td>5</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>6.3</td></tr>
+                <tr><td>大资金不友好</td><td>6</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>5.4</td></tr>
+                <tr><td>总分</td><td>58.0</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;多子账户分仓综合轮动/价值/小市值/高股息策略&quot;,
+    &quot;strategy_type&quot;: &quot;组合型（ETF动量轮动 + 价值因子 + 机器学习多因子小市值 + 高股息低价股）&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;通过把资金分为四个子账户，分别执行风格差异较大的子策略（ETF动量轮动、低PB大市值价值、机器学习小市值、低价高股息）以实现资产配置与分散化。各子策略利用不同的市场异象：ETF趋势/动量、价值回归、小市值与多因子溢价、以及高分红＋价格错配，期望在不同市场环境下互补获利。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 价格序列（日频、1分钟）用于动量/RSRS、涨跌停判断、止盈止损；2) JoinQuant内置多因子库（ARBR/SGAI/Price1Y 等）日频；3) 财务数据（PB、ROA、EPS、分红、锁定股解禁等），以最新公告日为准；4) ETF与股票的涨跌停价、停牌状态、科创/北交所标识。&quot;,
+        &quot;stock_pool&quot;: &quot;全体A股（剔除 ST、*、退市、停牌、涨跌停、科创板 68/北交 8、4 开头）+ 四只指定ETF。小市值策略再剔除上市不足 400 天与未来 120 天内大额解禁。高股息策略仅保留过去一年股息率前 25%且股价 &lt;9 元并按流通市值升序筛选。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;ETF 子账户：四只 ETF 按 25 日动量×R² − (反转因子) 评分且通过 RSRS 多头过滤，取分数最高的 1 只；&quot;,
+            &quot;其他子账户：各自选股函数返回的前 N 只（低 PB &amp; 高 ROA；多因子打分最高小市值；高股息+低价+小市值）&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;调仓时不在最新 top-list 的持仓全部卖出（先卖后买）&quot;,
+            &quot;任一持仓跌破买入价 20% 触发全仓止损并进入 20 交易日禁买期&quot;,
+            &quot;持仓股昨日涨停且当日开板，盘中 14:00 &amp; 14:50 市价卖出（order_target_value 0）&quot;,
+            &quot;若处于指定空仓月份（小市值 April），开盘立即清仓&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;初始资金按 [20%,20%,30%,30%] 分配到 4 个子账户。每子账户等权分配到 max_hold_count 只股票/ETF。止损、空仓月、涨停开板卖出、多空独立子账户共同控制风险。&quot;,
+        &quot;trading_frequency&quot;: &quot;ETF: 每日 10:00 检查并可能换仓；PB: 月初 9:35 调仓；小市值: 每周一 9:35 调仓；大妈: 每月 15 号 10:30 调仓；止损/开板卖出在每日 9:30/14:00/14:50 执行。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前（7:30~7:40）完成选股逻辑；开盘 9:30 根据开盘价检查止损/空仓；9:35/10:00/10:30 按子策略各自时间段下单；14:00/14:50 监控开板卖出；收盘后检查成交记录。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 3,
+        &quot;risk_score_reason&quot;: &quot;所有历史/因子/财务查询均以 context.previous_date 或省略 date（默认当前交易日 T，JoinQuant 会做公告日对齐）。未发现使用未来已知数据。Intraday get_price 在 9:35/14:00 仅使用当前已产生分钟线，无越界。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;attribute_history/history/get_price 均以 end_date&lt;=当前或 previous_date，未见提前调用未来bar。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals 未指定 date，但在回测中会取 T 日可得财报，JoinQuant自动做时点处理；风险较低。&quot;,
+            &quot;index_component_leak&quot;: &quot;未调用 get_index_stocks 等未来成分函数。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无使用 .loc[0] 等方式截取全部历史后再回溯计算。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;最好显式指定 date=context.previous_date 给 get_fundamentals，完全避免当日数据泄漏疑虑。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;get_current_data 在 7:30 调用时的高/低停价与停牌字段在回测引擎与实盘可能不完全一致&quot;,
+            &quot;RSRS 阈值以历史250日回溯，极端停牌/复权处理可能与实盘有差异&quot;,
+            &quot;止损使用 1 分钟线 history，分钟回测流畅但实盘易受脉冲噪音影响&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 5,
+        &quot;slippage_reason&quot;: &quot;设置 1% 价格相关滑点；小市值、低价股子策略在现实中冲击成本较高但持仓数少且金额受限。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;ETF 子策略可能日换 1 只；其余月/周调仓；整体年换手中等，佣金税费中等偏低。&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;小市值与低价股可流动性不足；但每次买入仅 1-3 只、等权，小资金可成交，较大资金难度上升。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;主要在固定时间段挂单，非高频；但需要盘中监控涨停开板卖出。&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;小规模账户可较好执行；大资金受容量及冲击成本限制；需盘中监控。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;基本无成交压力，成本可控，易于人工执行。&quot;,
+            &quot;100w&quot;: &quot;仍可执行，但小市值/低价股可能需要分批下单避免拉升。&quot;,
+            &quot;1000w&quot;: &quot;流动性瓶颈明显，特别是小市值与高股息低价组合；ETF 与大市值子账户尚可。&quot;,
+            &quot;1y&quot;: &quot;整体容量不足，除非大幅调高大市值/ETF权重，建议放弃原样执行。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;对小市值与低价股子账户加入成交量/流动性过滤，提高可交易性&quot;, 
+            &quot;将止损与开板卖出逻辑改为盘后下一日执行，降低盯盘需求并减少滑点&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 6,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;30%权重分配给小市值+30%给低价小市值策略，容量有限。&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;利用动量、情绪因子（ARBR、VOL120）及涨停后开板卖出等行为驱动机制，但也含价值/分红成分。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;多策略组合提升稳健性；但机器学习系数静态且来源不明，ETF轮动参数固定，可能对样本外失效。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.2,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% (0.4*6) + 行为偏差30% (0.3*5) + 稳健性30% (0.3*5) = 5.2&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;单边极端牛市（价值/高股息/止损策略掉队）&quot;,
+            &quot;流动性枯竭或小盘股持续下跌导致频繁止损&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;在横盘震荡市，ETF动量轮动子策略收益低于基准&quot;,
+            &quot;小市值子账户在4月空仓可减少回撤&quot;,
+            &quot;组合整体回撤应低于任何单一子策略&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;结构清晰的多子账户组合，未来函数风险低，但小市值与低价股子策略的实际交易成本与容量是主要瓶颈。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 引入流动性过滤或买卖量限制；2) 动态调整子账户权重；3) 定期更新机器学习因子系数以避免过拟合；4) 显式用 previous_date 调用财务数据防止潜在前视。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 3,
+        &quot;slippage&quot;: 5,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 6,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.2
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供初始资金规模，假设为100万人民币；若更大需按容量重新评估&quot;,
+        &quot;默认佣金0.03%，印花税0.1%，与 set_order_cost 一致；其它费用未在代码给出&quot;,
+        &quot;采用 JoinQuant默认的撮合&amp;滑点机制（PriceRelatedSlippage(0.01)）&quot;,
+        &quot;订单均为 order_target_value，默认市价成交；实际环境可能需要限价/分单&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

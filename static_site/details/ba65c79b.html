@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>非大盘权重回避+小盘成长轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>非大盘权重回避+小盘成长轮动</h1>
+        <p class="meta">
+            ID: ba65c79b | 
+            类型: 行业宽度+基本面过滤的动量/小市值轮动 | 
+            来源: b25_5四大搅屎棍策略.txt |
+            分析日期: 2026-01-10 22:39:43
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>每周判断市场最强的一级申万行业（用行业内价格站上20日均线股票的占比来衡量“多头宽度”）。只要领涨行业不是四个大市值权重行业（银行、钢铁、有色、煤炭），则认为风险偏好良好，于是在中小板指数成分股中，选择 ROE&gt;15%、ROA&gt;10% 且市值最小的 10 只股票买入并等权持有；如发现前一交易日曾涨停的持仓股在当日 14:00 打开涨停，则提前卖出；否则持股至少一周。通过避开权重“搅屎棍”行业、顺势参与小盘成长股，以博取市场风格切换时的超额收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>起始池为中证 1000+500 全指(000985)做行业宽度统计，再从中小板综(399101)成分中挑股。过滤条件：1) 非停牌；2) 非 ST/退市/*ST；3) 非科创板、北交所、创业板；4) 非次新(上市≥375 天)；5) 当日未涨/跌停。再用 ROE&gt;15% &amp; ROA&gt;10%，按市值升序取前 10 只。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>申万一级行业宽度最高且不属于银行(801780)、有色(801050)、钢铁(801040)、煤炭(801950), 个股满足财务与市值、停复牌/涨跌停/次新等过滤条件</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>周一 9:30 调仓时不在最新目标列表且昨日未涨停, 昨日涨停股若当日 14:00 打开涨停价则立即清仓</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多持 10 只股票，等权分配；未显式设置总体仓位上限，默认可持满仓；无单票或组合级风控（如止损、资金控制等）。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>行业强弱判断与调仓频率：每周一次（run_weekly 周一 9:30）。盘中 14:00 可能触发个别卖出。无日内高频交易。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>1) 盘前：计算昨日行业宽度、生成当周买入名单；2) 开盘后尽快（09:30）按等权资金买入目标股；3) 每日 14:00 检查前一日涨停股是否开板，若开板则盘中卖出；4) 若本周领涨行业为四大权重则不建仓，仅执行必要卖出。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>全部用 context.previous_date 获取历史价格；未使用 attribute_history/历史财报穿越。指数成分 get_index_stocks 在当天调用理论上已生效，不构成未来泄漏。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>get_index_stocks 用 current_dt (盘中) 调用，可能在个别极端情况下拿到当日才生效的调仓信息, indicator/valuation 默认取最近财报，若回测跨季报发布日期前后，可能有轻微信息时差误配, 滑点被强制设为 0，回测收益可能高估</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>对 10–1000 万可执行，超 3000 万可能受制于流动性；需要盘中跟单</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>高可执行，影响极小，可基本跟回测</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>可执行，需留意个别个股挂单深度</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>流动性成为瓶颈，需扩容标的或分批成交，冲击成本上升</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>大概率无法在规定时间内建仓完成，需放弃或改造</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>小盘低市值股票为主，标的容量有限，对大规模资金不友好</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用市场风格/情绪漂移（非权重行业领涨）与小盘股动量，但非纯情绪，也有基本面过滤</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>依赖行业轮动和小盘风格占优，易受市场环境变化影响；财报阈值固定可能失效</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>银行等权重行业持续领涨, 流动性严重收缩的小盘股杀估值周期</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>当非权重行业成为市场最强时，中小市值高 ROE/ROA 股一周后平均超额收益为正, 若四大权重行业领涨，则持股收益显著下滑, 14:00 开板卖出机制可降低涨停打开后的回撤</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>逻辑简洁但对市场风格依赖较强，流动性和滑点现实中需谨慎评估。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 引入成交量过滤或流动性指标；2) 动态调节资金分配避免单只占比过高；3) 细化行业宽度阈值和观察窗口以增强稳健性。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>资金规模、基准资金曲线、滑点模型仅在代码中固定为 0，本报告按一般股票交易默认 0.1%-0.3% 实际滑点做评估, 假设聚宽 get_index_stocks / get_industry_stocks 在 backtest/实盘中均按查询日期返回当日已生效的成分，不含未来信息</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>6</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>5</td></tr>
+                <tr><td>综合可执行性</td><td>6.0</td></tr>
+                <tr><td>大资金不友好</td><td>7</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>5.3</td></tr>
+                <tr><td>总分</td><td>56.2</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;非大盘权重回避+小盘成长轮动&quot;,
+    &quot;strategy_type&quot;: &quot;行业宽度+基本面过滤的动量/小市值轮动&quot;,
+
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;每周判断市场最强的一级申万行业（用行业内价格站上20日均线股票的占比来衡量“多头宽度”）。只要领涨行业不是四个大市值权重行业（银行、钢铁、有色、煤炭），则认为风险偏好良好，于是在中小板指数成分股中，选择 ROE&gt;15%、ROA&gt;10% 且市值最小的 10 只股票买入并等权持有；如发现前一交易日曾涨停的持仓股在当日 14:00 打开涨停，则提前卖出；否则持股至少一周。通过避开权重“搅屎棍”行业、顺势参与小盘成长股，以博取市场风格切换时的超额收益。&quot;,
+        &quot;data_and_indicators&quot;: &quot;价格数据(日线 close/high_limit/low_limit, 1 分钟收盘用于涨跌停过滤)，20 日简单均线；财务指标 indicator.roe, indicator.roa；市值 valuation.market_cap；申万一级行业归属；指数成分(000985 全指和 399101 中小板综)。价格日频更新、部分分钟级过滤，财务为季频更新。&quot;,
+        &quot;stock_pool&quot;: &quot;起始池为中证 1000+500 全指(000985)做行业宽度统计，再从中小板综(399101)成分中挑股。过滤条件：1) 非停牌；2) 非 ST/退市/*ST；3) 非科创板、北交所、创业板；4) 非次新(上市≥375 天)；5) 当日未涨/跌停。再用 ROE&gt;15% &amp; ROA&gt;10%，按市值升序取前 10 只。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;申万一级行业宽度最高且不属于银行(801780)、有色(801050)、钢铁(801040)、煤炭(801950)&quot;,
+            &quot;个股满足财务与市值、停复牌/涨跌停/次新等过滤条件&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;周一 9:30 调仓时不在最新目标列表且昨日未涨停&quot;,
+            &quot;昨日涨停股若当日 14:00 打开涨停价则立即清仓&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;最多持 10 只股票，等权分配；未显式设置总体仓位上限，默认可持满仓；无单票或组合级风控（如止损、资金控制等）。&quot;,
+        &quot;trading_frequency&quot;: &quot;行业强弱判断与调仓频率：每周一次（run_weekly 周一 9:30）。盘中 14:00 可能触发个别卖出。无日内高频交易。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;1) 盘前：计算昨日行业宽度、生成当周买入名单；2) 开盘后尽快（09:30）按等权资金买入目标股；3) 每日 14:00 检查前一日涨停股是否开板，若开板则盘中卖出；4) 若本周领涨行业为四大权重则不建仓，仅执行必要卖出。&quot;
+    },
+
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;全部用 context.previous_date 获取历史价格；未使用 attribute_history/历史财报穿越。指数成分 get_index_stocks 在当天调用理论上已生效，不构成未来泄漏。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;get_price/end_date=context.previous_date、history(1m, count=1) 均是过去数据，安全&quot;,
+            &quot;financial_data_leak&quot;: &quot;indicator/valuation 查询不指定日期，会自动取最新可得财报，属于回测时点可得数据，风险较低&quot;,
+            &quot;index_component_leak&quot;: &quot;get_index_stocks(..., date=today) 仅用当日成分，行业宽度计算仍基于昨日收盘价；指数成分变更多在生效日开盘前公布，泄漏概率低&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未见使用 pipeline、因子缓存等可能穿越回测引擎时间的方式&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;为了绝对保险，所有 get_index_stocks / get_industry_stocks 建议统一使用 context.previous_date 作为日期参数。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;get_index_stocks 用 current_dt (盘中) 调用，可能在个别极端情况下拿到当日才生效的调仓信息&quot;,
+            &quot;indicator/valuation 默认取最近财报，若回测跨季报发布日期前后，可能有轻微信息时差误配&quot;,
+            &quot;滑点被强制设为 0，回测收益可能高估&quot;
+        ]
+    },
+
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 6,
+        &quot;slippage_reason&quot;: &quot;集中在 09:30 开盘买入小市值股票，且回测设为 0 滑点，实盘易受流动性冲击&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;周频调仓+偶发盘中卖出，换手整体不高；佣金假设万 3 + 千 1 过户，现实略低&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;标的小盘股且可能量小，若组合资金较大需要拆单并接受较高冲击&quot;,
+        &quot;time_sensitivity_score&quot;: 5,
+        &quot;time_sensitivity_reason&quot;: &quot;必须在周一开盘及时成交，14:00 需监控开板卖出；时间要求中等&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;对 10–1000 万可执行，超 3000 万可能受制于流动性；需要盘中跟单&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;高可执行，影响极小，可基本跟回测&quot;,
+            &quot;100w&quot;: &quot;可执行，需留意个别个股挂单深度&quot;,
+            &quot;1000w&quot;: &quot;流动性成为瓶颈，需扩容标的或分批成交，冲击成本上升&quot;,
+            &quot;1y&quot;: &quot;大概率无法在规定时间内建仓完成，需放弃或改造&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;引入实际滑点模型 (如 0.1% 或盘口冲击) 提前评估真实收益&quot;,
+            &quot;加入成交量/换手率过滤，确保标的可成交；或增加股票数量摊薄冲击&quot;
+        ]
+    },
+
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 7,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;小盘低市值股票为主，标的容量有限，对大规模资金不友好&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;利用市场风格/情绪漂移（非权重行业领涨）与小盘股动量，但非纯情绪，也有基本面过滤&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;依赖行业轮动和小盘风格占优，易受市场环境变化影响；财报阈值固定可能失效&quot;,
+        &quot;effectiveness_total_score&quot;: 5.1,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为利用30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;银行等权重行业持续领涨&quot;, &quot;流动性严重收缩的小盘股杀估值周期&quot;],
+        &quot;verifiable_predictions&quot;: [
+            &quot;当非权重行业成为市场最强时，中小市值高 ROE/ROA 股一周后平均超额收益为正&quot;,
+            &quot;若四大权重行业领涨，则持股收益显著下滑&quot;,
+            &quot;14:00 开板卖出机制可降低涨停打开后的回撤&quot;
+        ]
+    },
+
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;逻辑简洁但对市场风格依赖较强，流动性和滑点现实中需谨慎评估。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 引入成交量过滤或流动性指标；2) 动态调节资金分配避免单只占比过高；3) 细化行业宽度阈值和观察窗口以增强稳健性。&quot;
+    },
+
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 6,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 5,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 7,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 5.1
+    },
+
+    &quot;assumptions&quot;: [
+        &quot;资金规模、基准资金曲线、滑点模型仅在代码中固定为 0，本报告按一般股票交易默认 0.1%-0.3% 实际滑点做评估&quot;,
+        &quot;假设聚宽 get_index_stocks / get_industry_stocks 在 backtest/实盘中均按查询日期返回当日已生效的成分，不含未来信息&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

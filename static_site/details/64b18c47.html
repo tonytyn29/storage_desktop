@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日内追涨停-次日撤板 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>日内追涨停-次日撤板</h1>
+        <p class="meta">
+            ID: 64b18c47 | 
+            类型: 事件驱动 + 小市值动量 | 
+            来源: b2324_97.【涨停研究一】具有哪些因子的股票更容易涨停.txt |
+            分析日期: 2026-01-11 18:35:01
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>过去 250 交易日连续涨停次数远高于市场平均且市值较小的股票，说明它们处在强烈情绪炒作周期；如果当日早盘再次接近涨停，则继续上冲概率大，隔夜持有一天后可获利。从而通过筛选“强势+小市值+情绪延续”个股并在早盘追涨，第二天下午卖出实现超额收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全部 A 股 → 剔除科创板(688*)、创业板(300*)、ST/退市/停牌、新股(&lt;300-350 交易日) → 再做相对位置、市值、涨停次数三重过滤后得到候选股。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>信号1：候选股在当日 11:20 之前涨幅 7.5%~9.5%(仓位一) 或 5%~9.5%(仓位二), 信号2：当日未持仓且买入名额(5 只/仓)未满</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>信号1：持仓进入次日 14:50 之后且当日未封死涨停(涨幅 ≤9.9%), 信号2：满额 T+1 轮动逻辑：两个子组合交替持仓，老仓自动进入待卖清单</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>账户拆成 2 个子组合，各初始 50% 现金。每子组合最多持 5 只，单票等额；无止损/止盈，仅 T+1 强制卖出；未设动态风控。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>每日盘中(每分钟)监控买入，隔日尾盘卖出；换手≈100%/日。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前：准备候选股列表；盘中 09:30-11:20 观察是否满足涨幅条件并市价买入；次日 14:50 按规则卖出；盘后重新跑选股脚本。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有选股在当日收盘后(after_market_close)完成，仅用于次日交易；回测部分使用 stat_date=前一交易日，不回看未来。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>使用 fill_paused=True 可能把停牌日误计为涨停日。, 创业板/科创板全部剔除，实盘可适度放宽。, 极端行情下 14:50 可能无法卖出，需补流动性保护。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>仅适合 ≤100 万资金的主动盯盘账户；大资金或托管环境难以实现。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>基本可全额成交，影响可忽略。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>需要拆单，部分买单可能挂尾部，成交率 70-80%。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>排队与涨停板容量限制，实际成交率 &lt;30%，策略失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>几乎无法上板，需彻底重写执行层。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>选股倾向于流通市值市场均值一半以下且涨停股，容量极低。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>收益依赖投机情绪和涨停板效应(羊群/锚定)。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>2013-15、17-22 回测效果尚可，但熊市和监管抑制涨停炒作阶段易失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>持续弱势震荡、涨停家数极低的熊市, 涨停板新规或监管打击短线炒作的政策期</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>候选股次日涨停概率显著高于市场基准, 250 日涨停次数是未来隔夜收益的正向指标, 小市值+高情绪组合在单边熊市中收益显著下降</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>典型情绪板接力策略，短线小资金可玩，大资金与弱市环境下失效概率高。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 增加流动性因子过滤；2) 引入风控(指数止损、跌停保护)；3) 考虑分仓低吸而非追板以降低滑点。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未显式设置滑点模型，默认无滑点；此处分析按典型 0.2-0.5% 手续费+滑点估计。, 默认回测初始资金 100 万，交易成本定义为 set_order_cost 中的 0.03% 佣金+千分之一印花税；实际可与券商不同。, get_fundamentals 数据 T 日可用，未考虑财报发布延迟。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>3</td></tr>
+                <tr><td>滑点</td><td>8</td></tr>
+                <tr><td>成本</td><td>8</td></tr>
+                <tr><td>执行难度</td><td>7</td></tr>
+                <tr><td>时间敏感性</td><td>8</td></tr>
+                <tr><td>综合可执行性</td><td>3.3</td></tr>
+                <tr><td>大资金不友好</td><td>8</td></tr>
+                <tr><td>行为偏差利用</td><td>7</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>6.0</td></tr>
+                <tr><td>总分</td><td>47.7</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;日内追涨停-次日撤板&quot;,
+    &quot;strategy_type&quot;: &quot;事件驱动 + 小市值动量&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;过去 250 交易日连续涨停次数远高于市场平均且市值较小的股票，说明它们处在强烈情绪炒作周期；如果当日早盘再次接近涨停，则继续上冲概率大，隔夜持有一天后可获利。从而通过筛选“强势+小市值+情绪延续”个股并在早盘追涨，第二天下午卖出实现超额收益。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 日线行情(高/低/收/涨跌停价) ‑ 每日更新; 2) 1 分钟行情用于盘中买卖; 3) 基本面字段 circulating_market_cap ‑ T-1 晚间可获得; 4) 股票上市日期/停牌状态/ST 标识。&quot;,
+        &quot;stock_pool&quot;: &quot;全部 A 股 → 剔除科创板(688*)、创业板(300*)、ST/退市/停牌、新股(&lt;300-350 交易日) → 再做相对位置、市值、涨停次数三重过滤后得到候选股。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;信号1：候选股在当日 11:20 之前涨幅 7.5%~9.5%(仓位一) 或 5%~9.5%(仓位二)&quot;,
+            &quot;信号2：当日未持仓且买入名额(5 只/仓)未满&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;信号1：持仓进入次日 14:50 之后且当日未封死涨停(涨幅 ≤9.9%)&quot;,
+            &quot;信号2：满额 T+1 轮动逻辑：两个子组合交替持仓，老仓自动进入待卖清单&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;账户拆成 2 个子组合，各初始 50% 现金。每子组合最多持 5 只，单票等额；无止损/止盈，仅 T+1 强制卖出；未设动态风控。&quot;,
+        &quot;trading_frequency&quot;: &quot;每日盘中(每分钟)监控买入，隔日尾盘卖出；换手≈100%/日。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前：准备候选股列表；盘中 09:30-11:20 观察是否满足涨幅条件并市价买入；次日 14:50 按规则卖出；盘后重新跑选股脚本。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 3,
+        &quot;risk_score_reason&quot;: &quot;所有选股在当日收盘后(after_market_close)完成，仅用于次日交易；回测部分使用 stat_date=前一交易日，不回看未来。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;未见对未来价量的引用；get_price 的 end_date 为 stat_date≤t，count 向前取历史。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals 日期固定为 stat_date，当天披露数据默认可用，符合聚宽约定。&quot;,
+            &quot;index_component_leak&quot;: &quot;无指数成分或排名对今天以后数据的引用。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;avoid_future_data=True；未使用 history(…) 向后看未来。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;谨慎确认财报披露滞后影响；如必要可对财务数据再滞后 1 天。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;使用 fill_paused=True 可能把停牌日误计为涨停日。&quot;,
+            &quot;创业板/科创板全部剔除，实盘可适度放宽。&quot;,
+            &quot;极端行情下 14:50 可能无法卖出，需补流动性保护。&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 8,
+        &quot;slippage_reason&quot;: &quot;下单价接近涨停，买入需主动排队，极易吃 1%+ 滑点。&quot;,
+        &quot;cost_score&quot;: 8,
+        &quot;cost_reason&quot;: &quot;日换手接近满仓，佣金+印花税≈0.16%/日；滑点进一步放大。&quot;,
+        &quot;execution_score&quot;: 7,
+        &quot;execution_reason&quot;: &quot;小市值+涨停股流动性有限，量化系统需拆单并监控排队。&quot;,
+        &quot;time_sensitivity_score&quot;: 8,
+        &quot;time_sensitivity_reason&quot;: &quot;买点限定 11:20 前分钟级触发；错过窗口则无法复制收益。&quot;,
+        &quot;overall_executability&quot;: 4,
+        &quot;overall_reason&quot;: &quot;仅适合 ≤100 万资金的主动盯盘账户；大资金或托管环境难以实现。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;基本可全额成交，影响可忽略。&quot;,
+            &quot;100w&quot;: &quot;需要拆单，部分买单可能挂尾部，成交率 70-80%。&quot;,
+            &quot;1000w&quot;: &quot;排队与涨停板容量限制，实际成交率 &lt;30%，策略失效。&quot;,
+            &quot;1y&quot;: &quot;几乎无法上板，需彻底重写执行层。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;采用涨停价/上限价限价单+排队监控，减少滑点。&quot;,
+            &quot;结合成交量过滤或流动性阈值，提升大资金容量。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 8,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;选股倾向于流通市值市场均值一半以下且涨停股，容量极低。&quot;,
+        &quot;behavioral_bias_score&quot;: 7,
+        &quot;behavioral_bias_reason&quot;: &quot;收益依赖投机情绪和涨停板效应(羊群/锚定)。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;2013-15、17-22 回测效果尚可，但熊市和监管抑制涨停炒作阶段易失效。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.6,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 稳健性30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;持续弱势震荡、涨停家数极低的熊市&quot;,
+            &quot;涨停板新规或监管打击短线炒作的政策期&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;候选股次日涨停概率显著高于市场基准&quot;,
+            &quot;250 日涨停次数是未来隔夜收益的正向指标&quot;,
+            &quot;小市值+高情绪组合在单边熊市中收益显著下降&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;典型情绪板接力策略，短线小资金可玩，大资金与弱市环境下失效概率高。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 增加流动性因子过滤；2) 引入风控(指数止损、跌停保护)；3) 考虑分仓低吸而非追板以降低滑点。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 3,
+        &quot;slippage&quot;: 8,
+        &quot;cost&quot;: 8,
+        &quot;execution&quot;: 7,
+        &quot;time_sensitivity&quot;: 8,
+        &quot;executability&quot;: 4,
+        &quot;effectiveness_a&quot;: 8,
+        &quot;effectiveness_b&quot;: 7,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 5.6
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未显式设置滑点模型，默认无滑点；此处分析按典型 0.2-0.5% 手续费+滑点估计。&quot;,
+        &quot;默认回测初始资金 100 万，交易成本定义为 set_order_cost 中的 0.03% 佣金+千分之一印花税；实际可与券商不同。&quot;,
+        &quot;get_fundamentals 数据 T 日可用，未考虑财报发布延迟。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

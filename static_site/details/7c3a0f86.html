@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四ETF风险平价（ES版） - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>四ETF风险平价（ES版）</h1>
+        <p class="meta">
+            ID: 7c3a0f86 | 
+            类型: 多资产风险平价 | 
+            来源: b2324_7.致敬经典作品——小兵哥《一致性风险度量》——极速版.txt |
+            分析日期: 2026-01-11 18:26:06
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>用 120 日历史收益率计算各资产（沪深300 ETF、黄金 ETF、国债 ETF、货币/美元 ETF）的 99% 期望损失（ES），将组合资金按“低 ES 给更高权重、高 ES 给低权重”的方式分配，使得各资产对组合尾部风险贡献相近，达到‘全天候’风险平衡；每 30 个交易日或持仓价格变动超过 15% 时再平衡。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>固定 4 只高流动性 ETF：510300(股)、518880(金)、511010(债)、513100(货币/海外)。未做 ST、停牌、涨跌停、流动性过滤；上市不足 60 日可在注释中选择剔除。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>月度（30 日）或触发 15% 价格偏离时重新计算权重，目标权重 &gt; 当前权重时买入, 买入前检查可用现金≥目标增量 25%，且当前价高于持仓成本——避免补仓亏损品种</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>同一次再平衡中目标权重 &lt; 当前权重时卖出, 若完全卖空，则在记录中记为一次结果交易</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>总仓位始终≈100%；单票权重随 ES 动态变化，理论 0–100%；设置 15% 价格波动提前再平衡；买卖阈值：目标市值与现有市值差额≥25%且≥1000 元才下单。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>常规 30 个交易日调仓一次；若持仓 ETF 价格相对上次调仓价涨跌 &gt;15% 则立即再平衡；下单函数 market_open，在集合竞价后开盘瞬间按 order_target_value 成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前：运行 fun_initialize 更新资产池；盘中：开盘立即按最新权重买卖；盘后：after_market_close 查看持仓与交易记录。人工盘中复制目标市值即可。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>仅使用 history(…, &#x27;1d&#x27;,&#x27;close&#x27;)、get_security_info 等正向函数；全部调用发生在 before_open 或 open 时点，不引用未来行情。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>history 在分钟级实时回测时仍是安全，但在盘后回测中默认安全；保持一致即可</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>资产容量大、调仓低频、逻辑简单。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>极易执行，成本忽略不计。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>同上。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>仍能在集合竞价完成；不过 518880、511010 单边冲击需关注，但问题不大。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>需拆分多笔，但沪深 300ETF、黄金 ETF、国债 ETF 日流动性足以容纳。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>ETF 容量大，且月度调仓，几乎无容量瓶颈。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>逻辑基于波动/尾部风险平价，不依赖行为偏差。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>风险平价在多数宏观环境有效，但当资产高度正相关（如 2020 3 月极端下跌）将失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>股、债、金齐跌的流动性危机, 黄金与股指同向上涨（导致金 ES 降低、仓位过大）后突发反转</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>组合年化波动率明显低于单独持有股指 ETF, 极端下跌日（沪深300&lt;-3%）组合回撤小于股指跌幅的一半, 长期夏普比率高于单持股、单债</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>简单、透明、低频的四资产风险平价策略，未来函数风险低，实盘可行性高，但收益来源有限且在极端正相关时表现一般。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 增加更多 ETF（可转债、商品期货指数等）提升分散度；2) ES 估计可换为半衰加权或 GARCH 提高稳定性；3) 引入再平衡成本敏感参数，减少小幅交易。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>回测与实盘均使用聚宽默认佣金模型；未额外设置基金/ETF 申赎费用, 资金规模未给出，以上执行难度评估基于 10 万–1 亿元区间</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>2</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>9</td></tr>
+                <tr><td>时间敏感性</td><td>2</td></tr>
+                <tr><td>综合可执行性</td><td>6.9</td></tr>
+                <tr><td>大资金不友好</td><td>2</td></tr>
+                <tr><td>行为偏差利用</td><td>1</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>3.2</td></tr>
+                <tr><td>总分</td><td>48.6</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;四ETF风险平价（ES版）&quot;,
+    &quot;strategy_type&quot;: &quot;多资产风险平价&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;用 120 日历史收益率计算各资产（沪深300 ETF、黄金 ETF、国债 ETF、货币/美元 ETF）的 99% 期望损失（ES），将组合资金按“低 ES 给更高权重、高 ES 给低权重”的方式分配，使得各资产对组合尾部风险贡献相近，达到‘全天候’风险平衡；每 30 个交易日或持仓价格变动超过 15% 时再平衡。&quot;,
+        &quot;data_and_indicators&quot;: &quot;仅用到各 ETF 的收盘价（history, 1d）；指标为 120 日滚动日收益率、排序后 1% 最差日收益的均值（ES）。数据每日更新。&quot;,
+        &quot;stock_pool&quot;: &quot;固定 4 只高流动性 ETF：510300(股)、518880(金)、511010(债)、513100(货币/海外)。未做 ST、停牌、涨跌停、流动性过滤；上市不足 60 日可在注释中选择剔除。&quot;,
+        &quot;buy_signals&quot;: [&quot;月度（30 日）或触发 15% 价格偏离时重新计算权重，目标权重 &gt; 当前权重时买入&quot;, &quot;买入前检查可用现金≥目标增量 25%，且当前价高于持仓成本——避免补仓亏损品种&quot;],
+        &quot;sell_signals&quot;: [&quot;同一次再平衡中目标权重 &lt; 当前权重时卖出&quot;, &quot;若完全卖空，则在记录中记为一次结果交易&quot;],
+        &quot;position_and_risk&quot;: &quot;总仓位始终≈100%；单票权重随 ES 动态变化，理论 0–100%；设置 15% 价格波动提前再平衡；买卖阈值：目标市值与现有市值差额≥25%且≥1000 元才下单。&quot;,
+        &quot;trading_frequency&quot;: &quot;常规 30 个交易日调仓一次；若持仓 ETF 价格相对上次调仓价涨跌 &gt;15% 则立即再平衡；下单函数 market_open，在集合竞价后开盘瞬间按 order_target_value 成交。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前：运行 fun_initialize 更新资产池；盘中：开盘立即按最新权重买卖；盘后：after_market_close 查看持仓与交易记录。人工盘中复制目标市值即可。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;仅使用 history(…, &#x27;1d&#x27;,&#x27;close&#x27;)、get_security_info 等正向函数；全部调用发生在 before_open 或 open 时点，不引用未来行情。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;history 调用长度固定（≤120）且在当天开盘前后取昨日及更早的收盘价，未穿越。&quot;,
+            &quot;financial_data_leak&quot;: &quot;无财务数据调用，风险为 0。&quot;,
+            &quot;index_component_leak&quot;: &quot;固定 ETF 代码，无成分股前视。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未使用 pipeline、 run_query 等可能在 JQ 中产生未来函数的接口。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;无必须修复；若要进一步保险，可在 fun_getdailyreturn 中显式 drop 最后一条可能未收盘的数据。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;history 在分钟级实时回测时仍是安全，但在盘后回测中默认安全；保持一致即可&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 2,
+        &quot;slippage_reason&quot;: &quot;四只 ETF 日均成交额巨大；且在开盘集合竞价用市值目标单笔下单，0.2% 固定滑点设置已偏保守。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;约月度调仓一次，换手低；代码注释掉 commission，默认为 0.0003 买/0.0013 卖，但频率低总体成本可控。&quot;,
+        &quot;execution_score&quot;: 9,
+        &quot;execution_reason&quot;: &quot;固定 4 只 ETF，流动性极高，order_target_value 一次即可成交。&quot;,
+        &quot;time_sensitivity_score&quot;: 2,
+        &quot;time_sensitivity_reason&quot;: &quot;即使非即时成交，全天任何时间按市值调仓对结果影响很小。&quot;,
+        &quot;overall_executability&quot;: 9,
+        &quot;overall_reason&quot;: &quot;资产容量大、调仓低频、逻辑简单。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;极易执行，成本忽略不计。&quot;,
+            &quot;100w&quot;: &quot;同上。&quot;,
+            &quot;1000w&quot;: &quot;仍能在集合竞价完成；不过 518880、511010 单边冲击需关注，但问题不大。&quot;,
+            &quot;1y&quot;: &quot;需拆分多笔，但沪深 300ETF、黄金 ETF、国债 ETF 日流动性足以容纳。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;明确 commission 设置以免实盘与回测不一致&quot;, &quot;可将订单拆分到盘中多笔，进一步降低冲击&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 2,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;ETF 容量大，且月度调仓，几乎无容量瓶颈。&quot;,
+        &quot;behavioral_bias_score&quot;: 1,
+        &quot;behavioral_bias_reason&quot;: &quot;逻辑基于波动/尾部风险平价，不依赖行为偏差。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;风险平价在多数宏观环境有效，但当资产高度正相关（如 2020 3 月极端下跌）将失效。&quot;,
+        &quot;effectiveness_total_score&quot;: 2.6,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40%+非理性攻击30%+跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;股、债、金齐跌的流动性危机&quot;, &quot;黄金与股指同向上涨（导致金 ES 降低、仓位过大）后突发反转&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;组合年化波动率明显低于单独持有股指 ETF&quot;, &quot;极端下跌日（沪深300&lt;-3%）组合回撤小于股指跌幅的一半&quot;, &quot;长期夏普比率高于单持股、单债&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;简单、透明、低频的四资产风险平价策略，未来函数风险低，实盘可行性高，但收益来源有限且在极端正相关时表现一般。&quot;,
+        &quot;recommendation&quot;: &quot;小仓或实盘账户可直接部署；想进一步提高收益需增加资产/择时模块。&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 增加更多 ETF（可转债、商品期货指数等）提升分散度；2) ES 估计可换为半衰加权或 GARCH 提高稳定性；3) 引入再平衡成本敏感参数，减少小幅交易。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 2,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 9,
+        &quot;time_sensitivity&quot;: 2,
+        &quot;executability&quot;: 9,
+        &quot;effectiveness_a&quot;: 2,
+        &quot;effectiveness_b&quot;: 1,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 2.6
+    },
+    
+    &quot;assumptions&quot;: [&quot;回测与实盘均使用聚宽默认佣金模型；未额外设置基金/ETF 申赎费用&quot;, &quot;资金规模未给出，以上执行难度评估基于 10 万–1 亿元区间&quot;]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

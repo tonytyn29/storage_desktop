@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小市值低估值日滚动加权 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>小市值低估值日滚动加权</h1>
+        <p class="meta">
+            ID: 6f3f1494 | 
+            类型: 多因子选股（小市值+价值因子） | 
+            来源: b25_82回报社区——基于Gyro老师策略的思考.txt |
+            分析日期: 2026-01-10 22:57:37
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>每天开盘前把全部 A 股按市值、PB、PE、PCF 四个指标做低到高排序，综合得分最低的前 100 只被认为是“小而便宜”的股票；用一个线性递减的权重（分层加权）把资金全部买入这 100 只个股。盘中若价格较上次买入价涨跌超过 10% 且导致仓位偏离目标权重，就做一次动态调仓，保持权重平衡。通过不断持有并动态再平衡低估值小盘股组合，期望获取价值回归收益和小盘溢价。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>1) 初步池：上证综指(000001.XSHG)+深证综指(399106.XSHE)全部成分股；2) 过滤条件：PB、PE、PCF &gt; 0；3) 未显式过滤 ST、停牌、上市天数、涨跌停、流动性。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>开盘前入选综合打分前 100 名, 若已持仓且价格跌超 10% 导致持仓低于目标，加仓至目标市值</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>当天未进入前 100 名则清仓, 已持仓且价格涨超 10% 导致持仓高于目标，减仓至目标市值</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>满仓投入；按线性递减权重分配，最大单票权重 ≈ 2/(n)=2%；最小权重≈0；无现金缓冲；无止损止盈；无 ST/停牌/涨跌停检查。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>理论上每日盘前重算股票池并给出目标权重；handle_data 是分钟级调用，满足条件即下单。若股票池变动或价格偏离触发，可能出现日内多次委托。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>若人工执行，可在开盘前按最新财报数据做因子排序，9:30 开盘后一次性按目标权重买入/调仓；盘中可忽略 10% 动态再平衡降低操作复杂度。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>before_trading_start 中 get_index_stocks(&#x27;000001.XSHG&#x27;) 、get_index_stocks(&#x27;399106.XSHE&#x27;) 未传日期，回测时将返回“今天”而非历史时点的成分，属于典型未来函数风险。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>未考虑财报发布日期导致的财务数据可得性时滞, 未过滤 ST、停牌、异常波动股，实盘可能下单失败, handle_data 分钟级下单 + 100 只小盘股，滑点/成交风险大</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小资金可行；中等以上资金受流动性与冲击约束；需修复未来函数后再考虑。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>较易执行，买入 100 只股每只 1 万元以下，滑点可控。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>单票 10 万级，对部分小盘股仍可成交，但需分次下单。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>单票 100 万级，很多目标股日成交额可能不足，冲击不可忽视，需做流动性筛选或分层持仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>单票千万级，小市值股无法承接，基本无法执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>重仓小盘股且100只分散，容量有限；流动性边界约在数千万级别。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>主要依赖小盘价值溢价而非明显行为偏差；定期重排可能间接对冲情绪 extremes。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>核心是简单价值+小盘，在不同经济周期表现分化，缺乏行业/宏观适应机制；未来函数掩盖真实表现。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>小盘股流动性骤降或连跌封跌停的熊市, 价值因子失效、成长/热门股领涨的结构性行情</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>组合市值整体将显著小于全市场中位数, 组合 PB/PE/PCF 将显著低于市场平均, 在小盘风格占优年份相对基准有超额收益</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>策略逻辑简单明了但存在致命未来函数（index_stocks）泄漏，且实盘执行受流动性和换手制约。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 给 get_index_stocks 指定历史日期或直接使用全部 A 股；2) 改为每月/每季调仓并增加流动性与风险控制；3) 加入 ST/停牌/涨跌停过滤，提高实盘稳定性。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未给出资金规模，默认以总资产为 context.portfolio.total_value（系统变量）。, 使用聚宽默认撮合，滑点模型未设置，假设为无滑点。, 交易费用采用 initialize 中 set_order_cost 的费率：双边万一佣金+千一印花税。, 假设 get_fundamentals 返回财报数据在回测时已处理信息披露滞后，不属于未来函数。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>8</td></tr>
+                <tr><td>滑点</td><td>6</td></tr>
+                <tr><td>成本</td><td>6</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>5</td></tr>
+                <tr><td>综合可执行性</td><td>5.4</td></tr>
+                <tr><td>大资金不友好</td><td>7</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>5.1</td></tr>
+                <tr><td>总分</td><td>52.2</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;小市值低估值日滚动加权&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股（小市值+价值因子）&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;每天开盘前把全部 A 股按市值、PB、PE、PCF 四个指标做低到高排序，综合得分最低的前 100 只被认为是“小而便宜”的股票；用一个线性递减的权重（分层加权）把资金全部买入这 100 只个股。盘中若价格较上次买入价涨跌超过 10% 且导致仓位偏离目标权重，就做一次动态调仓，保持权重平衡。通过不断持有并动态再平衡低估值小盘股组合，期望获取价值回归收益和小盘溢价。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 基本面数据：market_cap、pb_ratio、pe_ratio、pcf_ratio（季度更新，聚宽 get_fundamentals，盘前调用）。2) 价格数据：当日开盘价、实时盘口（current_data.day_open）。3) 交易记录时间戳（transact_time）。&quot;,
+        &quot;stock_pool&quot;: &quot;1) 初步池：上证综指(000001.XSHG)+深证综指(399106.XSHE)全部成分股；2) 过滤条件：PB、PE、PCF &gt; 0；3) 未显式过滤 ST、停牌、上市天数、涨跌停、流动性。&quot;,
+        &quot;buy_signals&quot;: [&quot;开盘前入选综合打分前 100 名&quot;, &quot;若已持仓且价格跌超 10% 导致持仓低于目标，加仓至目标市值&quot;],
+        &quot;sell_signals&quot;: [&quot;当天未进入前 100 名则清仓&quot;, &quot;已持仓且价格涨超 10% 导致持仓高于目标，减仓至目标市值&quot;],
+        &quot;position_and_risk&quot;: &quot;满仓投入；按线性递减权重分配，最大单票权重 ≈ 2/(n)=2%；最小权重≈0；无现金缓冲；无止损止盈；无 ST/停牌/涨跌停检查。&quot;,
+        &quot;trading_frequency&quot;: &quot;理论上每日盘前重算股票池并给出目标权重；handle_data 是分钟级调用，满足条件即下单。若股票池变动或价格偏离触发，可能出现日内多次委托。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;若人工执行，可在开盘前按最新财报数据做因子排序，9:30 开盘后一次性按目标权重买入/调仓；盘中可忽略 10% 动态再平衡降低操作复杂度。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;是&quot;,
+        &quot;risk_level&quot;: &quot;高&quot;,
+        &quot;risk_score&quot;: 8,
+        &quot;risk_score_reason&quot;: &quot;before_trading_start 中 get_index_stocks(&#x27;000001.XSHG&#x27;) 、get_index_stocks(&#x27;399106.XSHE&#x27;) 未传日期，回测时将返回“今天”而非历史时点的成分，属于典型未来函数风险。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;未发现对未来价格的引用；get_price 只取最近一次成交日的 open 价，合规。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals 默认使用当前回测日期，未做向后偏移，但聚宽已在底层做披露日处理，暂视为安全。&quot;,
+            &quot;index_component_leak&quot;: &quot;get_index_stocks 默认取实时最新成分，历史回测会看到未来新增或剔除股票，导致严重未来信息泄漏。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无其他明显引擎漏洞调用。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;在 get_index_stocks 中增加 date=context.current_dt 或直接使用 get_index_weights + date 参数，从而保证组件按历史成分；或干脆改用 universe=all A 股并自己做上市天数/停牌过滤。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;未考虑财报发布日期导致的财务数据可得性时滞&quot;, &quot;未过滤 ST、停牌、异常波动股，实盘可能下单失败&quot;, &quot;handle_data 分钟级下单 + 100 只小盘股，滑点/成交风险大&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 6,
+        &quot;slippage_reason&quot;: &quot;大量小市值股且在盘中以 market order 方式 order_target_value，容易吃掉挂单，尤其在涨跌停板附近。&quot;,
+        &quot;cost_score&quot;: 6,
+        &quot;cost_reason&quot;: &quot;日度重选 + 动态再平衡导致换手率较高；券商双边 0.0002 的默认低费率仍累积显著成本。&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;100 只小盘股拆单分布降低冲击，但部分股票成交量偏低，仍需分批交易；实盘需算法单。&quot;,
+        &quot;time_sensitivity_score&quot;: 5,
+        &quot;time_sensitivity_reason&quot;: &quot;买卖信号在开盘前给出，盘中补充再平衡；分钟级实现更佳，但可日内执行，属于中等时效。&quot;,
+        &quot;overall_executability&quot;: 5,
+        &quot;overall_reason&quot;: &quot;小资金可行；中等以上资金受流动性与冲击约束；需修复未来函数后再考虑。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;较易执行，买入 100 只股每只 1 万元以下，滑点可控。&quot;,
+            &quot;100w&quot;: &quot;单票 10 万级，对部分小盘股仍可成交，但需分次下单。&quot;,
+            &quot;1000w&quot;: &quot;单票 100 万级，很多目标股日成交额可能不足，冲击不可忽视，需做流动性筛选或分层持仓。&quot;,
+            &quot;1y&quot;: &quot;单票千万级，小市值股无法承接，基本无法执行。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;增加成交额/换手率过滤，剔除极端小盘低流动股票&quot;, &quot;将调仓频率调为月度或季度，减少换手与滑点；可取消分钟级再平衡，在收盘或次日开盘一次性调仓&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 7,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;重仓小盘股且100只分散，容量有限；流动性边界约在数千万级别。&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;主要依赖小盘价值溢价而非明显行为偏差；定期重排可能间接对冲情绪 extremes。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;核心是简单价值+小盘，在不同经济周期表现分化，缺乏行业/宏观适应机制；未来函数掩盖真实表现。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.0,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;小盘股流动性骤降或连跌封跌停的熊市&quot;, &quot;价值因子失效、成长/热门股领涨的结构性行情&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;组合市值整体将显著小于全市场中位数&quot;, &quot;组合 PB/PE/PCF 将显著低于市场平均&quot;, &quot;在小盘风格占优年份相对基准有超额收益&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;策略逻辑简单明了但存在致命未来函数（index_stocks）泄漏，且实盘执行受流动性和换手制约。&quot;,
+        &quot;recommendation&quot;: &quot;先修复未来函数并降低调仓频率后，以小资金做实盘观测；否则回测结果基本不可信。&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 给 get_index_stocks 指定历史日期或直接使用全部 A 股；2) 改为每月/每季调仓并增加流动性与风险控制；3) 加入 ST/停牌/涨跌停过滤，提高实盘稳定性。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 8,
+        &quot;slippage&quot;: 6,
+        &quot;cost&quot;: 6,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 5,
+        &quot;executability&quot;: 5,
+        &quot;effectiveness_a&quot;: 7,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 5.0
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未给出资金规模，默认以总资产为 context.portfolio.total_value（系统变量）。&quot;,
+        &quot;使用聚宽默认撮合，滑点模型未设置，假设为无滑点。&quot;,
+        &quot;交易费用采用 initialize 中 set_order_cost 的费率：双边万一佣金+千一印花税。&quot;,
+        &quot;假设 get_fundamentals 返回财报数据在回测时已处理信息披露滞后，不属于未来函数。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

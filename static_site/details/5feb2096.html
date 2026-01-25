@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单票20日布林中心线策略 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>单票20日布林中心线策略</h1>
+        <p class="meta">
+            ID: 5feb2096 | 
+            类型: 均值回归 | 
+            来源: b2324_19.人人可躺平16年3400%.txt |
+            分析日期: 2026-01-11 14:59:54
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>仅交易一只 LOF 基金（162605）。当价格位于 20 日均价上下 0.5 个标准差的“震荡区”时满仓买入，认为价格会回到均值；当价格向上突破 +2.75σ 或向下跌破 −1σ 时全部卖出，锁定收益或止损。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>固定为 162605.XSHE；未做 ST / 涨跌停 / 流动性 等过滤；停牌时不下单。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>current_price &gt;= middle-0.5*std, current_price &lt;= middle+0.5*std（即位于中轨±0.5σ 区间内）</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>current_price &gt; middle+2.75*std（向上突破）, current_price &lt; middle-1*std（向下跌破）</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>每次买入用完所有可用现金；卖出清仓；无分仓、无止盈止损以外的风控。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>取决于 Bollinger 触发，一般数日到数周一次；下单在 handle_data（盘中逐分钟调用或日末调用，取决于回测模式）。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>若人工执行，可在每日收盘后计算 20 日均值与 σ，第二天集合竞价挂单；若需盘中高频监控，则需实时价格推送。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>仅使用 history(days=&#x27;1d&#x27;) 取过去 20 个完整日 K 线，不含未来信息；无 get_fundamentals 等财务调用。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>slippage 设置为 0 与真实市场不符, 全仓单票，缺乏分散, Bollinger 参数（+2.75σ / −1σ）系经验值，需再验证</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小中资金易执行；大资金需流动性评估且有冲击。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>基本无冲击，可一次性下单。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>可分 2-3 笔完成，冲击有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>需按成交量 ≤10% 原则拆单，多日建仓/撤仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>超出单票容量，易显著抬高/压低价格，难以执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>单票容量有限，资金规模 &gt;2000 万执行困难。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>主要依赖技术均值回归，不深度利用情绪偏差。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>策略仅对单资产优化，参数固定，可能在不同市场阶段失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>单边强趋势行情持续突破上轨, 市场极端波动导致频繁假信号</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>在震荡市能取得超额收益, 价格突破 ±2.75σ 后通常回撤, 长期收益率高度依赖波动率水平</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>思路简单、易复现，但单票+全仓风险与容量问题明显。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>（1）加入多资产分散；（2）使用 ATR 或分位数自适应上下轨；（3）加仓减仓采用分层比例而非全仓/清仓断点。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未给出初始资金，假设 100 万人民币, 未给出实际滑点/市场冲击，回测设定为 FixedSlippage(0) 与现实不符</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>1</td></tr>
+                <tr><td>滑点</td><td>4</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>6</td></tr>
+                <tr><td>时间敏感性</td><td>3</td></tr>
+                <tr><td>综合可执行性</td><td>6.6</td></tr>
+                <tr><td>大资金不友好</td><td>6</td></tr>
+                <tr><td>行为偏差利用</td><td>3</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>4.5</td></tr>
+                <tr><td>总分</td><td>54.6</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;单票20日布林中心线策略&quot;,
+    &quot;strategy_type&quot;: &quot;均值回归&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;仅交易一只 LOF 基金（162605）。当价格位于 20 日均价上下 0.5 个标准差的“震荡区”时满仓买入，认为价格会回到均值；当价格向上突破 +2.75σ 或向下跌破 −1σ 时全部卖出，锁定收益或止损。&quot;,
+        &quot;data_and_indicators&quot;: &quot;使用 history() 读取 20 个日收盘价计算移动平均（middle）和标准差（std）；数据频率为日线。&quot;,
+        &quot;stock_pool&quot;: &quot;固定为 162605.XSHE；未做 ST / 涨跌停 / 流动性 等过滤；停牌时不下单。&quot;,
+        &quot;buy_signals&quot;: [&quot;current_price &gt;= middle-0.5*std&quot;, &quot;current_price &lt;= middle+0.5*std（即位于中轨±0.5σ 区间内）&quot;],
+        &quot;sell_signals&quot;: [&quot;current_price &gt; middle+2.75*std（向上突破）&quot;, &quot;current_price &lt; middle-1*std（向下跌破）&quot;],
+        &quot;position_and_risk&quot;: &quot;每次买入用完所有可用现金；卖出清仓；无分仓、无止盈止损以外的风控。&quot;,
+        &quot;trading_frequency&quot;: &quot;取决于 Bollinger 触发，一般数日到数周一次；下单在 handle_data（盘中逐分钟调用或日末调用，取决于回测模式）。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;若人工执行，可在每日收盘后计算 20 日均值与 σ，第二天集合竞价挂单；若需盘中高频监控，则需实时价格推送。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 1,
+        &quot;risk_score_reason&quot;: &quot;仅使用 history(days=&#x27;1d&#x27;) 取过去 20 个完整日 K 线，不含未来信息；无 get_fundamentals 等财务调用。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;history() 在回测引擎返回 t-1 日及以前数据；无泄漏证据。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未引用财报数据。&quot;,
+            &quot;index_component_leak&quot;: &quot;无相关调用。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未发现调用可能导致 look-ahead 的 API。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;无需特别修复；如担心 intraday history 漏洞，可在聚宽设置 daily 频率并仅在 before_close 触发。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;slippage 设置为 0 与真实市场不符&quot;, &quot;全仓单票，缺乏分散&quot;, &quot;Bollinger 参数（+2.75σ / −1σ）系经验值，需再验证&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 4,
+        &quot;slippage_reason&quot;: &quot;LOF 162605 日均成交额数亿，常规资金滑点可控；但实盘不可能为 0。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;换手视行情而定，一般周级；佣金模型设置低于市场均值。&quot;,
+        &quot;execution_score&quot;: 6,
+        &quot;execution_reason&quot;: &quot;一次性满仓或清仓大单，若资金较大需拆单；涨跌停日无法成交。&quot;,
+        &quot;time_sensitivity_score&quot;: 3,
+        &quot;time_sensitivity_reason&quot;: &quot;信号基于日线，不要求分钟级响应。&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;小中资金易执行；大资金需流动性评估且有冲击。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;基本无冲击，可一次性下单。&quot;,
+            &quot;100w&quot;: &quot;可分 2-3 笔完成，冲击有限。&quot;,
+            &quot;1000w&quot;: &quot;需按成交量 ≤10% 原则拆单，多日建仓/撤仓。&quot;,
+            &quot;1y&quot;: &quot;超出单票容量，易显著抬高/压低价格，难以执行。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;引入分笔交易函数逐步建仓/减仓&quot;, &quot;增加 2-3 只流动性相似的基金分散资金&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 6,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;单票容量有限，资金规模 &gt;2000 万执行困难。&quot;,
+        &quot;behavioral_bias_score&quot;: 3,
+        &quot;behavioral_bias_reason&quot;: &quot;主要依赖技术均值回归，不深度利用情绪偏差。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;策略仅对单资产优化，参数固定，可能在不同市场阶段失效。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.3,
+        &quot;weight_explanation&quot;: &quot;大资金不友好 40% + 行为偏差利用 30% + 跨阶段稳健 30%。&quot;,
+        &quot;worst_environments&quot;: [&quot;单边强趋势行情持续突破上轨&quot;, &quot;市场极端波动导致频繁假信号&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;在震荡市能取得超额收益&quot;, &quot;价格突破 ±2.75σ 后通常回撤&quot;, &quot;长期收益率高度依赖波动率水平&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;思路简单、易复现，但单票+全仓风险与容量问题明显。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;（1）加入多资产分散；（2）使用 ATR 或分位数自适应上下轨；（3）加仓减仓采用分层比例而非全仓/清仓断点。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 1,
+        &quot;slippage&quot;: 4,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 6,
+        &quot;time_sensitivity&quot;: 3,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 6,
+        &quot;effectiveness_b&quot;: 3,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 4.3
+    },
+    
+    &quot;assumptions&quot;: [&quot;未给出初始资金，假设 100 万人民币&quot;, &quot;未给出实际滑点/市场冲击，回测设定为 FixedSlippage(0) 与现实不符&quot;]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

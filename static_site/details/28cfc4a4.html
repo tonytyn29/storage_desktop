@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETF-RSRS动量轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>ETF-RSRS动量轮动</h1>
+        <p class="meta">
+            ID: 28cfc4a4 | 
+            类型: 动量策略 | 
+            来源: b2324_60.ETF动量轮动RSRS择时-v2.txt |
+            分析日期: 2026-01-11 18:23:06
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>先在 4 只高流动性宽基/行业 ETF 中，选择过去 20 个交易日相对 90 日均线乖离率上升速度（线性斜率）最大的一只；再用沪深300 指数 18 日高低价回归斜率的 600 日 Z-score×R²（RSRS 经典择时）判断大盘强弱：RSRS 低于阈值则空仓，反之持有。额外在 60 分钟级别若跌破 20 小时均线立即止损。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>固定 ETF 列表 [&#x27;510050&#x27;,&#x27;510300&#x27;,&#x27;159949&#x27;,&#x27;159928&#x27;]，未做 ST、停牌过滤（ETF 无需）。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>09:30 计算动量排名，取排名第 1 的 ETF, RSRS 信号为 BUY (rsrs_score &gt; -0.7) 或 KEEP</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>RSRS 信号为 SELL（rsrs_score≤-0.7 或 0&lt;rsrs_score&lt;均值）, 13:00 检查持仓 ETF 的 60m 收盘价跌破 20 期 MA, 极端止损：浮亏≤-90%（形同无效）</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多仅持 1 只 ETF，仓位=全部可用资金；无分散；止损触发即清仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>理论上日频检查，但只有当动量/RSRS 触发才换仓或空仓；平均月度换手；所有委托在 my_trade 09:30 或 13:00 触发。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前：无需操作；09:25 预挂单按昨日数据得出的目标 ETF；13:00 如触发止损需盘中卖出。其余时间仅观测 RSRS 指标。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>全部使用 attribute_history 并在实时盘中调用；未见明显 look-ahead。set_option(&#x27;avoid_future_data&#x27;,True) 已打开。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>RSRS 斜率序列不断累积，长期回测内存可能膨胀, 极端止损 -90% 基本无效，可误导使用者, attribute_history 在分钟级调用效率较低，长回测易超时</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>低频、标的深度充足、逻辑简单，易于人工或程序实盘。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>完全无压力，任意时点一次性成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>市价扫单冲击&lt;1bp，盈亏无显著影响。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>一次成交亦可，建议分批以控制冲击，但仍在 ETF 深度容量内。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>可行，但需关注 159949,159928 成交额，必要时改用更大盘宽指 ETF</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>交易对象为宽基/行业 ETF，日成交几十亿以上，容量充足。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>动量+趋势跟随利用部分情绪，但非纯情绪博弈。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>RSRS 在不同市场阶段效果差异明显；动量窗口固定 20/90/18/600，无自适应。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>单边震荡市（无趋势）, 快速 V 型反转（RSRS 滞后）</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>趋势向上时能较长时间满仓持有领涨 ETF, 熊市初期会快速空仓，降低回撤, 震荡市年化夏普低于宽基指数</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>简洁、低成本、无未来函数的 ETF 趋势轮动策略，执行容易，但依赖固定参数，震荡阶段表现一般。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>增加 ETF 备选数量并做流动性过滤；对 RSRS 阈值及窗口做滚动优化或加入多指标共振。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>默认资金规模≤1亿元，全部用市价单即可成交, 佣金 3bp、无印花税（ETF 免税）；滑点固定 0.1%, 未考虑交易型开放式基金的分级、场外申赎影响</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>3</td></tr>
+                <tr><td>成本</td><td>2</td></tr>
+                <tr><td>执行难度</td><td>9</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>6.5</td></tr>
+                <tr><td>大资金不友好</td><td>2</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>3.7</td></tr>
+                <tr><td>总分</td><td>49.8</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;ETF-RSRS动量轮动&quot;,
+    &quot;strategy_type&quot;: &quot;动量策略&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;先在 4 只高流动性宽基/行业 ETF 中，选择过去 20 个交易日相对 90 日均线乖离率上升速度（线性斜率）最大的一只；再用沪深300 指数 18 日高低价回归斜率的 600 日 Z-score×R²（RSRS 经典择时）判断大盘强弱：RSRS 低于阈值则空仓，反之持有。额外在 60 分钟级别若跌破 20 小时均线立即止损。&quot;,
+        &quot;data_and_indicators&quot;: &quot;日频价格(high/low/close)、60 分钟价格(close)、成交量(volume)，均来自聚宽行情接口 attribute_history；不使用任何财务/基本面数据。&quot;,
+        &quot;stock_pool&quot;: &quot;固定 ETF 列表 [&#x27;510050&#x27;,&#x27;510300&#x27;,&#x27;159949&#x27;,&#x27;159928&#x27;]，未做 ST、停牌过滤（ETF 无需）。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;09:30 计算动量排名，取排名第 1 的 ETF&quot;,
+            &quot;RSRS 信号为 BUY (rsrs_score &gt; -0.7) 或 KEEP&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;RSRS 信号为 SELL（rsrs_score≤-0.7 或 0&lt;rsrs_score&lt;均值）&quot;,
+            &quot;13:00 检查持仓 ETF 的 60m 收盘价跌破 20 期 MA&quot;,
+            &quot;极端止损：浮亏≤-90%（形同无效）&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;最多仅持 1 只 ETF，仓位=全部可用资金；无分散；止损触发即清仓。&quot;,
+        &quot;trading_frequency&quot;: &quot;理论上日频检查，但只有当动量/RSRS 触发才换仓或空仓；平均月度换手；所有委托在 my_trade 09:30 或 13:00 触发。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前：无需操作；09:25 预挂单按昨日数据得出的目标 ETF；13:00 如触发止损需盘中卖出。其余时间仅观测 RSRS 指标。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;全部使用 attribute_history 并在实时盘中调用；未见明显 look-ahead。set_option(&#x27;avoid_future_data&#x27;,True) 已打开。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;attribute_history(&#x27;1d&#x27;) 在 09:30 仍只返回昨日收盘前数据，无未来泄漏。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未调用财务接口。&quot;,
+            &quot;index_component_leak&quot;: &quot;固定 ETF，不用成分信息。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未使用 schedule_function 回调数据外推，风险低。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;仍建议在 initialize 处不要一次性将 g.slope_series 填满，可在每日运行后只 append 最新值。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;RSRS 斜率序列不断累积，长期回测内存可能膨胀&quot;,
+            &quot;极端止损 -90% 基本无效，可误导使用者&quot;,
+            &quot;attribute_history 在分钟级调用效率较低，长回测易超时&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 3,
+        &quot;slippage_reason&quot;: &quot;ETF 深度充足；策略仅做开盘价市价单，理论滑点≈0.01%~0.05%。&quot;,
+        &quot;cost_score&quot;: 2,
+        &quot;cost_reason&quot;: &quot;单边佣金 3bp，月度换手，年化成本&lt;0.5%。&quot;,
+        &quot;execution_score&quot;: 9,
+        &quot;execution_reason&quot;: &quot;一次只交易 1 只高流动性 ETF，成交极易完成。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;信号在 09:30 当天即可执行；秒级不敏感，但需在开盘完成。&quot;,
+        &quot;overall_executability&quot;: 9,
+        &quot;overall_reason&quot;: &quot;低频、标的深度充足、逻辑简单，易于人工或程序实盘。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;完全无压力，任意时点一次性成交。&quot;,
+            &quot;100w&quot;: &quot;市价扫单冲击&lt;1bp，盈亏无显著影响。&quot;,
+            &quot;1000w&quot;: &quot;一次成交亦可，建议分批以控制冲击，但仍在 ETF 深度容量内。&quot;,
+            &quot;1y&quot;: &quot;可行，但需关注 159949,159928 成交额，必要时改用更大盘宽指 ETF&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;用聚宽 Volume 或成交额过滤替换较冷 ETF，以提升大资金容量&quot;,
+            &quot;把 13:00 止损改为固定阈值或 ATR，当前简单均线可能频繁噪声触发&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 2,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;交易对象为宽基/行业 ETF，日成交几十亿以上，容量充足。&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;动量+趋势跟随利用部分情绪，但非纯情绪博弈。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;RSRS 在不同市场阶段效果差异明显；动量窗口固定 20/90/18/600，无自适应。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.0,
+        &quot;weight_explanation&quot;: &quot;大资金友好20%+情绪利用30%+跨阶段稳健50%。&quot;,
+        &quot;worst_environments&quot;: [&quot;单边震荡市（无趋势）&quot;, &quot;快速 V 型反转（RSRS 滞后）&quot;],
+        &quot;verifiable_predictions&quot;: [
+            &quot;趋势向上时能较长时间满仓持有领涨 ETF&quot;,
+            &quot;熊市初期会快速空仓，降低回撤&quot;,
+            &quot;震荡市年化夏普低于宽基指数&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;简洁、低成本、无未来函数的 ETF 趋势轮动策略，执行容易，但依赖固定参数，震荡阶段表现一般。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;增加 ETF 备选数量并做流动性过滤；对 RSRS 阈值及窗口做滚动优化或加入多指标共振。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 3,
+        &quot;cost&quot;: 2,
+        &quot;execution&quot;: 9,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 9,
+        &quot;effectiveness_a&quot;: 2,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.0
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;默认资金规模≤1亿元，全部用市价单即可成交&quot;,
+        &quot;佣金 3bp、无印花税（ETF 免税）；滑点固定 0.1%&quot;,
+        &quot;未考虑交易型开放式基金的分级、场外申赎影响&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

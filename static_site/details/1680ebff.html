@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F13-Score低PB月度多因子 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>F13-Score低PB月度多因子</h1>
+        <p class="meta">
+            ID: 1680ebff | 
+            类型: 多因子选股 | 
+            来源: b2324_18.【复现】FFScore财务模型.txt |
+            分析日期: 2026-01-11 14:57:43
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>每月在全A(剔除金融及异常股票)中，优先选择财务质量显著改善(F13派生出的6个因子中≥5个为正)且估值处于全市场前20%低位的股票，等权持有并按月调仓，以获得价值回归+基本面修复溢价。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全A(剔除停牌&gt;21/22日、ST、上市&lt;180日、新旧金融行业)，理论&gt;3500只。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>F13_Score&gt;4(6项中至少5项为正), 行业中性标准化PB处于全市场20%分位以下</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>月度调仓时不再满足目标集合, 人工平仓或退市停牌长期化(由通用API保证)</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>当月目标股等权，单票≈1/|target|，满仓操作；无单独止损/止盈；仅依赖月度再平衡。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>run_monthly 触发，调仓日在开盘价下单(理论T+0生效，但实际T+1才能成交)。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘后跑筛选→生成次日开盘指令；开盘集合竞价一次性等权买卖；月度复查持仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有信号均基于 context.previous_date（上一个交易日）及 jqfactor 历史披露逻辑，无显式 peek；仅需警惕财报发布日期对齐误差。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>财报披露滞后可能导致回测业绩高估, 固定 0.002 元滑点远低于实际, 一次性等权满仓可能触发涨跌停买不到或卖不出</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>中低频、多标的、等权，1000万以下资金较易执行；超亿元时部分小市值品种容量不足。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>完全可执行，滑点忽略不计。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>基本可执行，需分批买入流动性最差的 10% 标的。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>部分低PB小盘股无法一次性成交，需要 T+N 拉长建仓或放宽过滤。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>仓位下不去。需限制池子流动性或改为分层选股，否则冲击成本压缩收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>依赖低PB + 全市场选股，命中小盘深度折价股的概率高，对大资金不友好。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>主要赚价值回归和基本面改善，不直接博弈投资者情绪。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>价值+质量组合在长周期有理论支撑，但表现随市场风格波动；牛市后半段或成长风盛行时跑输。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>小盘成长风格极盛时期, 估值快速杀跌导致价值股持续下行</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>未来12个月内组合ROE同比增速将高于沪深300, 组合下行波动低于全A低PB单因子组合, 财报披露窗口(3/5/9/11月)后组合相对收益更高</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>经典价值+质量月度策略，逻辑清晰，未来函数风险低，实盘需重新估算滑点与容量。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 增加成交额过滤或分级加权 2) 补充动量/情绪因子做风格平衡 3) 采用滚动调仓降低一次性冲击</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未给出初始资金(假设100万人民币), 未给出成交额/涨跌停处理(假设自然成交，使用 order_target_value 默认市价)</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>5</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>6</td></tr>
+                <tr><td>时间敏感性</td><td>3</td></tr>
+                <tr><td>综合可执行性</td><td>6.2</td></tr>
+                <tr><td>大资金不友好</td><td>6</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>5.2</td></tr>
+                <tr><td>总分</td><td>56.3</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;F13-Score低PB月度多因子&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;每月在全A(剔除金融及异常股票)中，优先选择财务质量显著改善(F13派生出的6个因子中≥5个为正)且估值处于全市场前20%低位的股票，等权持有并按月调仓，以获得价值回归+基本面修复溢价。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 财务因子：ROE/ROA/毛利率/流动性/周转率等，季度频率，经jqfactor按报告发布日期对齐；2) 估值因子：最新PB(日频)；3) 价格数据(日内1分钟/日线均用到)；4) 行业分类(SW一级)。&quot;,
+        &quot;stock_pool&quot;: &quot;全A(剔除停牌&gt;21/22日、ST、上市&lt;180日、新旧金融行业)，理论&gt;3500只。&quot;,
+        &quot;buy_signals&quot;: [&quot;F13_Score&gt;4(6项中至少5项为正)&quot;, &quot;行业中性标准化PB处于全市场20%分位以下&quot;],
+        &quot;sell_signals&quot;: [&quot;月度调仓时不再满足目标集合&quot;, &quot;人工平仓或退市停牌长期化(由通用API保证)&quot;],
+        &quot;position_and_risk&quot;: &quot;当月目标股等权，单票≈1/|target|，满仓操作；无单独止损/止盈；仅依赖月度再平衡。&quot;,
+        &quot;trading_frequency&quot;: &quot;run_monthly 触发，调仓日在开盘价下单(理论T+0生效，但实际T+1才能成交)。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘后跑筛选→生成次日开盘指令；开盘集合竞价一次性等权买卖；月度复查持仓。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有信号均基于 context.previous_date（上一个交易日）及 jqfactor 历史披露逻辑，无显式 peek；仅需警惕财报发布日期对齐误差。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;get_price 与 order 均使用昨日收盘及当日开盘，无未来价格引用。&quot;,
+            &quot;financial_data_leak&quot;: &quot;calc_factors 取 end_date=bar_time(昨日)，jqfactor 默认使用已披露财报，若使用未披露财报将被处理为 NaN；未见提前引用。&quot;,
+            &quot;index_component_leak&quot;: &quot;股票池为 &#x27;A&#x27;(全市场) 或调用 get_index_stocks，当日成分只影响筛选，不涉及未来成分。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;run_monthly 在开盘下单，信号计算在之前完成，符合因果顺序。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;在 calc_factors 前加 explicitly_set_future_data(False) 并使用 `valuation_date_shift=True` 确保财报发布日期对齐。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;财报披露滞后可能导致回测业绩高估&quot;, &quot;固定 0.002 元滑点远低于实际&quot;, &quot;一次性等权满仓可能触发涨跌停买不到或卖不出&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 5,
+        &quot;slippage_reason&quot;: &quot;集合竞价一次性下大单对小盘股冲击明显，且代码假设固定 0.002 元滑点偏乐观。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;月度调仓，预估年换手 ~200% 左右，含千三印花税卖出侧；成本中等。&quot;,
+        &quot;execution_score&quot;: 6,
+        &quot;execution_reason&quot;: &quot;目标股数量(30-150) 分散，有助于成交；但低PB往往流动性偏弱，需要分批成交。&quot;,
+        &quot;time_sensitivity_score&quot;: 3,
+        &quot;time_sensitivity_reason&quot;: &quot;月度信号，盘前生成即可；不需要分钟级反应。&quot;,
+        &quot;overall_executability&quot;: 7,
+        &quot;overall_reason&quot;: &quot;中低频、多标的、等权，1000万以下资金较易执行；超亿元时部分小市值品种容量不足。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;完全可执行，滑点忽略不计。&quot;,
+            &quot;100w&quot;: &quot;基本可执行，需分批买入流动性最差的 10% 标的。&quot;,
+            &quot;1000w&quot;: &quot;部分低PB小盘股无法一次性成交，需要 T+N 拉长建仓或放宽过滤。&quot;,
+            &quot;1y&quot;: &quot;仓位下不去。需限制池子流动性或改为分层选股，否则冲击成本压缩收益。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;引入成交额过滤(如日均成交额&gt;3000万)&quot;, &quot;使用 VWAP/TWAP 分批算法或延两日完成调仓&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 6,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;依赖低PB + 全市场选股，命中小盘深度折价股的概率高，对大资金不友好。&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;主要赚价值回归和基本面改善，不直接博弈投资者情绪。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;价值+质量组合在长周期有理论支撑，但表现随市场风格波动；牛市后半段或成长风盛行时跑输。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.3,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40%+行为偏差30%+跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;小盘成长风格极盛时期&quot;, &quot;估值快速杀跌导致价值股持续下行&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;未来12个月内组合ROE同比增速将高于沪深300&quot;, &quot;组合下行波动低于全A低PB单因子组合&quot;, &quot;财报披露窗口(3/5/9/11月)后组合相对收益更高&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;经典价值+质量月度策略，逻辑清晰，未来函数风险低，实盘需重新估算滑点与容量。&quot;,
+        &quot;recommendation&quot;: &quot;小-中资金可小仓实测；大资金或机构需加流动性限制后再评估。&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 增加成交额过滤或分级加权 2) 补充动量/情绪因子做风格平衡 3) 采用滚动调仓降低一次性冲击&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 5,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 6,
+        &quot;time_sensitivity&quot;: 3,
+        &quot;executability&quot;: 7,
+        &quot;effectiveness_a&quot;: 6,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.3
+    },
+    
+    &quot;assumptions&quot;: [&quot;未给出初始资金(假设100万人民币)&quot;, &quot;未给出成交额/涨跌停处理(假设自然成交，使用 order_target_value 默认市价)&quot;]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

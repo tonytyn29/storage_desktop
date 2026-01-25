@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>龙头底分型打板 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>龙头底分型打板</h1>
+        <p class="meta">
+            ID: 61204d0a | 
+            类型: 事件驱动 / 情绪动量 | 
+            来源: b2324_1.龙头底分型战法-两年23倍.txt |
+            分析日期: 2026-01-11 14:36:48
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>先用上一交易日及更早的日线数据，寻找处于『龙头调整末端→再次涨停』形态的个股（作者称“底分型”）。若当日早盘股价继续强势（开盘后 2%-3% 以上拉升），则当分钟满仓追涨；随后通过一系列固定阈值的止盈/止损与日内形态判断在当日或次日尾盘卖出。盈利来源于：a) 涨停打板次日及日内资金继续接力造成的高换手溢价；b) 较紧的止损限制亏损。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全 A 股（排除 300*** 与 688***）、排除当日停牌与 ST、上市超过 1080 天、昨日涨停且涨幅≥5%。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>Signal-1：昨日通过 high_continous() 形态过滤入选 help_stock；当日 09:30 后股价 &gt; 当日开盘价 2%，且开盘价在昨收 ±5% 之内 → 全仓买入, Signal-2：若开盘已高开 ≥5%，但 09:35 以后仍涨 ≥3%，则全仓买入</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>SL-1：成本价亏损 ≥5% 立即清仓, TP-1：浮盈 ≥40% 且出现大阴线/盘中跳水等多条件组合；
+TP-2：连板后出现弱势回落；
+TP-3：盘中跌破当日低点 3% 等
+(代码包含约 8 条 if 条件，皆以 order_target(stock,0) 实现全清)</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>按 available_cash 全仓买入第一触发标的（cash&gt;5k 限制），理论上一次只持 0-1 只股票。无总仓控仓、无行业/市值分散，最大风险来自单票跳空跌停。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>选股在 before_market_open（盘前）；下单在 market_open every_bar：买入集中在 9:30-10:15 之间，止盈止损可能在全天分钟级触发，尤其 14:40 后强制卖出逻辑。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>1) 盘前（9:20 前）跑形态选股脚本生成候选列表；2) 开盘后监控分时，当满足 2%/3% 拉升条件立即市价买入；3) 全天盯盘，严格执行 5% 止损及尾盘 14:40 处置；4) 盘后清空 help_stock 列表。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有 get_price/attribute_history/end_date 均≤当前回测时点 (多用 pre_date = now-1day)。未看见 look-ahead 财务/价格调用。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>attribute_history 在极端分钟回测模式下极偶发前视，请关注版本差异, tick 数据在回测易出现与实盘不同的快照延迟, help_stock 全局变量若多日未成交会持续留存，可能导致多次利用更久远的筛选结果</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小资金 (&lt;300 万) 且半自动盯盘尚可；需快速通道及市价单控滑点。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>可基本按脚本成交，滑点&lt;0.3%</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>需拆单，热门龙头单笔成交额可接受；滑点约0.5-1%</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>流动性成为瓶颈，无法在 09:35 前吃满仓，可能被一字板卡死或引发涨停打开</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>基本无法执行，大幅冲击市场，持仓集中风险极高</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>目标为高换手/低流通盘涨停股，容量小。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用涨停博弈与龙头信仰的资金情绪，有明确行为金融成份。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>依赖 2019-2021 高度活跃的情绪环境；震荡或熊市时信号极少或频繁止损。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>连续一字跌停或跌停开板无法脱身, 低波动、无涨停板的熊市</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>选中个股当日成交额显著高于过去 5 日均值, 买入日收盘价较开盘价上涨概率 &gt;60%, 若触发 5% 止损，后续 5 个交易日继续下跌概率 &gt;50%</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>典型情绪打板策略，短期收益靠跟随极端动量，风险集中在单票跳水与滑点。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>引入仓位分散、日内限价排队、动态止盈止损和成交量过滤减少冲击。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供资金规模——默认以 available_cash 全仓买入；评分时以 100 万基准, 未提供滑点/手续费模型——仅使用 set_order_cost 默认手续费；未考虑冲击成本</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>7</td></tr>
+                <tr><td>成本</td><td>8</td></tr>
+                <tr><td>执行难度</td><td>4</td></tr>
+                <tr><td>时间敏感性</td><td>8</td></tr>
+                <tr><td>综合可执行性</td><td>4.5</td></tr>
+                <tr><td>大资金不友好</td><td>8</td></tr>
+                <tr><td>行为偏差利用</td><td>6</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>5.8</td></tr>
+                <tr><td>总分</td><td>52.1</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;龙头底分型打板&quot;,
+    &quot;strategy_type&quot;: &quot;事件驱动 / 情绪动量&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;先用上一交易日及更早的日线数据，寻找处于『龙头调整末端→再次涨停』形态的个股（作者称“底分型”）。若当日早盘股价继续强势（开盘后 2%-3% 以上拉升），则当分钟满仓追涨；随后通过一系列固定阈值的止盈/止损与日内形态判断在当日或次日尾盘卖出。盈利来源于：a) 涨停打板次日及日内资金继续接力造成的高换手溢价；b) 较紧的止损限制亏损。&quot;,
+        &quot;data_and_indicators&quot;: &quot;纯价格行为：get_price/attribute_history 日线(500 80 60 40 12 10 8 6 5 3 1)、分钟、tick；不使用任何基本面或财务数据。指标包括：涨跌停判断、开/收/高/低差值、5日/20日/60日均线、历史最高/最低、连续涨停计数等。数据频率：盘前一次批量日线、盘中每分钟实时价格。&quot;,
+        &quot;stock_pool&quot;: &quot;全 A 股（排除 300*** 与 688***）、排除当日停牌与 ST、上市超过 1080 天、昨日涨停且涨幅≥5%。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;Signal-1：昨日通过 high_continous() 形态过滤入选 help_stock；当日 09:30 后股价 &gt; 当日开盘价 2%，且开盘价在昨收 ±5% 之内 → 全仓买入&quot;,
+            &quot;Signal-2：若开盘已高开 ≥5%，但 09:35 以后仍涨 ≥3%，则全仓买入&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;SL-1：成本价亏损 ≥5% 立即清仓&quot;,
+            &quot;TP-1：浮盈 ≥40% 且出现大阴线/盘中跳水等多条件组合；\nTP-2：连板后出现弱势回落；\nTP-3：盘中跌破当日低点 3% 等\n(代码包含约 8 条 if 条件，皆以 order_target(stock,0) 实现全清)&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;按 available_cash 全仓买入第一触发标的（cash&gt;5k 限制），理论上一次只持 0-1 只股票。无总仓控仓、无行业/市值分散，最大风险来自单票跳空跌停。&quot;,
+        &quot;trading_frequency&quot;: &quot;选股在 before_market_open（盘前）；下单在 market_open every_bar：买入集中在 9:30-10:15 之间，止盈止损可能在全天分钟级触发，尤其 14:40 后强制卖出逻辑。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;1) 盘前（9:20 前）跑形态选股脚本生成候选列表；2) 开盘后监控分时，当满足 2%/3% 拉升条件立即市价买入；3) 全天盯盘，严格执行 5% 止损及尾盘 14:40 处置；4) 盘后清空 help_stock 列表。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有 get_price/attribute_history/end_date 均≤当前回测时点 (多用 pre_date = now-1day)。未看见 look-ahead 财务/价格调用。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;未使用未来价格；end_date 均是 yesterday 或更早。&quot;,
+            &quot;financial_data_leak&quot;: &quot;无财务数据调用。&quot;,
+            &quot;index_component_leak&quot;: &quot;无因子排名/指数成分未来信息。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无 order_targets_before_trading 等潜在泄漏。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;仍建议把 pre_date/yes_date_one 显式替换为 get_previous_trade_date(context.current_dt.date()) 增强稳健。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;attribute_history 在极端分钟回测模式下极偶发前视，请关注版本差异&quot;,
+            &quot;tick 数据在回测易出现与实盘不同的快照延迟&quot;,
+            &quot;help_stock 全局变量若多日未成交会持续留存，可能导致多次利用更久远的筛选结果&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 7,
+        &quot;slippage_reason&quot;: &quot;追涨停股且采用 order_value(cash) 一次性扫单，极易吃掉盘口，引发 1%+ 滑点。&quot;,
+        &quot;cost_score&quot;: 8,
+        &quot;cost_reason&quot;: &quot;策略可能隔日持续交易同一票，但日内换手一次或多次；全仓切换致换手率高，自带印花税。&quot;,
+        &quot;execution_score&quot;: 4,
+        &quot;execution_reason&quot;: &quot;需分钟级盯盘且打高换手小票，&gt;1000w 资金无法一次成交。&quot;,
+        &quot;time_sensitivity_score&quot;: 8,
+        &quot;time_sensitivity_reason&quot;: &quot;买点触发窗口 &lt; 几分钟；卖点包含盘中最低价比较，时效性高。&quot;,
+        &quot;overall_executability&quot;: 5,
+        &quot;overall_reason&quot;: &quot;小资金 (&lt;300 万) 且半自动盯盘尚可；需快速通道及市价单控滑点。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;可基本按脚本成交，滑点&lt;0.3%&quot;,
+            &quot;100w&quot;: &quot;需拆单，热门龙头单笔成交额可接受；滑点约0.5-1%&quot;,
+            &quot;1000w&quot;: &quot;流动性成为瓶颈，无法在 09:35 前吃满仓，可能被一字板卡死或引发涨停打开&quot;,
+            &quot;1y&quot;: &quot;基本无法执行，大幅冲击市场，持仓集中风险极高&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;加入分批成交与冲击成本模型，限制单笔订单≤成交额的5%&quot;,
+            &quot;允许同时持有 2-3 只股票分散单票黑天鹅风险&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 8,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;目标为高换手/低流通盘涨停股，容量小。&quot;,
+        &quot;behavioral_bias_score&quot;: 6,
+        &quot;behavioral_bias_reason&quot;: &quot;利用涨停博弈与龙头信仰的资金情绪，有明确行为金融成份。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;依赖 2019-2021 高度活跃的情绪环境；震荡或熊市时信号极少或频繁止损。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.6,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;连续一字跌停或跌停开板无法脱身&quot;,
+            &quot;低波动、无涨停板的熊市&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;选中个股当日成交额显著高于过去 5 日均值&quot;,
+            &quot;买入日收盘价较开盘价上涨概率 &gt;60%&quot;,
+            &quot;若触发 5% 止损，后续 5 个交易日继续下跌概率 &gt;50%&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;典型情绪打板策略，短期收益靠跟随极端动量，风险集中在单票跳水与滑点。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;引入仓位分散、日内限价排队、动态止盈止损和成交量过滤减少冲击。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 7,
+        &quot;cost&quot;: 8,
+        &quot;execution&quot;: 4,
+        &quot;time_sensitivity&quot;: 8,
+        &quot;executability&quot;: 5,
+        &quot;effectiveness_a&quot;: 8,
+        &quot;effectiveness_b&quot;: 6,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 5.6
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供资金规模——默认以 available_cash 全仓买入；评分时以 100 万基准&quot;,
+        &quot;未提供滑点/手续费模型——仅使用 set_order_cost 默认手续费；未考虑冲击成本&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

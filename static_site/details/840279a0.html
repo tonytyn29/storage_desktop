@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月度高股息30 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>月度高股息30</h1>
+        <p class="meta">
+            ID: 840279a0 | 
+            类型: 多因子选股 | 
+            来源: b25_87山寨红利.txt |
+            分析日期: 2026-01-10 23:01:10
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>在全部A股中，先排除负PB、负净利润增长的公司，再从最近3年分红合计/当前市值（股息率）最高的10%股票里优选流动性正常、无风险事件的股票，月初等权买入前30只。通过捕捉高分红、盈利改善企业的长期价值回报，同时保持分散持仓获取超额收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全部 A 股（沪深京）→ 剔除 PB&lt;=0 与净利润增速≤0 → 再按 3 年累计股息率排序取前 10% → 保留前 100 支 → 剔除停牌/涨跌停/退市/ST/*ST/带星号股票 → 取前30支</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>月度调仓日（每月首个交易日10:00）属于入选的30只高股息股票且当前未持有, 账户持仓数&lt;30 时，按照等价值 order_value 买入，目标每股仓位 = 总资产/30</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>月度调仓日不再位列当月选股名单的个股全部卖出, （无止损、无止盈，亦不做仓位再平衡）</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多持 30 只股票；理论满仓（卖出旧股后买新股至满仓）；单票等权约 3.3% 初始权重；无其他风控/止损。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>每月一次（首个交易日 10:00 调仓），中低频。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>1) 盘前准备：计算最新选股名单、确定需要买卖的股票及目标金额；2) 开盘后等待 10:00，检查停牌/涨跌停状态；3) 先清仓不在名单的持股，再按等金额买入新股；4) 如某只股票涨停无法买入可跳过（策略本身如此处理）。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有使用的历史财务与分红数据均以 context.previous_date 为查询日期过滤；设置 set_option(&#x27;avoid_future_data&#x27;, True)。未见明显的未来价格或成分信息调用。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>财报发布日期与会计期差异仍可能造成轻微信息领先，需配合上市公司财报发布时间做进一步校正。, 分红登记日信息一般提前披露，采用登记日过滤基本安全，但仍建议以公告日期为触发条件。, 未对新股上市天数做限制，回测期可能包含未充分交易历史的次新股。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>低频 + 大盘高流动性品种 + 等权分散，实盘实现难度较低。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>对流动性影响极小，滑点忽略不计。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>仍可轻松成交，平均每票3.3万元，股息型大盘股常有千万级别日成交额。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>单票约330万，需拆单但仍可在当日成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>单票约3,300万，部分银行/煤炭股可承接，但需分时成交；仍基本可行但或需多日建仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>高股息样本主要为大市值行业，容量较大；仅30支导致超大资金集中度略高但整体友好。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用投资者对股息价值低估及盈利改善的认知偏差，程度一般。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>高股息策略长期有效性有学术与实证支持，但行业偏离（银行、地产）在不同宏观周期表现分化明显。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>高利率上升且分红股估值快速压缩的熊市, 监管或政策利空集中打击高股息权重行业（如金融、能源）</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>在分红处于高位且盈利改善时，高股息组合一个月后跑赢沪深300。, 在市场剧烈下跌时组合回撤小于沪深300。, 组合收益对银行、煤炭、电力板块权重高度敏感。</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>简单可靠的月度高股息因子策略，风险低、执行易，但收益潜力有限且行业集中需关注。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>考虑加入盈利质量、估值分散及行业/个股权重上限约束，提高收益风险比并降低行业集中度。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供手续费、滑点、资金规模等信息，假设万 3 手续费、对手盘充足且使用市价/限价即时成交。, A 股市场可在10:00按最新价成交；涨跌停无法成交时直接忽略与策略逻辑一致。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>3</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>8</td></tr>
+                <tr><td>时间敏感性</td><td>3</td></tr>
+                <tr><td>综合可执行性</td><td>6.7</td></tr>
+                <tr><td>大资金不友好</td><td>3</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>4.1</td></tr>
+                <tr><td>总分</td><td>52.5</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;月度高股息30&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;在全部A股中，先排除负PB、负净利润增长的公司，再从最近3年分红合计/当前市值（股息率）最高的10%股票里优选流动性正常、无风险事件的股票，月初等权买入前30只。通过捕捉高分红、盈利改善企业的长期价值回报，同时保持分散持仓获取超额收益。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) finance.STK_XR_XD: 最近3年现金分红金额（bonus_amount_rmb）\n2) valuation: 市值、市净率等每日更新\n3) indicator.inc_return: 净利润同比增速（季频/公告后即可使用）\n4) 实时行情 current_data：停牌、涨跌停、ST 状态等；每日分时更新&quot;,
+        &quot;stock_pool&quot;: &quot;全部 A 股（沪深京）→ 剔除 PB&lt;=0 与净利润增速≤0 → 再按 3 年累计股息率排序取前 10% → 保留前 100 支 → 剔除停牌/涨跌停/退市/ST/*ST/带星号股票 → 取前30支&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;月度调仓日（每月首个交易日10:00）属于入选的30只高股息股票且当前未持有&quot;,
+            &quot;账户持仓数&lt;30 时，按照等价值 order_value 买入，目标每股仓位 = 总资产/30&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;月度调仓日不再位列当月选股名单的个股全部卖出&quot;,
+            &quot;（无止损、无止盈，亦不做仓位再平衡）&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;最多持 30 只股票；理论满仓（卖出旧股后买新股至满仓）；单票等权约 3.3% 初始权重；无其他风控/止损。&quot;,
+        &quot;trading_frequency&quot;: &quot;每月一次（首个交易日 10:00 调仓），中低频。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;1) 盘前准备：计算最新选股名单、确定需要买卖的股票及目标金额；2) 开盘后等待 10:00，检查停牌/涨跌停状态；3) 先清仓不在名单的持股，再按等金额买入新股；4) 如某只股票涨停无法买入可跳过（策略本身如此处理）。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有使用的历史财务与分红数据均以 context.previous_date 为查询日期过滤；设置 set_option(&#x27;avoid_future_data&#x27;, True)。未见明显的未来价格或成分信息调用。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;使用 current_data 仅取当日 10:00 之前的实时行情，符合实盘场景；无 end-of-day 未来价引用。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals/finance.run_query 均以 previous_date 过滤；finance.STK_XR_XD 进一步限定 a_registration_date &lt;= previous_date；风险可接受。&quot;,
+            &quot;index_component_leak&quot;: &quot;未引用未来成分或指数权重。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未使用 history()/attribute_history()/xxx.days(…) 等可能导致 look-ahead 的 API；风险低。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;为保险起见，可在 get_fundamentals 等函数中显式指定 date=context.previous_date 以防默认今日；并在回测页面勾选“使用真实价格”。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;财报发布日期与会计期差异仍可能造成轻微信息领先，需配合上市公司财报发布时间做进一步校正。&quot;,
+            &quot;分红登记日信息一般提前披露，采用登记日过滤基本安全，但仍建议以公告日期为触发条件。&quot;,
+            &quot;未对新股上市天数做限制，回测期可能包含未充分交易历史的次新股。&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 3,
+        &quot;slippage_reason&quot;: &quot;月度、等权、主要为高股息大盘股（银行、煤炭、电力等），流动性好；10:00 下单且有一定分散度，对冲滑点。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;每月调仓一次，换手率中低；按万 3 手续费估算，成本影响有限。&quot;,
+        &quot;execution_score&quot;: 8,
+        &quot;execution_reason&quot;: &quot;30 只大盘股等权，盘中市价/金额委托可基本成交；只有个别涨停导致买不进的情形。&quot;,
+        &quot;time_sensitivity_score&quot;: 3,
+        &quot;time_sensitivity_reason&quot;: &quot;月度节奏，10:00 下单，时点并不极端；可容忍小幅延迟。&quot;,
+        &quot;overall_executability&quot;: 8,
+        &quot;overall_reason&quot;: &quot;低频 + 大盘高流动性品种 + 等权分散，实盘实现难度较低。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;对流动性影响极小，滑点忽略不计。&quot;,
+            &quot;100w&quot;: &quot;仍可轻松成交，平均每票3.3万元，股息型大盘股常有千万级别日成交额。&quot;,
+            &quot;1000w&quot;: &quot;单票约330万，需拆单但仍可在当日成交。&quot;,
+            &quot;1y&quot;: &quot;单票约3,300万，部分银行/煤炭股可承接，但需分时成交；仍基本可行但或需多日建仓。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;加入持仓再平衡逻辑，使实际等权更贴合目标仓位。&quot;,
+            &quot;对涨停买不进的股票可采用排队挂单或延后买入，减少跟踪误差。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 3,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;高股息样本主要为大市值行业，容量较大；仅30支导致超大资金集中度略高但整体友好。&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;利用投资者对股息价值低估及盈利改善的认知偏差，程度一般。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;高股息策略长期有效性有学术与实证支持，但行业偏离（银行、地产）在不同宏观周期表现分化明显。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.4,
+        &quot;weight_explanation&quot;: &quot;大资金友好40% (0.4*3) + 行为偏差30% (0.3*4) + 跨阶段稳健30% (0.3*5) = 5.4&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;高利率上升且分红股估值快速压缩的熊市&quot;,
+            &quot;监管或政策利空集中打击高股息权重行业（如金融、能源）&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;在分红处于高位且盈利改善时，高股息组合一个月后跑赢沪深300。&quot;,
+            &quot;在市场剧烈下跌时组合回撤小于沪深300。&quot;,
+            &quot;组合收益对银行、煤炭、电力板块权重高度敏感。&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;简单可靠的月度高股息因子策略，风险低、执行易，但收益潜力有限且行业集中需关注。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;考虑加入盈利质量、估值分散及行业/个股权重上限约束，提高收益风险比并降低行业集中度。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 3,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 8,
+        &quot;time_sensitivity&quot;: 3,
+        &quot;executability&quot;: 8,
+        &quot;effectiveness_a&quot;: 3,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.4
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供手续费、滑点、资金规模等信息，假设万 3 手续费、对手盘充足且使用市价/限价即时成交。&quot;,
+        &quot;A 股市场可在10:00按最新价成交；涨跌停无法成交时直接忽略与策略逻辑一致。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSI500-月度多因子SVM最小方差组合 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>CSI500-月度多因子SVM最小方差组合</h1>
+        <p class="meta">
+            ID: 4849c64e | 
+            类型: 多因子选股 | 
+            来源: b2324_75.机器学习策略分享.txt |
+            分析日期: 2026-01-11 18:28:00
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>利用过去 200 个交易日（约 10 个月）每隔 30 日截面的因子暴露与其后 30 日的超额收益训练 SVM 分类器，预测当下截面未来一个月能否取得正超额收益；挑选最有可能上涨的股票并用最小方差模型配权，从而在保持较低组合波动的同时获取因子溢价。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>以沪深 300 对标（set_benchmark），但选股池限定为当日 CSI500（000905.XSHG）成份股；未显式过滤 ST、停牌、上市天数、涨跌停、流动性，只依赖交易引擎默认排除无法下单的股票。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>SVM 预测标签 = 1（看涨类）, 在看涨股票中，按预测概率 score 由小到大排序，取末尾 10 只（概率最高）</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>股票不在最新一次 10 只待买列表, 组合优化结果要求减仓</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>使用 jqlib.portfolio_optimizer 的 MinVariance 目标，对 10 只候选股做权重优化；但 WeightConstraint(low=0.9, high=1.0) 可能导致权重极度集中（几乎满仓单一票），与分散化目标相悖；总仓 = 100%，现金≈0%。无显式止损/回撤控制。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>每 30 个交易日在 run_daily@open 调仓一次；下单函数 order_target_value 在开盘单次提交。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>需在调仓日 T-1 收盘后运行模型并得到买入列表与权重；T 日集合竞价以限价或市价一次性下单即可。若手动，建议盘前挂单或开盘前五分钟完成。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>使用 context.previous_date 计算因子，信号在次日开盘执行；训练集虽然用未来 30 日收益制作标签，但训练时所有收益已成为已知历史数据。未发现 get_price 等函数跨越 backtest_dt。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>CSI500 当日凌晨可能已公布成份股调整——极端情况下实盘拿不到同样名单, 使用 MaxWindow=120 的动量因子，若 start_date=end_date 可能触发 jqfactor 自动向前拉取，注意运行效率, SVM 训练样本不平衡（仅取前 30%、后 30%），可能导致过拟合</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>中低频、10 只股、CSI500 具备流动性；但权重集中及未处理停牌/涨跌停需人工兜底</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>轻松成交，滑点可忽略；交易成本 &lt; 年化 0.4%</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>依旧可直接一次性下单；单票 100w*0.1≈10w 影响低</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>若优化后集中度高，单票几百万–千万，对部分次高位流通股需分批</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>若 1 亿且集中 1 票达 9000w，需做 VWAP 或 T+1 切片；对小市值股票冲击明显</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>可能出现单一重仓，容量受限；CSI500 中等市值，上亿资金有冲击</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>动量、资金流等因子部分捕捉情绪/偏差，但依赖 PCA + SVM，行为成分一般</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>模型需不断重训；因子库丰富但回测区间有限，缺少跨周期验证</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>快速风格切换（小盘→大盘或价值→成长）导致历史训练失效, 极端单边熊市，10 只重仓股 β 没有被最小方差覆盖到下跌风险</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>调仓后 30 个交易日组合超额收益为正的概率 &gt; 70%, 组合年化波动率 &lt; 同期 CSI500 波动率, 换手率月均 &lt; 120%</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>月度 ML 多因子思路合理但权重约束存在设计缺陷，需补充流动性与风控。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>放宽/重设 WeightConstraint、增加停牌/ST/流动性过滤、使用 cross-validation 或 rolling window 提升模型稳健性</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>聚宽默认初始资金为 100 万，未在代码中显式设置, 实际交易使用 order_target_value 默认市价单，无额外滑点模型；费率使用 set_order_cost 指定值</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>3</td></tr>
+                <tr><td>滑点</td><td>3</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>3</td></tr>
+                <tr><td>综合可执行性</td><td>7.5</td></tr>
+                <tr><td>大资金不友好</td><td>6</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>5.4</td></tr>
+                <tr><td>总分</td><td>63.1</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;CSI500-月度多因子SVM最小方差组合&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;利用过去 200 个交易日（约 10 个月）每隔 30 日截面的因子暴露与其后 30 日的超额收益训练 SVM 分类器，预测当下截面未来一个月能否取得正超额收益；挑选最有可能上涨的股票并用最小方差模型配权，从而在保持较低组合波动的同时获取因子溢价。&quot;,
+        &quot;data_and_indicators&quot;: &quot;价格（收盘价、成交量、120/60/10 日动量、波动率）、资金流（net_pct_main）、估值（PB、PCF、PS、BP）、财务（ROE/ROA/TTM/毛利率、营收/净利同比等）共 19 个自定义因子；用 jqfactor.calc_factors，一次性拉取所需窗口数据，因子经中位数去极值→市值/行业中性化→标准化。更新频率：每 30 个交易日。&quot;,
+        &quot;stock_pool&quot;: &quot;以沪深 300 对标（set_benchmark），但选股池限定为当日 CSI500（000905.XSHG）成份股；未显式过滤 ST、停牌、上市天数、涨跌停、流动性，只依赖交易引擎默认排除无法下单的股票。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;SVM 预测标签 = 1（看涨类）&quot;,
+            &quot;在看涨股票中，按预测概率 score 由小到大排序，取末尾 10 只（概率最高）&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;股票不在最新一次 10 只待买列表&quot;,
+            &quot;组合优化结果要求减仓&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;使用 jqlib.portfolio_optimizer 的 MinVariance 目标，对 10 只候选股做权重优化；但 WeightConstraint(low=0.9, high=1.0) 可能导致权重极度集中（几乎满仓单一票），与分散化目标相悖；总仓 = 100%，现金≈0%。无显式止损/回撤控制。&quot;,
+        &quot;trading_frequency&quot;: &quot;每 30 个交易日在 run_daily@open 调仓一次；下单函数 order_target_value 在开盘单次提交。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;需在调仓日 T-1 收盘后运行模型并得到买入列表与权重；T 日集合竞价以限价或市价一次性下单即可。若手动，建议盘前挂单或开盘前五分钟完成。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 3,
+        &quot;risk_score_reason&quot;: &quot;使用 context.previous_date 计算因子，信号在次日开盘执行；训练集虽然用未来 30 日收益制作标签，但训练时所有收益已成为已知历史数据。未发现 get_price 等函数跨越 backtest_dt。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;get_features 仅用 previous_date 数据；无 T 日价格；风险低&quot;,
+            &quot;financial_data_leak&quot;: &quot;set_option(\&quot;avoid_future_data\&quot;,True) + jqfactor 自动按披露期回溯，风险低&quot;,
+            &quot;index_component_leak&quot;: &quot;get_index_stocks(&#x27;000905.XSHG&#x27;, date) 使用 previous_date，合理；指数成份有当日调整滞后风险但属灰区&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无显式用 future_price / context.today 数据；风险低&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;校验 WeightConstraint 参数；如有需要可在因子计算中限定 is_st == 0、上市 &gt; 180 日等过滤，以避免灰区未来停牌/退市带来的异常。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;CSI500 当日凌晨可能已公布成份股调整——极端情况下实盘拿不到同样名单&quot;,
+            &quot;使用 MaxWindow=120 的动量因子，若 start_date=end_date 可能触发 jqfactor 自动向前拉取，注意运行效率&quot;,
+            &quot;SVM 训练样本不平衡（仅取前 30%、后 30%），可能导致过拟合&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 3,
+        &quot;slippage_reason&quot;: &quot;月度换手 + 10 只股票，理论成交量低，正常集合竞价成本可控&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;1 个月换手一次；佣金(0.03%)、印花税(0.1%)对收益影响中性&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;WeightConstraint 可能导致重仓 1 只股票，对部分中小盘标的冲击较大&quot;,
+        &quot;time_sensitivity_score&quot;: 3,
+        &quot;time_sensitivity_reason&quot;: &quot;信号隔夜有效；开盘前后成交即可，无分钟级要求&quot;,
+        &quot;overall_executability&quot;: 7,
+        &quot;overall_reason&quot;: &quot;中低频、10 只股、CSI500 具备流动性；但权重集中及未处理停牌/涨跌停需人工兜底&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;轻松成交，滑点可忽略；交易成本 &lt; 年化 0.4%&quot;,
+            &quot;100w&quot;: &quot;依旧可直接一次性下单；单票 100w*0.1≈10w 影响低&quot;,
+            &quot;1000w&quot;: &quot;若优化后集中度高，单票几百万–千万，对部分次高位流通股需分批&quot;,
+            &quot;1y&quot;: &quot;若 1 亿且集中 1 票达 9000w，需做 VWAP 或 T+1 切片；对小市值股票冲击明显&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;调整 WeightConstraint，例如每票 5%–15%，增强分散度&quot;,
+            &quot;增加流动性 &amp; 涨跌停过滤（如过去 20 日平均成交额 &gt; 3000 万）&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 6,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;可能出现单一重仓，容量受限；CSI500 中等市值，上亿资金有冲击&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;动量、资金流等因子部分捕捉情绪/偏差，但依赖 PCA + SVM，行为成分一般&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;模型需不断重训；因子库丰富但回测区间有限，缺少跨周期验证&quot;,
+        &quot;effectiveness_total_score&quot;: 5.3,
+        &quot;weight_explanation&quot;: &quot;大资金不友好 40% + 行为偏差 30% + 稳健性 30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;快速风格切换（小盘→大盘或价值→成长）导致历史训练失效&quot;,
+            &quot;极端单边熊市，10 只重仓股 β 没有被最小方差覆盖到下跌风险&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;调仓后 30 个交易日组合超额收益为正的概率 &gt; 70%&quot;,
+            &quot;组合年化波动率 &lt; 同期 CSI500 波动率&quot;,
+            &quot;换手率月均 &lt; 120%&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;月度 ML 多因子思路合理但权重约束存在设计缺陷，需补充流动性与风控。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;放宽/重设 WeightConstraint、增加停牌/ST/流动性过滤、使用 cross-validation 或 rolling window 提升模型稳健性&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 3,
+        &quot;slippage&quot;: 3,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 3,
+        &quot;executability&quot;: 7,
+        &quot;effectiveness_a&quot;: 6,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.3
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;聚宽默认初始资金为 100 万，未在代码中显式设置&quot;,
+        &quot;实际交易使用 order_target_value 默认市价单，无额外滑点模型；费率使用 set_order_cost 指定值&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

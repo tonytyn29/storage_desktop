@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小市值追涨停首板动量 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>小市值追涨停首板动量</h1>
+        <p class="meta">
+            ID: b79070e8 | 
+            类型: 事件驱动 / 情绪动量 | 
+            来源: b2324_32.追高概率涨停策略, 2022年化350%.txt |
+            分析日期: 2026-01-11 18:13:47
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>利用 A 股小市值个股涨停后次日到数日的『连板 / 高溢价』惯性、大额集合竞价成交量代表的资金合力，在开盘瞬间跟随情绪买入；若当日再拉高≈9%或跌破≈-6%即兑现，持有期通常 1-2 日，赚取短期情绪波段。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全 A 股去除：
+• 上市不足约 375 天（排除次新）
+• 科创板(68*)、创业板(30*)
+• ST/退市/停牌
+• 流通市值 ≥200 亿元
+• 前一交易日跌停
+• 当日一字涨停
+• 涨停历史筛选：先取近 120 日出现过涨停的股票，盘前再筛近 5 日至少 1 次涨停</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>09:26 之前集合竞价价格未触及涨跌停且小于昨收 *1.05, 09:26 集合竞价成交量 / 昨日成交量排名居前（代码中按比例排序）</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>14:00 检查：现价 ≥ 持仓成本 *1.09 或 ≤ 成本 *0.94 即清仓, 次日开盘如不再位于最新买入清单则在 09:30 市价卖出</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多持 3 只；等权分配可用现金；没有总仓位控制或大盘风控；止盈/止损仅依赖涨跌比率。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>每周一 07:00 更新大备选池；每天 09:26 生成候选并 09:30 下单；14:00 触发止盈/止损；开盘同时清理不在池中的旧仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>① 07:00 之前跑脚本更新大池；② 09:25 观察竞价，09:30 市价买入候选前 3 名；③ 14:00 根据实时盈亏平仓；④ 收盘后记录交易即可。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有 lookback 接口(history/attribute_history/get_price)均使用过去数据；get_ticks 取 09:25-09:26 属于当前时段，不回看未来。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>09:26 时刻部分券商仍可能未全部上传撮合委托，tick 数据可能与实盘不同, attribute_history 默认包含停牌日，极端情况需确认, 14:00 的盘中止盈止损依赖分钟行情，可在低流动性个股上被卡涨停/跌停</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>工程化可做，小资金 (&lt;500 万) 可执行；资金稍大或人工手动难度陡增。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>基本无冲击，可市价扫单</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>需拆单买入，可能部分买不到一字板</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>流动性瓶颈显著，仓位集中度、涨停板封单限制导致买不到足额</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>几乎无法进出，且买入即触发拉板风险被监管</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>依赖小市值、涨停板情绪，容量非常有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>核心收益来自交易者对涨停后连板预期的过度乐观行为。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>牛市及情绪亢奋阶段表现突出，熊市或监管打击炒小炒差时回撤巨大。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>监管加强连板交易、涨跌幅限制收紧, 整体市场极度低迷、涨停板稀缺</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>次日连板概率随集合竞价量占比增加而单调上升, 小市值股票涨停后的平均次日涨跌幅 &gt; 全样本, 情绪退潮周期止盈止损触发比率急剧提升</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>典型小市值首板追高策略，短期爆发力强但容量与回撤压力大。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>加入市场情绪/指数过滤、改市价为限价 T+1 、动态仓位与风控</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未给出资金规模——默认测试 10w-1000w 区间, 滑点模型/成交模型缺失——假设聚宽默认普通撮合，无交易延迟</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>7</td></tr>
+                <tr><td>成本</td><td>8</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>8</td></tr>
+                <tr><td>综合可执行性</td><td>4.2</td></tr>
+                <tr><td>大资金不友好</td><td>8</td></tr>
+                <tr><td>行为偏差利用</td><td>7</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>6.0</td></tr>
+                <tr><td>总分</td><td>51.9</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;小市值追涨停首板动量&quot;,
+    &quot;strategy_type&quot;: &quot;事件驱动 / 情绪动量&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;利用 A 股小市值个股涨停后次日到数日的『连板 / 高溢价』惯性、大额集合竞价成交量代表的资金合力，在开盘瞬间跟随情绪买入；若当日再拉高≈9%或跌破≈-6%即兑现，持有期通常 1-2 日，赚取短期情绪波段。&quot;,
+        &quot;data_and_indicators&quot;: &quot;日频：close、high_limit、low_limit、volume、market_cap；\n分钟/Tick：09:25-09:26 集合竞价成交量与价格；\n财务：市值（valuation.market_cap）周更；\n全部数据均使用聚宽基础接口。&quot;,
+        &quot;stock_pool&quot;: &quot;全 A 股去除：\n• 上市不足约 375 天（排除次新）\n• 科创板(68*)、创业板(30*)\n• ST/退市/停牌\n• 流通市值 ≥200 亿元\n• 前一交易日跌停\n• 当日一字涨停\n• 涨停历史筛选：先取近 120 日出现过涨停的股票，盘前再筛近 5 日至少 1 次涨停&quot;,
+        &quot;buy_signals&quot;: [&quot;09:26 之前集合竞价价格未触及涨跌停且小于昨收 *1.05&quot;, &quot;09:26 集合竞价成交量 / 昨日成交量排名居前（代码中按比例排序）&quot;],
+        &quot;sell_signals&quot;: [&quot;14:00 检查：现价 ≥ 持仓成本 *1.09 或 ≤ 成本 *0.94 即清仓&quot;, &quot;次日开盘如不再位于最新买入清单则在 09:30 市价卖出&quot;],
+        &quot;position_and_risk&quot;: &quot;最多持 3 只；等权分配可用现金；没有总仓位控制或大盘风控；止盈/止损仅依赖涨跌比率。&quot;,
+        &quot;trading_frequency&quot;: &quot;每周一 07:00 更新大备选池；每天 09:26 生成候选并 09:30 下单；14:00 触发止盈/止损；开盘同时清理不在池中的旧仓。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;① 07:00 之前跑脚本更新大池；② 09:25 观察竞价，09:30 市价买入候选前 3 名；③ 14:00 根据实时盈亏平仓；④ 收盘后记录交易即可。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有 lookback 接口(history/attribute_history/get_price)均使用过去数据；get_ticks 取 09:25-09:26 属于当前时段，不回看未来。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;history/attribute_history 均以 count 参数回看，未跨越当前时刻。&quot;,
+            &quot;financial_data_leak&quot;: &quot;仅使用 valuation.market_cap，并以 query(date=by_date) 回溯 375 天，无未来财报引用。&quot;,
+            &quot;index_component_leak&quot;: &quot;未用未来权重、未来排名。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无 use of pipeline 或自定义持仓回补。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;若担心撮合延迟，可把 09:26 逻辑拆到盘后预处理并盘前导入，以进一步降低未来函数嫌疑。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;09:26 时刻部分券商仍可能未全部上传撮合委托，tick 数据可能与实盘不同&quot;, &quot;attribute_history 默认包含停牌日，极端情况需确认&quot;, &quot;14:00 的盘中止盈止损依赖分钟行情，可在低流动性个股上被卡涨停/跌停&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 7,
+        &quot;slippage_reason&quot;: &quot;09:30 小票开盘缺口大、盘口薄，市价追买常被穿价；涨停次日一字板更买不到。&quot;,
+        &quot;cost_score&quot;: 8,
+        &quot;cost_reason&quot;: &quot;基本日内高换手：持股 1-2 日，且止盈止损价差小需频繁交易。&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;小票流动性有限，3 只股票等权买入对 &gt;1000 万资金已困难；但小资金尚可。&quot;,
+        &quot;time_sensitivity_score&quot;: 8,
+        &quot;time_sensitivity_reason&quot;: &quot;集合竞价量排序+09:30 买入要求毫秒级同步；14:00 及时止盈/止损也需盘中盯。&quot;,
+        &quot;overall_executability&quot;: 5,
+        &quot;overall_reason&quot;: &quot;工程化可做，小资金 (&lt;500 万) 可执行；资金稍大或人工手动难度陡增。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;基本无冲击，可市价扫单&quot;,
+            &quot;100w&quot;: &quot;需拆单买入，可能部分买不到一字板&quot;,
+            &quot;1000w&quot;: &quot;流动性瓶颈显著，仓位集中度、涨停板封单限制导致买不到足额&quot;,
+            &quot;1y&quot;: &quot;几乎无法进出，且买入即触发拉板风险被监管&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;增加限价挂单逻辑缩小滑点&quot;, &quot;加入指数风控与仓位动态控制&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 8,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;依赖小市值、涨停板情绪，容量非常有限。&quot;,
+        &quot;behavioral_bias_score&quot;: 7,
+        &quot;behavioral_bias_reason&quot;: &quot;核心收益来自交易者对涨停后连板预期的过度乐观行为。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;牛市及情绪亢奋阶段表现突出，熊市或监管打击炒小炒差时回撤巨大。&quot;,
+        &quot;effectiveness_total_score&quot;: 6.1,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40%，行为利用30%，跨阶段稳健30%。&quot;,
+        &quot;worst_environments&quot;: [&quot;监管加强连板交易、涨跌幅限制收紧&quot;, &quot;整体市场极度低迷、涨停板稀缺&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;次日连板概率随集合竞价量占比增加而单调上升&quot;, &quot;小市值股票涨停后的平均次日涨跌幅 &gt; 全样本&quot;, &quot;情绪退潮周期止盈止损触发比率急剧提升&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;典型小市值首板追高策略，短期爆发力强但容量与回撤压力大。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测并严控资金规模&quot;,
+        &quot;optimization_suggestions&quot;: &quot;加入市场情绪/指数过滤、改市价为限价 T+1 、动态仓位与风控&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 7,
+        &quot;cost&quot;: 8,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 8,
+        &quot;executability&quot;: 5,
+        &quot;effectiveness_a&quot;: 8,
+        &quot;effectiveness_b&quot;: 7,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 6.1
+    },
+    
+    &quot;assumptions&quot;: [&quot;未给出资金规模——默认测试 10w-1000w 区间&quot;, &quot;滑点模型/成交模型缺失——假设聚宽默认普通撮合，无交易延迟&quot;]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

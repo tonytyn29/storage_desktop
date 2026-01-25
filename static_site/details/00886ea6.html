@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>价值/成长双风格-RSRS轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>价值/成长双风格-RSRS轮动</h1>
+        <p class="meta">
+            ID: 00886ea6 | 
+            类型: 多因子选股 + 趋势动量择时 | 
+            来源: b2324_29.价值成长轮动策略.txt |
+            分析日期: 2026-01-11 18:12:49
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>先用30日动量在沪深300和中证500之间判断市场当前更偏好“大盘价值”还是“中小盘成长”，再在对应风格指数成份股池之外的全市场中用简单财务因子（价值侧 EPS 高 +利润率稳定；成长侧 PEG 低 + EBIT 高）挑出备选股票；最后用 RSRS 标准分和短期 MA 方向两重择时，只在大盘“向上”时建 5 只等权仓位并在出现双空信号时全部清仓，通过捕捉指数与个股多头行情获取收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>初始为全部 A 股，过滤 ST、*ST、退市、停牌、涨跌停、上市不足 250 日股票，并排除科创板（代码 688 开头）。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>RSRS_Zscore*r² &gt; 0.7, 20 日 MA - 3 日前 MA &gt; 0（两者满足其一）</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>RSRS_Zscore*r² &lt; -0.7 且 20 日 MA 下穿（两者同时满足）</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多 5 只股票，等份现金建仓；无单票仓位上限控制；SELL 信号时全仓清；不做分级止损止盈。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>run_daily 在 9:30 执行，若 BUY 则调仓；若 SELL 则清仓。理论上一天最多一次调仓，平均换手随择时而变，大约周级到月级。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>如手动，需在开盘前根据昨日收盘数据完成 RSRS/MA 及指数动量运算，开盘后立即下单；若 BUY 取最新自选股前 5 名等额买入，若 SELL 则一键清仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有历史数据通过 attribute_history()、get_factor_values(count=1,end_date=昨天) 调用，均为回测引擎允许的方式；未发现 history_xxx(0) 及今天未收盘财务数据的引用。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>财务因子在现实中披露存在滞后，本策略默认 T+0 可得。, 回测滑点设为 0，实盘需加入冲击成本模型。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小中资金可直接执行；&gt;1000 万时部分股票容量不足需分批成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>几乎可忽略冲击成本，滑点极小。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>正常拆单即可完成，日内冲击&lt;10bp。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>遇到小盘股成交占比可能&gt;5%，需 T+N 分批，滑点 20-40bp。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>单票 2000 万以上时选股容量严重不足，需扩充标的或分仓数。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>仅 5 只且成长侧偏小盘，容量有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用市场动量 + 基本面因子，部分收益来自投资者偏好轮动。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>逻辑简单但参数固定（N=18,M=600,30日动量），对不同年份可能敏感。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>震荡无趋势且大小盘风格快速切换, 政策利空导致小盘长时间跌停</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>当 RSRS_Zscore&gt;0.7 时指数未来 5-20 日收益为正的概率显著&gt;50%, 当 30 日动量 CSI500&gt;HS300 时中小盘未来收益更高, PEG 低+EBIT 高组合在 bull 市场超额收益更好</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>简洁可运行的小仓位轮动策略，未来函数风险低，但容量和参数稳健性一般。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>放宽持仓数、增加流动性筛选、给因子做横截面标准化及 IC 验证；实盘需加入滑点与冲击估计。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未给出资金规模，报告按 10 万-1 亿分情景分析。, 实际交易费率、滑点未知，文中默认佣金 0.03%、无滑点。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>4</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>6</td></tr>
+                <tr><td>时间敏感性</td><td>5</td></tr>
+                <tr><td>综合可执行性</td><td>6.4</td></tr>
+                <tr><td>大资金不友好</td><td>6</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>5.4</td></tr>
+                <tr><td>总分</td><td>58.1</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;价值/成长双风格-RSRS轮动&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股 + 趋势动量择时&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;先用30日动量在沪深300和中证500之间判断市场当前更偏好“大盘价值”还是“中小盘成长”，再在对应风格指数成份股池之外的全市场中用简单财务因子（价值侧 EPS 高 +利润率稳定；成长侧 PEG 低 + EBIT 高）挑出备选股票；最后用 RSRS 标准分和短期 MA 方向两重择时，只在大盘“向上”时建 5 只等权仓位并在出现双空信号时全部清仓，通过捕捉指数与个股多头行情获取收益。&quot;,
+        &quot;data_and_indicators&quot;: &quot;价格数据：日线 high/low/close（N=18，M=600，MA20）；基本面：EPS_TTM、Margin_Stability、PEG、EBIT、流通市值；更新频率均为日度；另外用 get_all_securities()/停复牌/涨跌停实时数据做过滤。&quot;,
+        &quot;stock_pool&quot;: &quot;初始为全部 A 股，过滤 ST、*ST、退市、停牌、涨跌停、上市不足 250 日股票，并排除科创板（代码 688 开头）。&quot;,
+        &quot;buy_signals&quot;: [&quot;RSRS_Zscore*r² &gt; 0.7&quot;, &quot;20 日 MA - 3 日前 MA &gt; 0（两者满足其一）&quot;],
+        &quot;sell_signals&quot;: [&quot;RSRS_Zscore*r² &lt; -0.7 且 20 日 MA 下穿（两者同时满足）&quot;],
+        &quot;position_and_risk&quot;: &quot;最多 5 只股票，等份现金建仓；无单票仓位上限控制；SELL 信号时全仓清；不做分级止损止盈。&quot;,
+        &quot;trading_frequency&quot;: &quot;run_daily 在 9:30 执行，若 BUY 则调仓；若 SELL 则清仓。理论上一天最多一次调仓，平均换手随择时而变，大约周级到月级。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;如手动，需在开盘前根据昨日收盘数据完成 RSRS/MA 及指数动量运算，开盘后立即下单；若 BUY 取最新自选股前 5 名等额买入，若 SELL 则一键清仓。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有历史数据通过 attribute_history()、get_factor_values(count=1,end_date=昨天) 调用，均为回测引擎允许的方式；未发现 history_xxx(0) 及今天未收盘财务数据的引用。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;attribute_history/high_low/close 均使用 N 或 M 天窗口且在 9:30 调用，回测引擎会返回前一交易日收盘价 -&gt; 安全。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_factor_values end_date=context.previous_date，未调用未来数据。&quot;,
+            &quot;index_component_leak&quot;: &quot;未调用 get_index_stocks 等未来成分函数；指数仅用价格序列 -&gt; 安全。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;initialize 中取 618 日历史价格只是向前取历史窗口，不涉及未来。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;如绝对严谨，可在 get_all_securities(date=context.previous_date) 显式指定日期。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;财务因子在现实中披露存在滞后，本策略默认 T+0 可得。&quot;, &quot;回测滑点设为 0，实盘需加入冲击成本模型。&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 4,
+        &quot;slippage_reason&quot;: &quot;早盘集合竞价或开盘阶段成交，单日最多 5 笔，滑点中等。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;择时导致换手介于周级到月级，交易成本可控但非低频。&quot;,
+        &quot;execution_score&quot;: 6,
+        &quot;execution_reason&quot;: &quot;成长侧可能挑出流动性较差的小盘股，且只持 5 只，需要一定拆单。&quot;,
+        &quot;time_sensitivity_score&quot;: 5,
+        &quot;time_sensitivity_reason&quot;: &quot;信号基于昨日收盘价，理论可在盘前算完；但代码在 9:30 在线计算并下单，对盘前准备要求一般。&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;小中资金可直接执行；&gt;1000 万时部分股票容量不足需分批成交。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;几乎可忽略冲击成本，滑点极小。&quot;,
+            &quot;100w&quot;: &quot;正常拆单即可完成，日内冲击&lt;10bp。&quot;,
+            &quot;1000w&quot;: &quot;遇到小盘股成交占比可能&gt;5%，需 T+N 分批，滑点 20-40bp。&quot;,
+            &quot;1y&quot;: &quot;单票 2000 万以上时选股容量严重不足，需扩充标的或分仓数。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;增加持仓数量到 15-20 只以降低个股冲击。&quot;, &quot;加入最小成交额/日均成交额过滤，避免流动性陷阱。&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 6,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;仅 5 只且成长侧偏小盘，容量有限。&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;利用市场动量 + 基本面因子，部分收益来自投资者偏好轮动。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;逻辑简单但参数固定（N=18,M=600,30日动量），对不同年份可能敏感。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.3,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;震荡无趋势且大小盘风格快速切换&quot;, &quot;政策利空导致小盘长时间跌停&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;当 RSRS_Zscore&gt;0.7 时指数未来 5-20 日收益为正的概率显著&gt;50%&quot;, &quot;当 30 日动量 CSI500&gt;HS300 时中小盘未来收益更高&quot;, &quot;PEG 低+EBIT 高组合在 bull 市场超额收益更好&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;简洁可运行的小仓位轮动策略，未来函数风险低，但容量和参数稳健性一般。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;放宽持仓数、增加流动性筛选、给因子做横截面标准化及 IC 验证；实盘需加入滑点与冲击估计。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 4,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 6,
+        &quot;time_sensitivity&quot;: 5,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 6,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.3
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未给出资金规模，报告按 10 万-1 亿分情景分析。&quot;,
+        &quot;实际交易费率、滑点未知，文中默认佣金 0.03%、无滑点。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

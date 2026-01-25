@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>低波动稳定度选股 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>低波动稳定度选股</h1>
+        <p class="meta">
+            ID: 28a993aa | 
+            类型: 多因子选股 | 
+            来源: b25_94别人“拿的住”的股票最赚钱.txt |
+            分析日期: 2026-01-10 23:06:35
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>从沪深300成分股里挑选近期（近20个交易日）高频波动率既低且稳定的10只股票，认为“盘中波动小、投资者更拿得住”，进而在下一阶段获得超额收益。月度调仓，等权持有，若当前市场（沪深300）近20日成交量高于过去250日的25%分位，则执行选股；否则空仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>仅沪深300成分股；attribute_history(skip_paused=True)自动剔除停牌日；未显式过滤ST、上市天数、市值、涨跌停，但HS300自身已部分保证流动性与规模。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>市场情绪过滤：沪深300近20日平均成交量 &gt; 过去250日成交量25分位数, 在满足情绪条件时，对所有HS300成分计算“高频波动率稳定度”因子，对该因子经传统20日波动率中性化后的残差由小到大排序，取前10名作为买入列表</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>股票当次调仓跌出前10名因子排名, 情绪过滤不满足时全仓卖出</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>等权分配，目标持仓支出 = 组合总市值 / 入选股票数；最多10只股票，理论上可100%满仓；无单独止损或风控。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>每月第20个交易日的开盘时刻执行一次调仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>1) 盘前：无须准备；2) 09:25-09:30获取signal及买卖列表；3) 09:30开盘后立刻按等权市值委托市价或限价（开盘价±滑点）；4) 如情绪过滤不通过，当日清仓并不再建仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>全部历史数据通过attribute_history获取，且设置了set_option(&quot;avoid_future_data&quot;, True)。未见如history(0)、panel、run_daily跨日取未来等典型未来函数。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>09:30拉取4800条1分钟数据可能超时或在实盘无法一次性获取, minute级数据 slicing 240*20 假设每天240条，遇到节假日/停牌天数会产生错位, 开盘瞬间全部发单，若10只股票均不活跃，可能吃跌停板等价格风险</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>低频、标的流动性佳、等权仓位，实盘实现难度不高。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>完全无压力，手续费/滑点可忽略。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>依然轻松成交，单笔成交&lt;千分之一日成交额。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>需分仓委托，关注权重较小的股；整体可行。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>组合最多10股，单票分配1千万级别，对部分HS300流通市值&lt;200亿的股票有冲击，需要TWAP分单。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>HS300成份股容量大；即使只买10只股票，总容量尚可。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用投资者对低波动股票偏好、情绪稳定资金抱团的行为，但逻辑较弱。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>因子简单，可跨阶段测试；但仅20日窗口、未检验对不同年份表现。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>市场情绪低迷导致空仓期过长, 高波动+快速风格轮动时期</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>低波动稳定度残差排前10的股票未来一个月平均收益&gt;HS300, 市场成交量处于底部四分位时策略空仓表现优于满仓, 因子自上而下单调性：残差分层收益随分位单调增加</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>思路清晰、实现简单、未来函数风险低，适合做月度低频量化选股的基础尝试。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 引入ST/财务质量/流动性过滤；2) 对minute数据计算改写为预处理或管线减少实盘计算压力；3) 考虑增加风险控制（止损/对冲）。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>默认使用聚宽股票分钟级数据在实盘可实时获取，且计算于09:30-09:31内完成, 资金规模、滑点模型、涨跌停不可买卖等未在代码中定义，假设使用聚宽默认设置</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>3</td></tr>
+                <tr><td>滑点</td><td>4</td></tr>
+                <tr><td>成本</td><td>2</td></tr>
+                <tr><td>执行难度</td><td>3</td></tr>
+                <tr><td>时间敏感性</td><td>3</td></tr>
+                <tr><td>综合可执行性</td><td>7.8</td></tr>
+                <tr><td>大资金不友好</td><td>3</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>4.1</td></tr>
+                <tr><td>总分</td><td>57.7</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;低波动稳定度选股&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;从沪深300成分股里挑选近期（近20个交易日）高频波动率既低且稳定的10只股票，认为“盘中波动小、投资者更拿得住”，进而在下一阶段获得超额收益。月度调仓，等权持有，若当前市场（沪深300）近20日成交量高于过去250日的25%分位，则执行选股；否则空仓。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1. 分钟级行情：过去20个交易日、每个交易日240根1分钟K线，用于计算当日成交量加权的日内收益率标准差。\n2. 日线行情：过去20个交易日收盘收益率标准差（传统波动率）。\n3. 指数（000300）日线与成交量：250日数据用于判定“市场情绪”。\n4. 不涉及任何财务报表类数据。&quot;,
+        &quot;stock_pool&quot;: &quot;仅沪深300成分股；attribute_history(skip_paused=True)自动剔除停牌日；未显式过滤ST、上市天数、市值、涨跌停，但HS300自身已部分保证流动性与规模。&quot;,
+        &quot;buy_signals&quot;: [&quot;市场情绪过滤：沪深300近20日平均成交量 &gt; 过去250日成交量25分位数&quot;, &quot;在满足情绪条件时，对所有HS300成分计算“高频波动率稳定度”因子，对该因子经传统20日波动率中性化后的残差由小到大排序，取前10名作为买入列表&quot;],
+        &quot;sell_signals&quot;: [&quot;股票当次调仓跌出前10名因子排名&quot;, &quot;情绪过滤不满足时全仓卖出&quot;],
+        &quot;position_and_risk&quot;: &quot;等权分配，目标持仓支出 = 组合总市值 / 入选股票数；最多10只股票，理论上可100%满仓；无单独止损或风控。&quot;,
+        &quot;trading_frequency&quot;: &quot;每月第20个交易日的开盘时刻执行一次调仓。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;1) 盘前：无须准备；2) 09:25-09:30获取signal及买卖列表；3) 09:30开盘后立刻按等权市值委托市价或限价（开盘价±滑点）；4) 如情绪过滤不通过，当日清仓并不再建仓。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 3,
+        &quot;risk_score_reason&quot;: &quot;全部历史数据通过attribute_history获取，且设置了set_option(\&quot;avoid_future_data\&quot;, True)。未见如history(0)、panel、run_daily跨日取未来等典型未来函数。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;attribute_history在09:30可能取到当日09:31之前的分钟数据，但随后立即下单，属于允许的同频交易；影响极小。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未使用财务数据，故无泄漏。&quot;,
+            &quot;index_component_leak&quot;: &quot;get_index_stocks 在回测中会自动使用当期成分（含未来变化），存在潜在泄漏风险；但该函数在聚宽支持历史成分回溯，默认按当前日期截面，风险较低。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未见手动对齐错误；回测引擎避免未来数据。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;如担心成分股未来泄漏，可改为成分表加上date过滤或使用构建的历史成分表。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;09:30拉取4800条1分钟数据可能超时或在实盘无法一次性获取&quot;,&quot;minute级数据 slicing 240*20 假设每天240条，遇到节假日/停牌天数会产生错位&quot;,&quot;开盘瞬间全部发单，若10只股票均不活跃，可能吃跌停板等价格风险&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 4,
+        &quot;slippage_reason&quot;: &quot;开盘集合竞价或9:30刚开盘下单，价格冲击可能产生0.1%~0.3%滑点；但月度换手、标的为HS300，整体流动性好。&quot;,
+        &quot;cost_score&quot;: 2,
+        &quot;cost_reason&quot;: &quot;月度调仓，单次换手不超过100%，年化换手&lt;1200%。交易成本偏低。&quot;,
+        &quot;execution_score&quot;: 3,
+        &quot;execution_reason&quot;: &quot;仅10只大盘股，下单量较小易成交；若资金&gt;1亿则需分拆委托。&quot;,
+        &quot;time_sensitivity_score&quot;: 3,
+        &quot;time_sensitivity_reason&quot;: &quot;因子基于分钟级前20日数据，允许在开盘后1-2分钟内完成计算与下单；时效性中等。&quot;,
+        &quot;overall_executability&quot;: 8,
+        &quot;overall_reason&quot;: &quot;低频、标的流动性佳、等权仓位，实盘实现难度不高。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;完全无压力，手续费/滑点可忽略。&quot;,
+            &quot;100w&quot;: &quot;依然轻松成交，单笔成交&lt;千分之一日成交额。&quot;,
+            &quot;1000w&quot;: &quot;需分仓委托，关注权重较小的股；整体可行。&quot;,
+            &quot;1y&quot;: &quot;组合最多10股，单票分配1千万级别，对部分HS300流通市值&lt;200亿的股票有冲击，需要TWAP分单。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;使用分笔TWAP降低开盘冲击&quot;, &quot;对ST/财务风险公司加过滤，加入流动性/市值权重限制&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 3,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;HS300成份股容量大；即使只买10只股票，总容量尚可。&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;利用投资者对低波动股票偏好、情绪稳定资金抱团的行为，但逻辑较弱。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;因子简单，可跨阶段测试；但仅20日窗口、未检验对不同年份表现。&quot;,
+        &quot;effectiveness_total_score&quot;: 3.9,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;市场情绪低迷导致空仓期过长&quot;, &quot;高波动+快速风格轮动时期&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;低波动稳定度残差排前10的股票未来一个月平均收益&gt;HS300&quot;, &quot;市场成交量处于底部四分位时策略空仓表现优于满仓&quot;, &quot;因子自上而下单调性：残差分层收益随分位单调增加&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;思路清晰、实现简单、未来函数风险低，适合做月度低频量化选股的基础尝试。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 引入ST/财务质量/流动性过滤；2) 对minute数据计算改写为预处理或管线减少实盘计算压力；3) 考虑增加风险控制（止损/对冲）。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 3,
+        &quot;slippage&quot;: 4,
+        &quot;cost&quot;: 2,
+        &quot;execution&quot;: 3,
+        &quot;time_sensitivity&quot;: 3,
+        &quot;executability&quot;: 8,
+        &quot;effectiveness_a&quot;: 3,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 3.9
+    },
+    
+    &quot;assumptions&quot;: [&quot;默认使用聚宽股票分钟级数据在实盘可实时获取，且计算于09:30-09:31内完成&quot;, &quot;资金规模、滑点模型、涨跌停不可买卖等未在代码中定义，假设使用聚宽默认设置&quot;]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

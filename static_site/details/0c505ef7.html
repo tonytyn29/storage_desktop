@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>低协方差国证1000年报选股 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>低协方差国证1000年报选股</h1>
+        <p class="meta">
+            ID: 0c505ef7 | 
+            类型: 多因子选股 | 
+            来源: b2324_91.致敬市场--4 解析细节.txt |
+            分析日期: 2026-01-11 18:33:38
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>从国证1000成分股中，先用上一年度年报中过滤出 ROE&gt;10% 且营业收入同比为正的公司，再从其过去一年的日收益率中计算与指数收益的协方差，挑选协方差最小的一组（目标 100 只左右）。等权配置，每只股票理论仓位 1%，意图获得基本面支撑且与市场整体波动相关性更低的组合，赚取风险溢价并降低系统性风险。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>初始为 399311.XSHE(国证1000) 当期成分股；未过滤 ST、未排除上市天数 / 涨跌停 / 流动性；停牌时不买入、不卖出。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>在 5 月第一次交易日满足基本面过滤且协方差排序靠前并不在现有持仓, 可用现金 ≥ 目标仓位且股票未停牌</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>不再出现在最新一次 choice_stocks 产生的 g.stocks 中, 股票未停牌</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>目标持仓数 g.position_num =100，理论等权 1%/只；代码没有再平衡，超出 100 只时只买到现金用完；无止损/止盈/资金控制等二级风控。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>run_monthly：1) update_stocks 在每月首日开盘执行，但仅 5 月真正换仓；2) trader 每月首日 14:30 下单；其余月份几乎不交易。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>实盘可于每年 5 月第一交易日前准备财报 &amp; 协方差数据；5 月首日 14:30-15:00 依次平仓剔除股、买入新股；其余月份无需操作。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>主动 set_option(&#x27;avoid_future_data&#x27;, False) 使回测可以获取尚未正式披露的数据；get_fundamentals(statDate=last_year) 未用 pubDate 过滤，在历史日期可能读取未来披露的年报。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>get_index_stocks 没有锁定历史成分，可能前视, 协方差计算量化函数 cov 未显式导入，回测环境差异可能导致异常, 未对 ST/退市股过滤，存在流动性与停牌风险</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>低频 + 等权分散降低了成本，但标的集中于小盘股，≥千万资金需关注盘口。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>一次购买额 &lt;1 万/只，流动性充裕，几乎无冲击。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>每只约 1 万，仍轻松成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>每只约 10 万，对部分小票需分批，下单时间拉长。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>每只约 100 万，低换手仍可完成，但需 1-2 天分批且关注涨跌停。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>国证1000 中多数股票成交额较低，容量有限，对 ≥1 亿资金不友好。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>主要依赖基本面和低 Beta，不明显利用市场情绪偏差。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>逻辑简单但只依赖单一年度财务阈值，缺乏多周期验证，稳健性中等。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>小盘整体流动性骤降或连续跌停, 财报造假或集中爆雷导致筛选指标失效</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>ROE&gt;10% 且营收正增长的小盘股未来一年超额收益为正, 低协方差组合对指数的 β 明显 &lt;1, 组合年化波动低于国证1000指数</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>低频基本面 + 低 Beta 组合思路朴素可行，但存在未来数据调用风险与执行细节缺陷。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>恢复避免未来数据选项、锁定历史指数成分、严格限制持股数=100 并按流动性加权或设置最小成交额过滤</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未在代码中看到 commission/slippage 设置，默认聚宽回测佣金 0.0003、印花税 0.001、无额外滑点, 资金规模默认 100 万，均市价单成交；实际大额资金可能需要分批限价</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>7</td></tr>
+                <tr><td>滑点</td><td>6</td></tr>
+                <tr><td>成本</td><td>2</td></tr>
+                <tr><td>执行难度</td><td>6</td></tr>
+                <tr><td>时间敏感性</td><td>2</td></tr>
+                <tr><td>综合可执行性</td><td>6.3</td></tr>
+                <tr><td>大资金不友好</td><td>6</td></tr>
+                <tr><td>行为偏差利用</td><td>3</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>5.0</td></tr>
+                <tr><td>总分</td><td>56.0</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;低协方差国证1000年报选股&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;从国证1000成分股中，先用上一年度年报中过滤出 ROE&gt;10% 且营业收入同比为正的公司，再从其过去一年的日收益率中计算与指数收益的协方差，挑选协方差最小的一组（目标 100 只左右）。等权配置，每只股票理论仓位 1%，意图获得基本面支撑且与市场整体波动相关性更低的组合，赚取风险溢价并降低系统性风险。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 财务数据：indicator.inc_return(ROE)、indicator.inc_total_revenue_year_on_year(营收同比)，年度频率；2) 价格数据：日收盘价，最近 241 个交易日；3) 指数成分：get_index_stocks，不含历史成分信息。&quot;,
+        &quot;stock_pool&quot;: &quot;初始为 399311.XSHE(国证1000) 当期成分股；未过滤 ST、未排除上市天数 / 涨跌停 / 流动性；停牌时不买入、不卖出。&quot;,
+        &quot;buy_signals&quot;: [&quot;在 5 月第一次交易日满足基本面过滤且协方差排序靠前并不在现有持仓&quot;, &quot;可用现金 ≥ 目标仓位且股票未停牌&quot;],
+        &quot;sell_signals&quot;: [&quot;不再出现在最新一次 choice_stocks 产生的 g.stocks 中&quot;, &quot;股票未停牌&quot;],
+        &quot;position_and_risk&quot;: &quot;目标持仓数 g.position_num =100，理论等权 1%/只；代码没有再平衡，超出 100 只时只买到现金用完；无止损/止盈/资金控制等二级风控。&quot;,
+        &quot;trading_frequency&quot;: &quot;run_monthly：1) update_stocks 在每月首日开盘执行，但仅 5 月真正换仓；2) trader 每月首日 14:30 下单；其余月份几乎不交易。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;实盘可于每年 5 月第一交易日前准备财报 &amp; 协方差数据；5 月首日 14:30-15:00 依次平仓剔除股、买入新股；其余月份无需操作。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;是&quot;,
+        &quot;risk_level&quot;: &quot;高&quot;,
+        &quot;risk_score&quot;: 7,
+        &quot;risk_score_reason&quot;: &quot;主动 set_option(&#x27;avoid_future_data&#x27;, False) 使回测可以获取尚未正式披露的数据；get_fundamentals(statDate=last_year) 未用 pubDate 过滤，在历史日期可能读取未来披露的年报。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;history 仅取过去 241 日收盘价，安全&quot;,
+            &quot;financial_data_leak&quot;: &quot;禁用 avoid_future_data 且直接按 statDate 抓取年报 → 有潜在提前知道尚未发布财报的风险&quot;,
+            &quot;index_component_leak&quot;: &quot;get_index_stocks 默认返回当前时点成分，对历史回测存在成分前视风险，但影响相对可控&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未发现其它引擎级别未来数据调用&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;重新开启 avoid_future_data=True，并改用 query(indicator.pubDate&lt;=context.current_dt) 同时 statDate=last_year；或在 4 月 30 日以后再调仓。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;get_index_stocks 没有锁定历史成分，可能前视&quot;, &quot;协方差计算量化函数 cov 未显式导入，回测环境差异可能导致异常&quot;, &quot;未对 ST/退市股过滤，存在流动性与停牌风险&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 6,
+        &quot;slippage_reason&quot;: &quot;国证1000 属于中小盘，14:30 下单可能遇到流动性真空；一次性 100 只拆单买卖对盘口冲击中等。&quot;,
+        &quot;cost_score&quot;: 2,
+        &quot;cost_reason&quot;: &quot;一年仅大规模换仓一次，平时基本零换手；佣金与印花税影响极低。&quot;,
+        &quot;execution_score&quot;: 6,
+        &quot;execution_reason&quot;: &quot;单票 1% 等权有利于分散，但部分小票日均成交额不足 2000 万时 1% 资金可能需拆单成交。&quot;,
+        &quot;time_sensitivity_score&quot;: 2,
+        &quot;time_sensitivity_reason&quot;: &quot;调仓点位事先确定且全年只有一次，对撮合速度要求不高。&quot;,
+        &quot;overall_executability&quot;: 7,
+        &quot;overall_reason&quot;: &quot;低频 + 等权分散降低了成本，但标的集中于小盘股，≥千万资金需关注盘口。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;一次购买额 &lt;1 万/只，流动性充裕，几乎无冲击。&quot;,
+            &quot;100w&quot;: &quot;每只约 1 万，仍轻松成交。&quot;,
+            &quot;1000w&quot;: &quot;每只约 10 万，对部分小票需分批，下单时间拉长。&quot;,
+            &quot;1y&quot;: &quot;每只约 100 万，低换手仍可完成，但需 1-2 天分批且关注涨跌停。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;调仓前做成交额过滤或以成交额加权&quot;, &quot;在 trader 中加入按目标权重再平衡逻辑并分批限价&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 6,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;国证1000 中多数股票成交额较低，容量有限，对 ≥1 亿资金不友好。&quot;,
+        &quot;behavioral_bias_score&quot;: 3,
+        &quot;behavioral_bias_reason&quot;: &quot;主要依赖基本面和低 Beta，不明显利用市场情绪偏差。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;逻辑简单但只依赖单一年度财务阈值，缺乏多周期验证，稳健性中等。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.8,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差利用30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;小盘整体流动性骤降或连续跌停&quot;, &quot;财报造假或集中爆雷导致筛选指标失效&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;ROE&gt;10% 且营收正增长的小盘股未来一年超额收益为正&quot;, &quot;低协方差组合对指数的 β 明显 &lt;1&quot;, &quot;组合年化波动低于国证1000指数&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;低频基本面 + 低 Beta 组合思路朴素可行，但存在未来数据调用风险与执行细节缺陷。&quot;,
+        &quot;recommendation&quot;: &quot;继续研究&quot;,
+        &quot;optimization_suggestions&quot;: &quot;恢复避免未来数据选项、锁定历史指数成分、严格限制持股数=100 并按流动性加权或设置最小成交额过滤&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 7,
+        &quot;slippage&quot;: 6,
+        &quot;cost&quot;: 2,
+        &quot;execution&quot;: 6,
+        &quot;time_sensitivity&quot;: 2,
+        &quot;executability&quot;: 7,
+        &quot;effectiveness_a&quot;: 6,
+        &quot;effectiveness_b&quot;: 3,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 4.8
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未在代码中看到 commission/slippage 设置，默认聚宽回测佣金 0.0003、印花税 0.001、无额外滑点&quot;,
+        &quot;资金规模默认 100 万，均市价单成交；实际大额资金可能需要分批限价&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

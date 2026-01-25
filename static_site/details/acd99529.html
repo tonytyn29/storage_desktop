@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>年度高股息价值 + IC 期指对冲 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>年度高股息价值 + IC 期指对冲</h1>
+        <p class="meta">
+            ID: acd99529 | 
+            类型: 多因子选股 / 趋势跟踪期货对冲 | 
+            来源: b2324_45.[原创]价值投资+期货对冲V4.0,无惧市场大跌.txt |
+            分析日期: 2026-01-11 18:17:51
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>70%资金买入高分红且基本面健康的股票长期持有获取α；30%资金用于在中证500股指期货(IC)上做趋势跟踪，当指数破短均线做空、突破做多，同时用ATR止损与波动率调整合约张数，从而在大跌时赚取β对冲收益，整体目标是提升夏普并降低回撤。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>初始从指数 399317.XSHE 的成分股获取，再剔除停牌(ST 自动由 cdata.paused 过滤)。财务过滤要求 PB&lt;3、ROE&gt;10%、现金&gt;0.4*短债等；未做流动性/上市时间/涨跌停过滤。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>每年5月重算分红收益率(div_3y / 市值)，按股息率排序取前5名, 股票子账户有可用现金且不在当前持仓时按等权买入</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>所持个股不再位于最新年度Top5 列表, 个股停牌、涨跌停均不主动卖出；无止损</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>总资金 70% 股、30% 期货子账户；期货子账户仅 35% 用于保证金。股票等权、理论单票≈14% 总仓位，集中度高。期货基本合约数 =15%资金 / 合约保证金，波动率低时 *1.5，高时 *1。ATR 回撤 ≥5ATR 止损；交割日强平。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>股票：每年5月13:45 run_daily 执行一次换仓；期货：每天 11:15 run_daily，根据均线/ATR 判断开平仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前：确认IC当月合约与交割日；9:00 更新 g.k。盘中：11:15 查看趋势信号，手动下 IC 指令；13:45 如5月则执行股票换仓。盘后：复核保证金占用。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有行情调用(get_bars/include_now, ATR, EMA)均在 11:15 或 13:45 运行，只使用当日已产生的数据；未见 history/previous_period 等未来函数。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>指数成分生效日期可能滞后, 使用当日分红公告可能与真实可得时点有偏差, 股票停牌/涨跌停未处理影响仓位调整</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>中小资金无压力；上千万需注意个股流动性与涨跌停。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>容易成交，权益端满仓≈7w 分散在5只；期货1~2手。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>股票单票≈14w，依旧可成交；期货≈10手，无压力。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>单票≈140w，若遭遇跌停或流动性差可能挂单较久；期货≈80~100手仍可。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>股票单票&gt;1400w，流动性风险明显；期货合约上限100手有可能无法对冲足额仓位。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>股票集中但总体容量属于中型，可承载~5000w，总体风险中等。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>价值股息+趋势跟踪多为经典风险溢价，行为成分有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>股息价值在多阶段有效，趋势对冲进可上可下；但两条逻辑未做参数检验，稳健性一般。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>无明显趋势的震荡市导致期货频繁止损, 价值股系统性杀估值、分红减少</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>高分红组合长期跑赢中证500, 大跌年份组合回撤小于沪深300, 震荡市年化收益低于单边牛市</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>简洁的价值+对冲思路，交易频率低，可作为保守型策略探索。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>扩大股票池、加入流动性过滤、对期货持仓做动态β对冲而非方向性交易</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供股票手续费/滑点，假设使用聚宽默认千1手续费、无滑点, 未提供期货合约乘数，假设IC 乘数 200 元，保证金比例15%, 资金规模默认=回测初始资金，未指定具体数值</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>4</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>7</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>6.4</td></tr>
+                <tr><td>大资金不友好</td><td>4</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>4.5</td></tr>
+                <tr><td>总分</td><td>53.4</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;年度高股息价值 + IC 期指对冲&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股 / 趋势跟踪期货对冲&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;70%资金买入高分红且基本面健康的股票长期持有获取α；30%资金用于在中证500股指期货(IC)上做趋势跟踪，当指数破短均线做空、突破做多，同时用ATR止损与波动率调整合约张数，从而在大跌时赚取β对冲收益，整体目标是提升夏普并降低回撤。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 基本面：PB、PE、PS、PCF、ROE、ROA、资产负债率、收入/利润同比等（季报频率）。2) 分红数据：finance.STK_XR_XD（事后公告日期筛选，回看3年）。3) 行情：日K、EMA(2/5日)、ATR(20/50日)等，当天 11:15 取值。4) 期货保证金、手续费常量。&quot;,
+        &quot;stock_pool&quot;: &quot;初始从指数 399317.XSHE 的成分股获取，再剔除停牌(ST 自动由 cdata.paused 过滤)。财务过滤要求 PB&lt;3、ROE&gt;10%、现金&gt;0.4*短债等；未做流动性/上市时间/涨跌停过滤。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;每年5月重算分红收益率(div_3y / 市值)，按股息率排序取前5名&quot;,
+            &quot;股票子账户有可用现金且不在当前持仓时按等权买入&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;所持个股不再位于最新年度Top5 列表&quot;,
+            &quot;个股停牌、涨跌停均不主动卖出；无止损&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;总资金 70% 股、30% 期货子账户；期货子账户仅 35% 用于保证金。股票等权、理论单票≈14% 总仓位，集中度高。期货基本合约数 =15%资金 / 合约保证金，波动率低时 *1.5，高时 *1。ATR 回撤 ≥5ATR 止损；交割日强平。&quot;,
+        &quot;trading_frequency&quot;: &quot;股票：每年5月13:45 run_daily 执行一次换仓；期货：每天 11:15 run_daily，根据均线/ATR 判断开平仓。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前：确认IC当月合约与交割日；9:00 更新 g.k。盘中：11:15 查看趋势信号，手动下 IC 指令；13:45 如5月则执行股票换仓。盘后：复核保证金占用。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有行情调用(get_bars/include_now, ATR, EMA)均在 11:15 或 13:45 运行，只使用当日已产生的数据；未见 history/previous_period 等未来函数。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;ATR/EMA 使用 include_now=True 但调用时点在日内，最多引用当日的当下价格，不构成未来泄漏&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals 在 5 月当日调用，财报已发布，不提前知道未来信息&quot;,
+            &quot;index_component_leak&quot;: &quot;get_index_stocks 使用当日成分，成分通常盘后才生效，可能轻微提前知道未来日调整，但399317 更换频率很低 -&gt; 轻微风险&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未使用因子回溯或自定义历史裁切，风险低&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;如要绝对避免成分股未来泄漏，可在 choice_stocks 中加一个 `date=context.previous_date` 参数；ATR/EMA 可设置 include_now=False。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;指数成分生效日期可能滞后&quot;,&quot;使用当日分红公告可能与真实可得时点有偏差&quot;,&quot;股票停牌/涨跌停未处理影响仓位调整&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 4,
+        &quot;slippage_reason&quot;: &quot;股票池仅5只且可能是中小盘高股息股，冲击成本中等；IC 期指流动性好，滑点可忽略。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;股票一年换仓一次，期货趋势策略单向换手有限；整体成本低。&quot;,
+        &quot;execution_score&quot;: 7,
+        &quot;execution_reason&quot;: &quot;IC 成交无压力；股票集中度高，对 1000w 以上会有冲击但仍可分批。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;股票次日盘后操作即可；期货信号 11:15 固定时点，分钟级即可成交。&quot;,
+        &quot;overall_executability&quot;: 7,
+        &quot;overall_reason&quot;: &quot;中小资金无压力；上千万需注意个股流动性与涨跌停。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;容易成交，权益端满仓≈7w 分散在5只；期货1~2手。&quot;,
+            &quot;100w&quot;: &quot;股票单票≈14w，依旧可成交；期货≈10手，无压力。&quot;,
+            &quot;1000w&quot;: &quot;单票≈140w，若遭遇跌停或流动性差可能挂单较久；期货≈80~100手仍可。&quot;,
+            &quot;1y&quot;: &quot;股票单票&gt;1400w，流动性风险明显；期货合约上限100手有可能无法对冲足额仓位。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;增加股票池数量降集中度&quot;,&quot;对股票端设置涨跌停/停牌保护和流动性过滤&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 4,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;股票集中但总体容量属于中型，可承载~5000w，总体风险中等。&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;价值股息+趋势跟踪多为经典风险溢价，行为成分有限。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;股息价值在多阶段有效，趋势对冲进可上可下；但两条逻辑未做参数检验，稳健性一般。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.4,
+        &quot;weight_explanation&quot;: &quot;大资金友好40% + 行为利用30% + 跨期稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;无明显趋势的震荡市导致期货频繁止损&quot;,&quot;价值股系统性杀估值、分红减少&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;高分红组合长期跑赢中证500&quot;,&quot;大跌年份组合回撤小于沪深300&quot;,&quot;震荡市年化收益低于单边牛市&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;简洁的价值+对冲思路，交易频率低，可作为保守型策略探索。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;扩大股票池、加入流动性过滤、对期货持仓做动态β对冲而非方向性交易&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 4,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 7,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 7,
+        &quot;effectiveness_a&quot;: 4,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 4.4
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供股票手续费/滑点，假设使用聚宽默认千1手续费、无滑点&quot;,
+        &quot;未提供期货合约乘数，假设IC 乘数 200 元，保证金比例15%&quot;,
+        &quot;资金规模默认=回测初始资金，未指定具体数值&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

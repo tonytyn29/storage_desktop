@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宽基ETF 动量+钝化RSRS 单 ETF 轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>宽基ETF 动量+钝化RSRS 单 ETF 轮动</h1>
+        <p class="meta">
+            ID: 28c59cda | 
+            类型: 动量策略 | 
+            来源: b2324_24.宽基ETF动量轮动钝化RSRS择时-回撤小.txt |
+            分析日期: 2026-01-11 18:05:50
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>在三只宽基指数（实际应为对应 ETF）之间做单只持仓轮动：先用 29 日动量×拟合优度 r² 选出最强势指数，再用钝化 RSRS（高低价回归斜率 z-score × r² × 波动分位）做趋势择时。满足多头阈值时全仓买入该 ETF；跌破空头阈值或止损触发时清仓并把资金停放在货币 ETF 511880，减少回撤。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>固定三只宽基指数代码 000300/000905/399006（代码本身是指数，实盘需改为可交易的 ETF，例如 510300、510500、159915）。未做 ST/停牌/涨跌停/流动性过滤。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>(1) 当日 8:00 计算的动量评分最高的指数 = X, (2) 其钝化 RSRS 分值 &gt; 预设阈值（各指数 0.4~1） ⇒ BUY</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>(1) 钝化 RSRS 分值 &lt; -阈值 ⇒ SELL, (2) 动态止损：a. 组合较上一执行点回撤 2% ；b. 较历史高点回撤 10% ⇒ 清仓</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>始终只持一只 ETF，全仓买入。止损两级（-2%、-10%）。空仓时把全部资金买入 511880 货币 ETF 降低等待收益波动。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>正常情况下日级调仓（开盘一次）；若触发止损则当日 11:20 / 14:50 可能追加交易。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前(≥8:00)跑脚本得到今日目标 ETF 与信号；09:30 开盘市价下单；盘中需盯盘两次以便手动止损；空仓后收盘前买回 511880。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有因子通过 attribute_history 获取过去数据；在 8:00 调用，回测与实盘时间序列一致。未见 peek 或 history_bars 今日价格等典型未来函数。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>止损逻辑使用组合净值 intra-day，如果回测引擎只有日末净值，会低估实盘止损触发频率, 未处理停牌/涨跌停导致 order 失败情形, 指数代码不可交易，回测与实盘需统一</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>低频、流动性充足、代码简单；唯一障碍是人工盯盘止损</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>几笔 ETF 交易，毫无压力</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>一次成交即可，不影响盘口</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>可拆分几笔成交，冲击仍可控</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>需分批挂单但仍能成交，货币 ETF 容量充足</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>交易标的是宽基 ETF，容量极大</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用动量 + 波动率驱动的趋势追随，有一定行为金融支撑</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>参数较多（N/M/阈值/止损）且固定指数池，易受样本内调参影响</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>极端震荡无趋势行情, 闪崩日导致止损高频触发</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>当沪深市场进入单边上升趋势时组合能快速满仓并保持持仓, 波动骤升时 RSRS 给出 SELL 或止损空仓, 在剧烈震荡阶段净值回撤受止损控制但可能跑输持有指数</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>逻辑清晰、交易简单，但参数繁多且指数代码不可交易，需转换为 ETF 并进一步验证稳健性。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>① 把指数代码替换为 510300/510500/159915；② 引入滚动窗口参数寻优或跨样本检验；③ 增加停牌/涨跌停/规模过滤；④ 把止损逻辑改为日级收盘触发，减小实盘盯盘压力</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>假设1：实际交易标的为流动性充足的宽基 ETF（例如 510300、510500、159915），而非代码中的指数。, 假设2：佣金万 1.1、无印花税；滑点 0.1% 与回测设置一致。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>2</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>8</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>7.0</td></tr>
+                <tr><td>大资金不友好</td><td>2</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>3.9</td></tr>
+                <tr><td>总分</td><td>52.8</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;宽基ETF 动量+钝化RSRS 单 ETF 轮动&quot;,
+    &quot;strategy_type&quot;: &quot;动量策略&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;在三只宽基指数（实际应为对应 ETF）之间做单只持仓轮动：先用 29 日动量×拟合优度 r² 选出最强势指数，再用钝化 RSRS（高低价回归斜率 z-score × r² × 波动分位）做趋势择时。满足多头阈值时全仓买入该 ETF；跌破空头阈值或止损触发时清仓并把资金停放在货币 ETF 511880，减少回撤。&quot;,
+        &quot;data_and_indicators&quot;: &quot;仅用日频价格数据：high/low/close；派生 ln 收盘价、Rolling β 斜率、r²、收益率标准差、z-score 等。无用到成交量、财务或行业数据。&quot;,
+        &quot;stock_pool&quot;: &quot;固定三只宽基指数代码 000300/000905/399006（代码本身是指数，实盘需改为可交易的 ETF，例如 510300、510500、159915）。未做 ST/停牌/涨跌停/流动性过滤。&quot;,
+        &quot;buy_signals&quot;: [&quot;(1) 当日 8:00 计算的动量评分最高的指数 = X&quot;, &quot;(2) 其钝化 RSRS 分值 &gt; 预设阈值（各指数 0.4~1） ⇒ BUY&quot;],
+        &quot;sell_signals&quot;: [&quot;(1) 钝化 RSRS 分值 &lt; -阈值 ⇒ SELL&quot;, &quot;(2) 动态止损：a. 组合较上一执行点回撤 2% ；b. 较历史高点回撤 10% ⇒ 清仓&quot;],
+        &quot;position_and_risk&quot;: &quot;始终只持一只 ETF，全仓买入。止损两级（-2%、-10%）。空仓时把全部资金买入 511880 货币 ETF 降低等待收益波动。&quot;,
+        &quot;trading_frequency&quot;: &quot;正常情况下日级调仓（开盘一次）；若触发止损则当日 11:20 / 14:50 可能追加交易。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前(≥8:00)跑脚本得到今日目标 ETF 与信号；09:30 开盘市价下单；盘中需盯盘两次以便手动止损；空仓后收盘前买回 511880。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有因子通过 attribute_history 获取过去数据；在 8:00 调用，回测与实盘时间序列一致。未见 peek 或 history_bars 今日价格等典型未来函数。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;调用 attribute_history(...,&#x27;1d&#x27;) 在开盘前只返回上一交易日收盘前数据 —— OK&quot;,
+            &quot;financial_data_leak&quot;: &quot;未用财务数据 —— 无风险&quot;,
+            &quot;index_component_leak&quot;: &quot;固定 3 只指数，无成分股回溯 —— 无风险&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未使用 pipeline/回测快照等 —— 无明显风险&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;正式实盘前把指数代码替换为对应 ETF；确认 attribute_history 行为在实盘 8:00 与回测一致。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;止损逻辑使用组合净值 intra-day，如果回测引擎只有日末净值，会低估实盘止损触发频率&quot;, &quot;未处理停牌/涨跌停导致 order 失败情形&quot;, &quot;指数代码不可交易，回测与实盘需统一&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 2,
+        &quot;slippage_reason&quot;: &quot;宽基 ETF（如 510300/510500/159915）日均成交额&gt;50 亿，滑点低&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;日级换手，佣金万 1.1 + 0 印花税，货币 ETF 零税费，成本低&quot;,
+        &quot;execution_score&quot;: 8,
+        &quot;execution_reason&quot;: &quot;只交易高流动 ETF，大单亦能一次成交&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;主要在开盘即时成交；止损需盘中操作但不属秒级&quot;,
+        &quot;overall_executability&quot;: 8,
+        &quot;overall_reason&quot;: &quot;低频、流动性充足、代码简单；唯一障碍是人工盯盘止损&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;几笔 ETF 交易，毫无压力&quot;,
+            &quot;100w&quot;: &quot;一次成交即可，不影响盘口&quot;,
+            &quot;1000w&quot;: &quot;可拆分几笔成交，冲击仍可控&quot;,
+            &quot;1y&quot;: &quot;需分批挂单但仍能成交，货币 ETF 容量充足&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;将止损与买卖逻辑合并，减少盘中多次交易&quot;, &quot;加入成交量/停牌过滤并改用可交易 ETF 代码&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 2,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;交易标的是宽基 ETF，容量极大&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;利用动量 + 波动率驱动的趋势追随，有一定行为金融支撑&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;参数较多（N/M/阈值/止损）且固定指数池，易受样本内调参影响&quot;,
+        &quot;effectiveness_total_score&quot;: 4.2,
+        &quot;weight_explanation&quot;: &quot;大资金友好 40% + 行为利用 30% + 跨阶段稳健 30%&quot;,
+        &quot;worst_environments&quot;: [&quot;极端震荡无趋势行情&quot;, &quot;闪崩日导致止损高频触发&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;当沪深市场进入单边上升趋势时组合能快速满仓并保持持仓&quot;, &quot;波动骤升时 RSRS 给出 SELL 或止损空仓&quot;, &quot;在剧烈震荡阶段净值回撤受止损控制但可能跑输持有指数&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;逻辑清晰、交易简单，但参数繁多且指数代码不可交易，需转换为 ETF 并进一步验证稳健性。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;① 把指数代码替换为 510300/510500/159915；② 引入滚动窗口参数寻优或跨样本检验；③ 增加停牌/涨跌停/规模过滤；④ 把止损逻辑改为日级收盘触发，减小实盘盯盘压力&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 2,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 8,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 8,
+        &quot;effectiveness_a&quot;: 2,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 4.2
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;假设1：实际交易标的为流动性充足的宽基 ETF（例如 510300、510500、159915），而非代码中的指数。&quot;,
+        &quot;假设2：佣金万 1.1、无印花税；滑点 0.1% 与回测设置一致。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

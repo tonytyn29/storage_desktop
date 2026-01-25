@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双日大跌抄底+CSI500大市值50轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>双日大跌抄底+CSI500大市值50轮动</h1>
+        <p class="meta">
+            ID: 4fc09245 | 
+            类型: 均值回归 | 
+            来源: b2324_47.别人恐惧我贪婪——重视大盘择时.txt |
+            分析日期: 2026-01-11 18:18:34
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>当大盘（上证综指）连续两天各自下跌≥1.5%且当日已经跌到这一阈值时，认为市场进入‘恐慌’阶段；此时按等权买入CSI500指数中流通市值最大的50只股票，持有约19个交易日等待均值回归反弹，然后一次性清仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>仅限000905.XSHG成分股；再按流通市值排序取前50；未进一步过滤ST/停牌/上市天数/涨跌停等，实际下单时依赖 order API 自动剔除停牌涨跌停。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>昨日上证综指跌幅≤-1.5%, 今日（14:55）上证综指相对昨日收盘跌幅≤-1.5%</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>买入后第20个 market_1455 调用（≈持有19个交易日）一次性清仓</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>目标最多持有50只股票，等权分配可用资金；无总仓位/回撤/单票风控；无止损。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>仅在满足双日大跌条件的当天14:55下单；若触发，随后每日14:55检测持仓天数，到第20次检测清仓；触发频率预计每年0~5次。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>人工复现需：1) 盘前获取上一日CSI500成分及市值排序；2) 14:55 判断上证指数条件并批量下单；3) 之后连续记天数，在第20次14:55 清仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有信号均使用上一日及当日实时数据；get_index_stocks 使用 yesterday；未使用历史未来价/财报。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>valuation 表在极端情况下可能 T 日 9:26 更新，理论上带来细微前视, 同分钟用 current_tick 判定并立即按最新价模拟成交，回测成交乐观, 未考虑涨跌停导致的无法成交风险</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>低频、大市值、等权分散，实盘实现难度不大，适合≤1000 万规模。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>基本无冲击；一次下单即可成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>每股分到2万左右，不需拆单。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>平均每股20万，需分批或 VWAP，仍可接受。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>单股200万以上，对部分成份股有冲击；需算法交易且可能显著提高滑点。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>标的流动性尚可，但一次性扫50只仍受容量限制；百亿规模难。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用市场恐慌（情绪）进行逆向抄底，属行为金融动能/均值回归混合逻辑。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>策略高度依赖极端下跌场景；牛市或震荡市触发次数少，收益不稳定。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>长时间无大跌的慢牛, 单日暴跌后立即反弹次日涨停，导致买入价高、持有期回撤</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>连续两日大跌后未来20日指数反弹概率高于基准, CSI500大市值端在恐慌后反弹幅度不逊于更小市值, 策略每年触发次数&lt;5次而夏普主要来源于极端行情</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>属于简单的大盘恐慌抄底策略，逻辑直观但依赖少量极端行情。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>增加 ST/停牌/跌停过滤、动态止盈止损、增加择时阈值和持仓天数的参数化优化</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未给出资金规模、默认按100%仓位，假设资金≤1000万, 使用聚宽默认滑点模型；无其他手续费假设除 set_order_cost 指定值</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>3</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>7</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>6.6</td></tr>
+                <tr><td>大资金不友好</td><td>4</td></tr>
+                <tr><td>行为偏差利用</td><td>6</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>4.4</td></tr>
+                <tr><td>总分</td><td>53.7</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;双日大跌抄底+CSI500大市值50轮动&quot;,
+    &quot;strategy_type&quot;: &quot;均值回归&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;当大盘（上证综指）连续两天各自下跌≥1.5%且当日已经跌到这一阈值时，认为市场进入‘恐慌’阶段；此时按等权买入CSI500指数中流通市值最大的50只股票，持有约19个交易日等待均值回归反弹，然后一次性清仓。&quot;,
+        &quot;data_and_indicators&quot;: &quot;价格：上证指数日线收盘价、当日分时 tick 价；财务：valuation.circulating_market_cap（按上一交易日更新）；指数成分：CSI500 成分股（上一交易日）。更新频率分别为分钟级、日级、日级。&quot;,
+        &quot;stock_pool&quot;: &quot;仅限000905.XSHG成分股；再按流通市值排序取前50；未进一步过滤ST/停牌/上市天数/涨跌停等，实际下单时依赖 order API 自动剔除停牌涨跌停。&quot;,
+        &quot;buy_signals&quot;: [&quot;昨日上证综指跌幅≤-1.5%&quot;, &quot;今日（14:55）上证综指相对昨日收盘跌幅≤-1.5%&quot;],
+        &quot;sell_signals&quot;: [&quot;买入后第20个 market_1455 调用（≈持有19个交易日）一次性清仓&quot;],
+        &quot;position_and_risk&quot;: &quot;目标最多持有50只股票，等权分配可用资金；无总仓位/回撤/单票风控；无止损。&quot;,
+        &quot;trading_frequency&quot;: &quot;仅在满足双日大跌条件的当天14:55下单；若触发，随后每日14:55检测持仓天数，到第20次检测清仓；触发频率预计每年0~5次。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;人工复现需：1) 盘前获取上一日CSI500成分及市值排序；2) 14:55 判断上证指数条件并批量下单；3) 之后连续记天数，在第20次14:55 清仓。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有信号均使用上一日及当日实时数据；get_index_stocks 使用 yesterday；未使用历史未来价/财报。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;attribute_history(count=2, unit=&#x27;1d&#x27;) 在 14:55 不包含当日收盘价，安全；get_current_tick 使用当前时点实时价，未提前看到未来价。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals 未指定 date，默认使用 T-1 日更新的 valuation 表，基本安全；若上市公司当日上午临时更新市值则仍为实时公开信息。&quot;,
+            &quot;index_component_leak&quot;: &quot;get_index_stocks(date=yesterday) 避免成分滞后问题，无前视。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未使用因子缓存/agg_future_bar 等隐式未来函数。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;显式指定 get_fundamentals(date=context.previous_date) 以彻底杜绝可能的前视。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;valuation 表在极端情况下可能 T 日 9:26 更新，理论上带来细微前视&quot;, &quot;同分钟用 current_tick 判定并立即按最新价模拟成交，回测成交乐观&quot;, &quot;未考虑涨跌停导致的无法成交风险&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 3,
+        &quot;slippage_reason&quot;: &quot;仅在14:55一次性下单，50 只中盘股流动性较好，换手低；但大跌日盘口波动大，可能放大滑点。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;平均持有约19天，年化换手次数有限；费用中等偏低。&quot;,
+        &quot;execution_score&quot;: 7,
+        &quot;execution_reason&quot;: &quot;一次性扫 50 只股票需要一定撮合，但目标股为CSI500大市值端，日均成交额高；百万元量级可直接吃单。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;仅需在14:55~收盘前完成交易；若延迟到尾盘成交影响较小。&quot;,
+        &quot;overall_executability&quot;: 7,
+        &quot;overall_reason&quot;: &quot;低频、大市值、等权分散，实盘实现难度不大，适合≤1000 万规模。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;基本无冲击；一次下单即可成交。&quot;,
+            &quot;100w&quot;: &quot;每股分到2万左右，不需拆单。&quot;,
+            &quot;1000w&quot;: &quot;平均每股20万，需分批或 VWAP，仍可接受。&quot;,
+            &quot;1y&quot;: &quot;单股200万以上，对部分成份股有冲击；需算法交易且可能显著提高滑点。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;加入成交量过滤，避免跌停买不到&quot;, &quot;使用分批算法 (TWAP/VWAP) 缓解大资金冲击&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 4,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;标的流动性尚可，但一次性扫50只仍受容量限制；百亿规模难。&quot;,
+        &quot;behavioral_bias_score&quot;: 6,
+        &quot;behavioral_bias_reason&quot;: &quot;利用市场恐慌（情绪）进行逆向抄底，属行为金融动能/均值回归混合逻辑。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;策略高度依赖极端下跌场景；牛市或震荡市触发次数少，收益不稳定。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.9,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40%+行为偏差30%+跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;长时间无大跌的慢牛&quot;, &quot;单日暴跌后立即反弹次日涨停，导致买入价高、持有期回撤&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;连续两日大跌后未来20日指数反弹概率高于基准&quot;, &quot;CSI500大市值端在恐慌后反弹幅度不逊于更小市值&quot;, &quot;策略每年触发次数&lt;5次而夏普主要来源于极端行情&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;属于简单的大盘恐慌抄底策略，逻辑直观但依赖少量极端行情。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;增加 ST/停牌/跌停过滤、动态止盈止损、增加择时阈值和持仓天数的参数化优化&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 3,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 7,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 7,
+        &quot;effectiveness_a&quot;: 4,
+        &quot;effectiveness_b&quot;: 6,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 4.9
+    },
+    
+    &quot;assumptions&quot;: [&quot;未给出资金规模、默认按100%仓位，假设资金≤1000万&quot;, &quot;使用聚宽默认滑点模型；无其他手续费假设除 set_order_cost 指定值&quot;]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

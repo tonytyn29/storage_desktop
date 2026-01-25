@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>252日新高-60日空档统计 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>252日新高-60日空档统计</h1>
+        <p class="meta">
+            ID: 9dd9bc27 | 
+            类型: 动量策略（仅做统计，无下单） | 
+            来源: b2324_99.计算每日全A市场个股创新高比例(改).txt |
+            分析日期: 2026-01-11 18:35:38
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>统计在最近15个交易日里，收盘价创下过去252个交易日新高且此前至少60个交易日未再创新高的股票数量与占比，用于观察市场强势突破的广度。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>取 by_date（窗口首日）时已上市的全部股票（get_all_securities），未剔除 ST、停牌、未交易满252天的新股等 ——『缺失信息/你的假设』。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>无实际买入逻辑；若延伸为交易策略，则“今日收盘价=过去252日最高且上一次高点距今≥60日”可视为买入信号 ——『缺失信息/你的假设』</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>代码中未涉及；可设想如跌破若干均线/回撤等 ——『缺失信息/你的假设』</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>完全缺失 —— 代码仅做统计。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>无实际下单；统计循环一次性离线运行。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>仅需离线脚本跑一次即可得到结果，无盘中操作。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>仅用到历史收盘序列；slice price.iloc[i+1:window+i+1] 含当日数据但不包含未来数据，未调用历史函数、未跨期引用未来信息。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>当前代码一次性获取全部股票价格，内存消耗大，易触发聚宽风控。, 未过滤 ST/停牌/新股，统计结果可能失真。, 若直接据此信号盘中买入，需要处理涨跌停与成交量约束。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>当前版本仅离线统计，几乎无执行难度。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>无下单；资金规模无影响。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>同上。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>同上。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>同上。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>仅做统计；若下单，突破股数量通常较多、分散度高，对大资金较友好。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>新高突破利用了动量与投资者追涨心理，但脚本仅统计无收益兑现。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>统计口径固定；新高宽度随市场环境波动大，缺乏跨阶段验证。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>极端熊市（几乎无新高）, 长期震荡无趋势</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>新高股票占比上升往往伴随市场多头情绪升温, 当新高占比快速收缩，指数回调概率增大, 252日新高宽度可作为择时辅助因子</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>该脚本属于市场情绪/宽度指标的离线统计工具，不是完整交易策略。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 加入ST/停牌过滤 2) 把统计指标纳入择时或选股回测 3) 完善卖出规则与风险控制</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供资金规模、手续费、滑点等 —— 认为脚本仅做统计，因此忽略。, 假设未来如需交易，应在收盘后运行脚本并在次日开盘成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>2</td></tr>
+                <tr><td>成本</td><td>2</td></tr>
+                <tr><td>执行难度</td><td>9</td></tr>
+                <tr><td>时间敏感性</td><td>2</td></tr>
+                <tr><td>综合可执行性</td><td>7.1</td></tr>
+                <tr><td>大资金不友好</td><td>1</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>3</td></tr>
+                <tr><td>有效性总分</td><td>2.5</td></tr>
+                <tr><td>总分</td><td>45.6</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;252日新高-60日空档统计&quot;,
+    &quot;strategy_type&quot;: &quot;动量策略（仅做统计，无下单）&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;统计在最近15个交易日里，收盘价创下过去252个交易日新高且此前至少60个交易日未再创新高的股票数量与占比，用于观察市场强势突破的广度。&quot;,
+        &quot;data_and_indicators&quot;: &quot;仅使用日频收盘价 (get_price, frequency=&#x27;daily&#x27;)；未用成交量、财务、其他因子。&quot;,
+        &quot;stock_pool&quot;: &quot;取 by_date（窗口首日）时已上市的全部股票（get_all_securities），未剔除 ST、停牌、未交易满252天的新股等 ——『缺失信息/你的假设』。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;无实际买入逻辑；若延伸为交易策略，则“今日收盘价=过去252日最高且上一次高点距今≥60日”可视为买入信号 ——『缺失信息/你的假设』&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;代码中未涉及；可设想如跌破若干均线/回撤等 ——『缺失信息/你的假设』&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;完全缺失 —— 代码仅做统计。&quot;,
+        &quot;trading_frequency&quot;: &quot;无实际下单；统计循环一次性离线运行。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;仅需离线脚本跑一次即可得到结果，无盘中操作。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;仅用到历史收盘序列；slice price.iloc[i+1:window+i+1] 含当日数据但不包含未来数据，未调用历史函数、未跨期引用未来信息。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;for i in range(check_days) 取 price 截面包含 check_date 当天，未引用 check_date 之后的数据 —— 合规。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未使用财务数据。&quot;,
+            &quot;index_component_leak&quot;: &quot;未用成分股或因子排名。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未运行 backtest，仅离线脚本。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;若要改为交易策略，需在收盘后运行并在次日开盘下单；同时要剔除停牌/涨跌停约束、考虑上市天数。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;当前代码一次性获取全部股票价格，内存消耗大，易触发聚宽风控。&quot;,
+            &quot;未过滤 ST/停牌/新股，统计结果可能失真。&quot;,
+            &quot;若直接据此信号盘中买入，需要处理涨跌停与成交量约束。&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 2,
+        &quot;slippage_reason&quot;: &quot;脚本不下单；若延伸为收盘判定、次日开盘买入，滑点较低。&quot;,
+        &quot;cost_score&quot;: 2,
+        &quot;cost_reason&quot;: &quot;无交易即无成本；假设次日开盘买入、信号稀疏，换手有限。&quot;,
+        &quot;execution_score&quot;: 9,
+        &quot;execution_reason&quot;: &quot;脚本仅做统计，易于执行；若变策略，信号股票分散，可拆单成交。&quot;,
+        &quot;time_sensitivity_score&quot;: 2,
+        &quot;time_sensitivity_reason&quot;: &quot;日频收盘后运行即可。&quot;,
+        &quot;overall_executability&quot;: 9,
+        &quot;overall_reason&quot;: &quot;当前版本仅离线统计，几乎无执行难度。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;无下单；资金规模无影响。&quot;,
+            &quot;100w&quot;: &quot;同上。&quot;,
+            &quot;1000w&quot;: &quot;同上。&quot;,
+            &quot;1y&quot;: &quot;同上。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;如需交易，应加入资金管理与卖出逻辑。&quot;,
+            &quot;过滤异常标的（停牌/ST）并加入成交量阈值以提升可执行性。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 1,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;仅做统计；若下单，突破股数量通常较多、分散度高，对大资金较友好。&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;新高突破利用了动量与投资者追涨心理，但脚本仅统计无收益兑现。&quot;,
+        &quot;cross_period_robustness_score&quot;: 3,
+        &quot;cross_period_robustness_reason&quot;: &quot;统计口径固定；新高宽度随市场环境波动大，缺乏跨阶段验证。&quot;,
+        &quot;effectiveness_total_score&quot;: 2.9,
+        &quot;weight_explanation&quot;: &quot;大资金不友好30% + 行为偏差利用30% + 跨阶段稳健40%&quot;,
+        &quot;worst_environments&quot;: [&quot;极端熊市（几乎无新高）&quot;, &quot;长期震荡无趋势&quot;],
+        &quot;verifiable_predictions&quot;: [
+            &quot;新高股票占比上升往往伴随市场多头情绪升温&quot;,
+            &quot;当新高占比快速收缩，指数回调概率增大&quot;,
+            &quot;252日新高宽度可作为择时辅助因子&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;该脚本属于市场情绪/宽度指标的离线统计工具，不是完整交易策略。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测或继续研究（加入资金与退出逻辑后）。&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 加入ST/停牌过滤 2) 把统计指标纳入择时或选股回测 3) 完善卖出规则与风险控制&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 2,
+        &quot;cost&quot;: 2,
+        &quot;execution&quot;: 9,
+        &quot;time_sensitivity&quot;: 2,
+        &quot;executability&quot;: 9,
+        &quot;effectiveness_a&quot;: 1,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 3,
+        &quot;effectiveness_total&quot;: 2.9
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供资金规模、手续费、滑点等 —— 认为脚本仅做统计，因此忽略。&quot;,
+        &quot;假设未来如需交易，应在收盘后运行脚本并在次日开盘成交。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETF双均线-20日动量轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>ETF双均线-20日动量轮动</h1>
+        <p class="meta">
+            ID: 764b98ba | 
+            类型: 动量策略 | 
+            来源: b25_58Debug-输出信息-多标的版ETF策略(ETF复现之三）.txt |
+            分析日期: 2026-01-10 22:38:20
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>在一个事先人工选出的 ETF 池中，优先买入近期（过去 20 个交易日）涨幅处于 5%~20% 且 5 日均线高于 20 日均线的品种，认为它们正处于上升趋势且仍有上升空间；若已持仓的 ETF 跌出近 20 日涨幅前四或涨幅已经超过 20%，则卖出。持仓数量限定为 2 只，通过等权分配资金实现分散并控制回撤。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>固定的 18 只场内/场外 ETF 列表（代码硬编码）。未做 ST、停牌过滤，但 ETF 一般无 ST 标记，流动性视具体合约而定；未检查涨跌停/开盘后可成交量。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>5 日均线 &gt; 20 日均线（短期强于长期）, 近 20 日涨幅位于 5%~20% 区间，且按涨幅排序居前，取前 g.etf_num (默认 2) 只</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>持仓 ETF 已不在近 20 日涨幅前 g.rank_num(=4) 名；, 或持仓 ETF 近 20 日涨幅大于 20%（获利了结）；
+此外，若当天同时入选买入列表则不会卖出。</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多持 2 只 ETF，等权（实际按 available_cash / (2-当前持仓数) 注入）。无总仓位上限（假设全仓买满）。无止损、无回撤控制。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>每天 09:30 调仓，理想状态下每日最多卖空仓、买入 2 只；持仓平均周期约数日到数周，属于高换手 ETF 轮动。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>1) 盘前：无需动作；2) 09:25 计算指标与买卖池；3) 09:30 市价/限价 (默认 order_target_value 用最新报价) 下单；4) 收盘后统计收益。手动实盘可用 T+0 买卖（仅限港/美 ETF，A 股 ETF 为 T+0 但赎回须 T+1，然而普通交易依旧 T+0 可卖），需注意成交量充足性与滑点。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>启用 set_option(&#x27;avoid_future_data&#x27;, True)。使用 attribute_history(…, count=long_days) 在盘前/盘中调用只拿到历史收盘价，不含未来。未见 history_bars(…, &#x27;1d&#x27;, …, include_now=True) 等潜在风险点。无财报/因子提前泄漏问题。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>attribute_history 在 09:25~09:30 获取的数据粒度与聚宽回测、实盘略有差异，需确认 include_now 行为。, ETF 早盘流动性不一定充足，市价单可能带来较大冲击。, 未过滤停牌/退市 ETF，若标的长期停牌可能导致无法卖出但也无估值更新。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>中小资金 (&lt;1000 万) 在 ETF 上开盘交易可执行；大资金或高频换手要求时滑点增加。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>完全可行，手续费可忽略，冲击影响小。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>可执行，需分批或限价单控制基差，全年成本约 1% 左右。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>部分 ETF 单日成交量不足，可能需多日建仓或扩大池子；冲击成本上升明显。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>流动性瓶颈，尤其海外主题与行业 ETF 容量有限，实盘落地困难。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>只持 2 支 ETF，且池子包含部分成交量有限的跨境、行业 ETF；大资金易产生冲击。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>依赖短期价格动量和均线交叉，利用趋势跟随与动量延续，存在一定行为金融依据但不显著。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>20 日动量+均线交叉逻辑较常见，部分阶段有效；但参数固定、池子有限，易受行情风格制约。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>震荡市/无明显趋势时，动量信号频繁反转导致高换手亏损, 极端行情（暴涨后快速回撤），20%止盈规则可能导致卖在低点、再追高回补</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>当 ETF 近 20 日涨幅处于 5%~20% 区间且 5 日 MA 上穿 20 日 MA 后，未来一段时间获得正超额收益。, 单次入选并持有至涨幅&gt;20%时整体胜率高于 50%。, 策略在高波动上升行情（如 2020 年新能源板块）明显跑赢基准，在震荡市跑输。</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>简洁的 ETF 短期动量轮动，逻辑直观，未来函数风险低，但参数随意、池子有限，换手略高，实盘大资金容量受限。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 引入流动性和成交额过滤，动态调整权重；2) 加入止损/回撤控制，减少震荡市反复交易；3) 参数优化（窗口、阈值）+ Walk-forward 验证；4) 使用收盘信号+下一交易日开盘成交，降低信号与交易耦合。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未给出手续费、滑点模型、成交方式，假设使用聚宽默认：买卖申报价为实时盘口中间价，双边佣金万三，无印花税，滑点 0., 假设所有列入 ETF 均可 T+0 交易、无涨跌停限制（多数 ETF 涨跌幅 ±10%，少数 ±20%），策略未做特殊处理。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>3</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>7</td></tr>
+                <tr><td>时间敏感性</td><td>5</td></tr>
+                <tr><td>综合可执行性</td><td>6.5</td></tr>
+                <tr><td>大资金不友好</td><td>6</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>5.4</td></tr>
+                <tr><td>总分</td><td>58.7</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;ETF双均线-20日动量轮动&quot;,
+    &quot;strategy_type&quot;: &quot;动量策略&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;在一个事先人工选出的 ETF 池中，优先买入近期（过去 20 个交易日）涨幅处于 5%~20% 且 5 日均线高于 20 日均线的品种，认为它们正处于上升趋势且仍有上升空间；若已持仓的 ETF 跌出近 20 日涨幅前四或涨幅已经超过 20%，则卖出。持仓数量限定为 2 只，通过等权分配资金实现分散并控制回撤。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 价格数据：使用 attribute_history 读取过去 20 个收盘价；\n2) 技术指标：5 日简单移动平均(Short MA)、20 日简单移动平均(Long MA)；\n3) 价格涨跌幅：近 20 日收盘价涨幅；\n更新频率：按 run_daily，在开盘前 09:25 及 09:30 重新计算。&quot;,
+        &quot;stock_pool&quot;: &quot;固定的 18 只场内/场外 ETF 列表（代码硬编码）。未做 ST、停牌过滤，但 ETF 一般无 ST 标记，流动性视具体合约而定；未检查涨跌停/开盘后可成交量。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;5 日均线 &gt; 20 日均线（短期强于长期）&quot;,
+            &quot;近 20 日涨幅位于 5%~20% 区间，且按涨幅排序居前，取前 g.etf_num (默认 2) 只&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;持仓 ETF 已不在近 20 日涨幅前 g.rank_num(=4) 名；&quot;,
+            &quot;或持仓 ETF 近 20 日涨幅大于 20%（获利了结）；\n此外，若当天同时入选买入列表则不会卖出。&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;最多持 2 只 ETF，等权（实际按 available_cash / (2-当前持仓数) 注入）。无总仓位上限（假设全仓买满）。无止损、无回撤控制。&quot;,
+        &quot;trading_frequency&quot;: &quot;每天 09:30 调仓，理想状态下每日最多卖空仓、买入 2 只；持仓平均周期约数日到数周，属于高换手 ETF 轮动。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;1) 盘前：无需动作；2) 09:25 计算指标与买卖池；3) 09:30 市价/限价 (默认 order_target_value 用最新报价) 下单；4) 收盘后统计收益。手动实盘可用 T+0 买卖（仅限港/美 ETF，A 股 ETF 为 T+0 但赎回须 T+1，然而普通交易依旧 T+0 可卖），需注意成交量充足性与滑点。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;启用 set_option(&#x27;avoid_future_data&#x27;, True)。使用 attribute_history(…, count=long_days) 在盘前/盘中调用只拿到历史收盘价，不含未来。未见 history_bars(…, &#x27;1d&#x27;, …, include_now=True) 等潜在风险点。无财报/因子提前泄漏问题。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;attribute_history 默认不含正在形成的 bar；开盘前/中调用只使用 t-1 收盘，安全。&quot;,
+            &quot;financial_data_leak&quot;: &quot;策略未使用财报数据。&quot;,
+            &quot;index_component_leak&quot;: &quot;ETF list为硬编码，且不依赖未来成分权重。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无使用 record/plot 对收益进行决策；无其他未来函数痕迹。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;维持现状即可；若担心 future data，可改用 history_bars(security, 20, &#x27;1d&#x27;, &#x27;close&#x27;, skip_suspended=True, fq=&#x27;pre&#x27;, include_now=False)。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;attribute_history 在 09:25~09:30 获取的数据粒度与聚宽回测、实盘略有差异，需确认 include_now 行为。&quot;,
+            &quot;ETF 早盘流动性不一定充足，市价单可能带来较大冲击。&quot;,
+            &quot;未过滤停牌/退市 ETF，若标的长期停牌可能导致无法卖出但也无估值更新。&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 3,
+        &quot;slippage_reason&quot;: &quot;交易品种为 ETF，且持仓 2 只，资金分散度高；上午 9:30 开盘时流动性尚可，但部分跨境 ETF（如 513100、513330）早盘基差大，可能带来 10~20bp 的滑点。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;每日可能换手，单笔买/卖按 ETF 普通佣金 0.03%+过户费。若每日全换仓，年化成交额≈250 次，属中等向高；故成本评分 4。&quot;,
+        &quot;execution_score&quot;: 7,
+        &quot;execution_reason&quot;: &quot;部分 ETF（如 516510、512660）流动性中等，万手以上资金需拆单且受被动投资者影响，1,000 万以上易冲击价格。&quot;,
+        &quot;time_sensitivity_score&quot;: 5,
+        &quot;time_sensitivity_reason&quot;: &quot;需在 09:30 点位执行。错过数分钟问题不大，但盘中大幅波动或夜盘影响跨境 ETF 溢价折价。&quot;,
+        &quot;overall_executability&quot;: 7,
+        &quot;overall_reason&quot;: &quot;中小资金 (&lt;1000 万) 在 ETF 上开盘交易可执行；大资金或高频换手要求时滑点增加。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;完全可行，手续费可忽略，冲击影响小。&quot;,
+            &quot;100w&quot;: &quot;可执行，需分批或限价单控制基差，全年成本约 1% 左右。&quot;,
+            &quot;1000w&quot;: &quot;部分 ETF 单日成交量不足，可能需多日建仓或扩大池子；冲击成本上升明显。&quot;,
+            &quot;1y&quot;: &quot;流动性瓶颈，尤其海外主题与行业 ETF 容量有限，实盘落地困难。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;加入盘口/成交量过滤，调仓时仅对流动性充分的 ETF 下单。&quot;,
+            &quot;改用收盘后信号 + 次日开盘下单，减少未来函数争议并方便执行；或加入价格滑点模型。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 6,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;只持 2 支 ETF，且池子包含部分成交量有限的跨境、行业 ETF；大资金易产生冲击。&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;依赖短期价格动量和均线交叉，利用趋势跟随与动量延续，存在一定行为金融依据但不显著。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;20 日动量+均线交叉逻辑较常见，部分阶段有效；但参数固定、池子有限，易受行情风格制约。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.3,
+        &quot;weight_explanation&quot;: &quot;大资金不友好 40%，行为偏差 30%，跨阶段稳健 30%；综合加权得分。&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;震荡市/无明显趋势时，动量信号频繁反转导致高换手亏损&quot;,
+            &quot;极端行情（暴涨后快速回撤），20%止盈规则可能导致卖在低点、再追高回补&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;当 ETF 近 20 日涨幅处于 5%~20% 区间且 5 日 MA 上穿 20 日 MA 后，未来一段时间获得正超额收益。&quot;,
+            &quot;单次入选并持有至涨幅&gt;20%时整体胜率高于 50%。&quot;,
+            &quot;策略在高波动上升行情（如 2020 年新能源板块）明显跑赢基准，在震荡市跑输。&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;简洁的 ETF 短期动量轮动，逻辑直观，未来函数风险低，但参数随意、池子有限，换手略高，实盘大资金容量受限。&quot;,
+        &quot;recommendation&quot;: &quot;小资金可尝试实盘跟踪并进一步评估；大资金或机构投资者需扩充标的、优化交易逻辑。&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 引入流动性和成交额过滤，动态调整权重；2) 加入止损/回撤控制，减少震荡市反复交易；3) 参数优化（窗口、阈值）+ Walk-forward 验证；4) 使用收盘信号+下一交易日开盘成交，降低信号与交易耦合。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 3,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 7,
+        &quot;time_sensitivity&quot;: 5,
+        &quot;executability&quot;: 7,
+        &quot;effectiveness_a&quot;: 6,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.3
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未给出手续费、滑点模型、成交方式，假设使用聚宽默认：买卖申报价为实时盘口中间价，双边佣金万三，无印花税，滑点 0.&quot;,
+        &quot;假设所有列入 ETF 均可 T+0 交易、无涨跌停限制（多数 ETF 涨跌幅 ±10%，少数 ±20%），策略未做特殊处理。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

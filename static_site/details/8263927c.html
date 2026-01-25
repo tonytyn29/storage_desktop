@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小市值低PEG尾盘五股策略 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>小市值低PEG尾盘五股策略</h1>
+        <p class="meta">
+            ID: 8263927c | 
+            类型: 多因子选股/小市值轮动 | 
+            来源: b2324_49.修改成一创版本.txt |
+            分析日期: 2026-01-11 18:19:16
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>每天临近收盘重新计算上一个交易日的低PEG因子、20日换手率稳定性因子，并在其中优选流通市值最小的股票；集中持有最多5 只小盘股，利用价值低估 + 市值偏小的潜在补涨空间获取超额收益；若股票在昨日涨停则暂缓卖出，同时跟踪涨停打开情况进行止盈。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>A 股全部普通股，剔除 ST/*ST/退市标记、停牌、上市不足 375 天、新股、科创板 688XXX；买入前再过滤当日涨跌停以及最近持仓过且期间出现涨停的股票。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>因子选股后得到的候选股按照流通市值从小到大排序，取前 5 只（若可买入数大于已持股数，按等权买入）, 当日 14:53 不处于涨停/跌停且未在最近涨停黑名单内</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>14:53 调仓时，不在新的 target_list0 且昨天没有涨停记录的股票全部平仓, 昨日涨停但今日 14:00 涨停已打开的股票立即卖出</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多 5 只股票，等权配置；无其他止损/仓位控制；如遇停牌无法卖出则继续持有。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>run_daily 调用，核心调仓发生在每个交易日 14:53。昨日涨停监控在 14:00。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前无需操作；14:00 观察昨日涨停股是否打开决定是否卖出；14:50-14:55 重新跑一遍选股列表、等权买入缺口股票；收盘后记录成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>因子全部用 context.previous_date（上一交易日）数据计算； set_option(&#x27;avoid_future_data&#x27;,True) 已打开；仅在下单前用当日价格判断涨跌停，不影响回测偏差。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>valuation.pe_ratio 基于昨日价格，但在实盘使用时要注意公告滞后问题, 行业中性化使用 SWL2 行业，历史变更可能产生误差, slippage 设为 0，回测收益可能高估</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小额度(&lt;300 万)可通过市价逐笔执行；更大规模会面临流动性与冲击成本。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>可完全成交，冲击有限，滑点约 5-10bp/次</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>需要拆单，部分标的可能买不到满仓，滑点 10-20bp/次</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>多数目标股日成交额不足，仓位无法布满，策略失效</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>几乎无法执行，该策略容量估计 &lt;2000 万</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>核心收益依赖小市值股票，容量天然受限</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用了市场对小市值、低估值股票的错价和涨停惯性，但并不完全基于情绪</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>逻辑较简单，但 PEG 低估值在部分年份失效；策略高度依赖小盘风格</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>熊市或价值陷阱周期，小盘股持续下跌, 高风险事件导致小市值股流动性枯竭，无法及时卖出</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>在小盘风格占优的阶段获取显著超额收益, 持仓平均流通市值明显小于全市场中位数, 涨停股次日打开概率与超额收益正相关</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>为小资金设计的低PEG + 小市值尾盘轮动策略，逻辑清晰但容量有限且对市场风格敏感。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>增加流动性过滤、引入止损或最大回撤控制、使用滑点模型评估真实收益</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供初始资金规模，默认 100 万人民币进行评估, 未提供真实滑点与下单类型，假设全部用市价单成交；实际滑点需另行测算</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>6</td></tr>
+                <tr><td>成本</td><td>5</td></tr>
+                <tr><td>执行难度</td><td>4</td></tr>
+                <tr><td>时间敏感性</td><td>5</td></tr>
+                <tr><td>综合可执行性</td><td>5.9</td></tr>
+                <tr><td>大资金不友好</td><td>8</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>5.6</td></tr>
+                <tr><td>总分</td><td>57.4</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;小市值低PEG尾盘五股策略&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股/小市值轮动&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;每天临近收盘重新计算上一个交易日的低PEG因子、20日换手率稳定性因子，并在其中优选流通市值最小的股票；集中持有最多5 只小盘股，利用价值低估 + 市值偏小的潜在补涨空间获取超额收益；若股票在昨日涨停则暂缓卖出，同时跟踪涨停打开情况进行止盈。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) valuation.pe_ratio, indicator.inc_net_profit_year_on_year → 计算PEG；2) valuation.turnover_ratio → 20 日标准差；3) valuation.circulating_market_cap → 尾部排序；4) 日/分钟 K 线价格用于停牌、涨跌停、昨涨停判断。全部数据最小更新频率为日级，分钟级数据仅做当日涨跌停判断。&quot;,
+        &quot;stock_pool&quot;: &quot;A 股全部普通股，剔除 ST/*ST/退市标记、停牌、上市不足 375 天、新股、科创板 688XXX；买入前再过滤当日涨跌停以及最近持仓过且期间出现涨停的股票。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;因子选股后得到的候选股按照流通市值从小到大排序，取前 5 只（若可买入数大于已持股数，按等权买入）&quot;,
+            &quot;当日 14:53 不处于涨停/跌停且未在最近涨停黑名单内&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;14:53 调仓时，不在新的 target_list0 且昨天没有涨停记录的股票全部平仓&quot;,
+            &quot;昨日涨停但今日 14:00 涨停已打开的股票立即卖出&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;最多 5 只股票，等权配置；无其他止损/仓位控制；如遇停牌无法卖出则继续持有。&quot;,
+        &quot;trading_frequency&quot;: &quot;run_daily 调用，核心调仓发生在每个交易日 14:53。昨日涨停监控在 14:00。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前无需操作；14:00 观察昨日涨停股是否打开决定是否卖出；14:50-14:55 重新跑一遍选股列表、等权买入缺口股票；收盘后记录成交。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;因子全部用 context.previous_date（上一交易日）数据计算； set_option(&#x27;avoid_future_data&#x27;,True) 已打开；仅在下单前用当日价格判断涨跌停，不影响回测偏差。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;未使用当日收盘价计算因子；history(1,&#x27;1m&#x27;) 仅用于过滤涨跌停。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals/query 均指定 date=yesterday，无未来漏用。&quot;,
+            &quot;index_component_leak&quot;: &quot;未直接使用指数成分信息。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无 look-ahead 写法，运行时序与回测引擎一致。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;维持现状即可；如需更安全，可将因子计算放到开盘前（09:05 的 prepare_stock_list）再缓存。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;valuation.pe_ratio 基于昨日价格，但在实盘使用时要注意公告滞后问题&quot;,
+            &quot;行业中性化使用 SWL2 行业，历史变更可能产生误差&quot;,
+            &quot;slippage 设为 0，回测收益可能高估&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 6,
+        &quot;slippage_reason&quot;: &quot;主要买入小市值低流动性股票且在 14:53 集中下单，吃单冲击不可忽视。&quot;,
+        &quot;cost_score&quot;: 5,
+        &quot;cost_reason&quot;: &quot;几乎每日调仓，平均换手＞100%/月；按万 3 手续费+千 1 印花税估算，费用中等。&quot;,
+        &quot;execution_score&quot;: 4,
+        &quot;execution_reason&quot;: &quot;小市值股票实际成交量有限，100 万以上资金需拆单且可能买不到足额。&quot;,
+        &quot;time_sensitivity_score&quot;: 5,
+        &quot;time_sensitivity_reason&quot;: &quot;策略设计为尾盘调仓，错过时点会显著偏离；但不要求秒级成交。&quot;,
+        &quot;overall_executability&quot;: 5,
+        &quot;overall_reason&quot;: &quot;小额度(&lt;300 万)可通过市价逐笔执行；更大规模会面临流动性与冲击成本。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;可完全成交，冲击有限，滑点约 5-10bp/次&quot;,
+            &quot;100w&quot;: &quot;需要拆单，部分标的可能买不到满仓，滑点 10-20bp/次&quot;,
+            &quot;1000w&quot;: &quot;多数目标股日成交额不足，仓位无法布满，策略失效&quot;,
+            &quot;1y&quot;: &quot;几乎无法执行，该策略容量估计 &lt;2000 万&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;引入成交额或换手率过滤，剔除极端流动性不足的股票&quot;,
+            &quot;使用 VWAP/ TWAP 拆单算法分散到 14:30-14:56 下单降低冲击&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 8,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;核心收益依赖小市值股票，容量天然受限&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;利用了市场对小市值、低估值股票的错价和涨停惯性，但并不完全基于情绪&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;逻辑较简单，但 PEG 低估值在部分年份失效；策略高度依赖小盘风格&quot;,
+        &quot;effectiveness_total_score&quot;: 5.1,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;熊市或价值陷阱周期，小盘股持续下跌&quot;,
+            &quot;高风险事件导致小市值股流动性枯竭，无法及时卖出&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;在小盘风格占优的阶段获取显著超额收益&quot;,
+            &quot;持仓平均流通市值明显小于全市场中位数&quot;,
+            &quot;涨停股次日打开概率与超额收益正相关&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;为小资金设计的低PEG + 小市值尾盘轮动策略，逻辑清晰但容量有限且对市场风格敏感。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;增加流动性过滤、引入止损或最大回撤控制、使用滑点模型评估真实收益&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 6,
+        &quot;cost&quot;: 5,
+        &quot;execution&quot;: 4,
+        &quot;time_sensitivity&quot;: 5,
+        &quot;executability&quot;: 5,
+        &quot;effectiveness_a&quot;: 8,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 5.1
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供初始资金规模，默认 100 万人民币进行评估&quot;,
+        &quot;未提供真实滑点与下单类型，假设全部用市价单成交；实际滑点需另行测算&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HS300月度多因子30档 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>HS300月度多因子30档</h1>
+        <p class="meta">
+            ID: 64ffaca9 | 
+            类型: 多因子选股 | 
+            来源: b2324_93.因子看板多因子模型---由量化课堂多因子模型修改.txt |
+            分析日期: 2026-01-11 18:33:46
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>在沪深300成份股中，用 6 个基本面+成交量因子做横截面排名，合成综合得分后买入得分最高的 30 只股票并等权持有，30 个交易日后重新计算得分并换仓。假设优质成长+高流动性个股未来表现更好，且组合分散可获得因子风险溢价。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>初始为 get_index_stocks(&#x27;000300.XSHG&#x27;) 的当日成份股；过滤规则：①当日未停牌；②过去 63 个交易日无停牌记录。无 ST、涨跌停、上市天数、流动性等其他过滤。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>综合得分排名前 30 名, 调仓日触发（每 30 个交易日）</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>持仓不在最新前 30 名时全清, 调仓日触发（每 30 个交易日）</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>等权持仓，单票≈3.33% ；总仓位 100%；无其他风控（无止损/止盈、无资金管理）。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>约每 30 个交易日换仓一次；下单发生在 handle_data 第一次被调用时（通常 09:31 左右）。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前：取前一交易日收盘数据计算因子并排序；得到待买入/卖出列表。
+盘中开盘后第一分钟：按等权市值买入 Top30、卖出其余。
+盘后：无需处理。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有因子通过 get_factor_values(end_date=previousdate) 取到前一日收盘可得数据；avoid_future_data=True；无 history(n) 的未来引用。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>财报因子可能提前获得未来尚未披露的值, 0 滑点、过低手续费导致收益高估, 实时交易需考虑集合竞价成交的不确定性</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>低频+大盘股+等权，下单简单，成交容易，容量可达数亿元。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>几乎无任何冲击，可完全跟单。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>依旧轻松成交，滑点可忽略。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>需拆单但 HS300 足以承接；预估冲击 &lt;5bp。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>超过 1 亿资金时部分权重股仍能成交，但可能对尾部流动性较差成份股造成冲击，需要 VWAP 拆单。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>标的为 HS300，单日成交量大，容量较高。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用成长+流动性等财务/技术因子，部分捕捉机构偏好，但对情绪利用有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>多因子逻辑普适，但权重简单（仅 ±1）且未经滚动优化，跨周期稳健性一般。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>财报失真或一致预期过强导致因子失效的年份, 极端流动性危机（如 2015.07 熔断后暴跌）</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>高资产增速+高流动性公司未来 1-2 个月超额收益为正, 组合换仓后一个月的年化波动低于单票平均波动, 组合与沪深300 指数相关性中等偏低 (&lt;0.8)</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>逻辑简洁的月度多因子选股，执行容易，但因子与权重较粗糙、未来财报可得性存在灰色风险。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>因子标准化/正交化、使用真实手续费滑点、引入财报发布日期过滤、增加风险控制（如行业中性、最大回撤限制）</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未给出资金规模，按回测初始 200 万假设评价, 默认只使用聚宽支持的普通限价单，成交价按『真实价格』模型；实际实盘需考虑集合竞价成交不确定性</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>3</td></tr>
+                <tr><td>滑点</td><td>4</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>3</td></tr>
+                <tr><td>时间敏感性</td><td>3</td></tr>
+                <tr><td>综合可执行性</td><td>7.6</td></tr>
+                <tr><td>大资金不友好</td><td>3</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>4.1</td></tr>
+                <tr><td>总分</td><td>56.7</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;HS300月度多因子30档&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;在沪深300成份股中，用 6 个基本面+成交量因子做横截面排名，合成综合得分后买入得分最高的 30 只股票并等权持有，30 个交易日后重新计算得分并换仓。假设优质成长+高流动性个股未来表现更好，且组合分散可获得因子风险溢价。&quot;,
+        &quot;data_and_indicators&quot;: &quot;财务因子5个（资产增速、归母净利润增速、筹资现金流增速、利息净支出、现金/收入TTM），技术因子1个（DAVOL20 量比）；频率：财务季/年报（聚宽因子库已向下填充）、技术因子日度。&quot;,
+        &quot;stock_pool&quot;: &quot;初始为 get_index_stocks(&#x27;000300.XSHG&#x27;) 的当日成份股；过滤规则：①当日未停牌；②过去 63 个交易日无停牌记录。无 ST、涨跌停、上市天数、流动性等其他过滤。&quot;,
+        &quot;buy_signals&quot;: [&quot;综合得分排名前 30 名&quot;, &quot;调仓日触发（每 30 个交易日）&quot;],
+        &quot;sell_signals&quot;: [&quot;持仓不在最新前 30 名时全清&quot;, &quot;调仓日触发（每 30 个交易日）&quot;],
+        &quot;position_and_risk&quot;: &quot;等权持仓，单票≈3.33% ；总仓位 100%；无其他风控（无止损/止盈、无资金管理）。&quot;,
+        &quot;trading_frequency&quot;: &quot;约每 30 个交易日换仓一次；下单发生在 handle_data 第一次被调用时（通常 09:31 左右）。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前：取前一交易日收盘数据计算因子并排序；得到待买入/卖出列表。\n盘中开盘后第一分钟：按等权市值买入 Top30、卖出其余。\n盘后：无需处理。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 3,
+        &quot;risk_score_reason&quot;: &quot;所有因子通过 get_factor_values(end_date=previousdate) 取到前一日收盘可得数据；avoid_future_data=True；无 history(n) 的未来引用。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;未使用后续价格；order 在开盘后下单，仍属实时价。&quot;,
+            &quot;financial_data_leak&quot;: &quot;用上一交易日 end_date，理论符合信息披露滞后，但未显式使用财报发布日期过滤，存在轻微提前知道全部财报的风险（低）。&quot;,
+            &quot;index_component_leak&quot;: &quot;get_index_stocks 具备历史组件能力，风险低。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无明显依赖；slippage=0 只是成本低估。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;使用 factor.get_factor_values(..., count=1) 仍可能拿到未正式披露的财报，应加 filter=announce_date&lt;=previousdate；同时设 realistic slippage。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;财报因子可能提前获得未来尚未披露的值&quot;, &quot;0 滑点、过低手续费导致收益高估&quot;, &quot;实时交易需考虑集合竞价成交的不确定性&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 4,
+        &quot;slippage_reason&quot;: &quot;月度换仓、沪深300大盘股，滑点有限，但策略假设 0 滑点不现实。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;月换手一次，30 只股票，每次换手≈100%/月；费用中等。&quot;,
+        &quot;execution_score&quot;: 3,
+        &quot;execution_reason&quot;: &quot;交易标的为高流动性 HS300，市场冲击较低，1000 万以内易成交。&quot;,
+        &quot;time_sensitivity_score&quot;: 3,
+        &quot;time_sensitivity_reason&quot;: &quot;只需调仓日盘中完成即可，不需要秒级执行。&quot;,
+        &quot;overall_executability&quot;: 8,
+        &quot;overall_reason&quot;: &quot;低频+大盘股+等权，下单简单，成交容易，容量可达数亿元。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;几乎无任何冲击，可完全跟单。&quot;,
+            &quot;100w&quot;: &quot;依旧轻松成交，滑点可忽略。&quot;,
+            &quot;1000w&quot;: &quot;需拆单但 HS300 足以承接；预估冲击 &lt;5bp。&quot;,
+            &quot;1y&quot;: &quot;超过 1 亿资金时部分权重股仍能成交，但可能对尾部流动性较差成份股造成冲击，需要 VWAP 拆单。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;设置 realistic slippage 与手续费&quot;, &quot;下单改为 VWAP 或 TWAP 进一步降低冲击&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 3,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;标的为 HS300，单日成交量大，容量较高。&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;利用成长+流动性等财务/技术因子，部分捕捉机构偏好，但对情绪利用有限。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;多因子逻辑普适，但权重简单（仅 ±1）且未经滚动优化，跨周期稳健性一般。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.2,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40%+行为偏差30%+跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;财报失真或一致预期过强导致因子失效的年份&quot;, &quot;极端流动性危机（如 2015.07 熔断后暴跌）&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;高资产增速+高流动性公司未来 1-2 个月超额收益为正&quot;, &quot;组合换仓后一个月的年化波动低于单票平均波动&quot;, &quot;组合与沪深300 指数相关性中等偏低 (&lt;0.8)&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;逻辑简洁的月度多因子选股，执行容易，但因子与权重较粗糙、未来财报可得性存在灰色风险。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;因子标准化/正交化、使用真实手续费滑点、引入财报发布日期过滤、增加风险控制（如行业中性、最大回撤限制）&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 3,
+        &quot;slippage&quot;: 4,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 3,
+        &quot;time_sensitivity&quot;: 3,
+        &quot;executability&quot;: 8,
+        &quot;effectiveness_a&quot;: 3,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 4.2
+    },
+    
+    &quot;assumptions&quot;: [&quot;未给出资金规模，按回测初始 200 万假设评价&quot;, &quot;默认只使用聚宽支持的普通限价单，成交价按『真实价格』模型；实际实盘需考虑集合竞价成交不确定性&quot;]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

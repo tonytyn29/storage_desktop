@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双板追涨二成仓 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>双板追涨二成仓</h1>
+        <p class="meta">
+            ID: 6d8d6b8b | 
+            类型: 事件驱动 + 日内动量 | 
+            来源: 2019年到现在90多倍的新策略.txt |
+            分析日期: 2026-01-10 19:10:15
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>策略只在“市场情绪较热（昨日涨停股占比&gt;1%）且沪深300今早红盘”时出手，挑选前一交易日涨停且距离120日最高价不到7%的个股，在次日早盘股指红盘、且个股再次冲击9%上涨时追涨买入，最多持有2只。下午14:50若未封板则清仓，若封板则隔夜。策略希望利用强势股连续涨停（连板）带来的超额收益，并通过小仓位日内高抛低吸或次日冲高出货获取收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全A股（剔除创业板‘30’及科创板‘68’开头代码）；未显式过滤ST/停牌/上市天数/流动性；隐式排除了今天停牌和无涨跌停限制的股票（因 get_current_data().high_limit 调用会报错）。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>昨日收盘价触及涨停且涨幅≥9%, 昨日收盘价距120日最高价不足7%（处于阶段高位）, 当日 09:30-10:30 区间内，沪深300指数高开上涨（实时价&gt;今开价），且个股现价&gt;昨收*1.09（再次冲击涨停）</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>14:50 未封涨停则全仓卖出, 若当日封涨停无法卖出，则次日早盘再执行同样规则（直到开板卖出）</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多持有2只股票；买入时将可用资金平均分配到剩余空位；未做任何涨跌幅、持仓单一股比例或回撤控制；无止损；隔夜仓位最多2只，如全部封板则满仓隔夜。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>选股与调仓为日频；买入窗口09:30~10:30，卖出固定14:50；回测在 handle_data 分钟级下单，多数工作日都会评估是否买卖。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>1) 盘前：根据昨日数据筛出候选股池（满足条件才有）；2) 09:30 开盘后关注沪深300是否翻红，若满足且候选股在+9%左右突破时即市价/限价买入，控制2只等权；3) 14:50 观察持仓，如未封涨停则卖出；若封涨停则带仓过夜，次日继续跟踪开板后择机卖出。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>全部选股使用 previous_date（上一交易日）及 get_price(..., end_date=previous_date），没有引用未来数据；交易判断仅用当下分钟行情。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>handle_data 分钟级循环在 backtest 中可能使用历史高频数据导致回测与实盘滑点差异, attribute_history 在盘中调用默认 skip_paused=False，遇到停牌股可能报错, 未处理科创板、创业板20%涨跌幅的新规则，实盘年份变动需注意</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小资金 (&lt;100w) 可人工或半自动完成，仍需抢单滑点大；大资金受限流动性与10%涨跌幅无法成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>可执行，单票5万，成交概率尚可，需手动挂涨停价或即时市价；滑点可控制在0.5%-1%。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>单票50万，部分小盘股排队买入难度加大，滑点上升；仍勉强可做但收益会被侵蚀。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>单票500万，基本买不到涨停前股票且卖出冲击明显，不建议。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>1亿级资金无法进场，容量极低策略失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>追涨停连板策略容量极小，稍大资金即排队首板难成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用市场情绪、高位连板博弈短期资金追捧，属于典型动量/羊群行为套利。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>依赖高情绪环境；熊市或严监管下连板显著减少策略停摆。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>整体情绪低迷、涨停家数&lt;1%的熊市, 监管打压题材股、连板高度受限的时期</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>连板高度扩散时期日内收益大幅正向, 熊市阶段触发买入机会显著变少且收益为负, 加严涨停制度（提升到20%或停盘）将削弱策略</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>典型追二板短线策略，逻辑清晰但容量与滑点风险大，适合小资金短线测试。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 引入成交量、市值过滤降低流动性风险；2) 增加分时挂单价格策略及止损；3) 设置最大回撤/风控；4) 对科创/创业板20%涨跌幅单独处理。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供初始资金规模，假设为100万人民币，聚宽默认值, 使用聚宽默认撮合：PriceFollowMatcher，无额外自定义滑点模型</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>6</td></tr>
+                <tr><td>成本</td><td>6</td></tr>
+                <tr><td>执行难度</td><td>6</td></tr>
+                <tr><td>时间敏感性</td><td>7</td></tr>
+                <tr><td>综合可执行性</td><td>4.9</td></tr>
+                <tr><td>大资金不友好</td><td>8</td></tr>
+                <tr><td>行为偏差利用</td><td>6</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>5.8</td></tr>
+                <tr><td>总分</td><td>54.0</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;双板追涨二成仓&quot;,
+    &quot;strategy_type&quot;: &quot;事件驱动 + 日内动量&quot;,
+
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;策略只在“市场情绪较热（昨日涨停股占比&gt;1%）且沪深300今早红盘”时出手，挑选前一交易日涨停且距离120日最高价不到7%的个股，在次日早盘股指红盘、且个股再次冲击9%上涨时追涨买入，最多持有2只。下午14:50若未封板则清仓，若封板则隔夜。策略希望利用强势股连续涨停（连板）带来的超额收益，并通过小仓位日内高抛低吸或次日冲高出货获取收益。&quot;,
+        &quot;data_and_indicators&quot;: &quot;价格数据：日线close、pre_close、high_limit(涨停价)；分钟级实时last_price/day_open/high_limit。更新频率：日频（选股），分钟级（交易时点）。无财务或基本面数据。&quot;,
+        &quot;stock_pool&quot;: &quot;全A股（剔除创业板‘30’及科创板‘68’开头代码）；未显式过滤ST/停牌/上市天数/流动性；隐式排除了今天停牌和无涨跌停限制的股票（因 get_current_data().high_limit 调用会报错）。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;昨日收盘价触及涨停且涨幅≥9%&quot;,
+            &quot;昨日收盘价距120日最高价不足7%（处于阶段高位）&quot;,
+            &quot;当日 09:30-10:30 区间内，沪深300指数高开上涨（实时价&gt;今开价），且个股现价&gt;昨收*1.09（再次冲击涨停）&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;14:50 未封涨停则全仓卖出&quot;,
+            &quot;若当日封涨停无法卖出，则次日早盘再执行同样规则（直到开板卖出）&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;最多持有2只股票；买入时将可用资金平均分配到剩余空位；未做任何涨跌幅、持仓单一股比例或回撤控制；无止损；隔夜仓位最多2只，如全部封板则满仓隔夜。&quot;,
+        &quot;trading_frequency&quot;: &quot;选股与调仓为日频；买入窗口09:30~10:30，卖出固定14:50；回测在 handle_data 分钟级下单，多数工作日都会评估是否买卖。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;1) 盘前：根据昨日数据筛出候选股池（满足条件才有）；2) 09:30 开盘后关注沪深300是否翻红，若满足且候选股在+9%左右突破时即市价/限价买入，控制2只等权；3) 14:50 观察持仓，如未封涨停则卖出；若封涨停则带仓过夜，次日继续跟踪开板后择机卖出。&quot;
+    },
+
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;全部选股使用 previous_date（上一交易日）及 get_price(..., end_date=previous_date），没有引用未来数据；交易判断仅用当下分钟行情。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;无。所有历史价格查询均止于上一交易日，实时决策用 get_current_data。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未使用财务数据。&quot;,
+            &quot;index_component_leak&quot;: &quot;未使用指数未来权重、仅实时指数价格。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无对未来数据的迂回引用。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;保持现状已基本避免未来函数；补充停牌/上市天数过滤能进一步严谨。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;handle_data 分钟级循环在 backtest 中可能使用历史高频数据导致回测与实盘滑点差异&quot;, &quot;attribute_history 在盘中调用默认 skip_paused=False，遇到停牌股可能报错&quot;, &quot;未处理科创板、创业板20%涨跌幅的新规则，实盘年份变动需注意&quot;]
+    },
+
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 6,
+        &quot;slippage_reason&quot;: &quot;买点要求接近+9%/涨停价，盘口极薄，封单挤压导致高滑点；卖点14:50 可能跌停或流动性差。&quot;,
+        &quot;cost_score&quot;: 6,
+        &quot;cost_reason&quot;: &quot;理论上日内高换手（买→卖），虽仅2只但换手率接近200%/天；千三佣金+千一印花税占用收益。&quot;,
+        &quot;execution_score&quot;: 6,
+        &quot;execution_reason&quot;: &quot;需在30分钟内盯盘挂单；若目标快速涨停或开盘秒板，难以买到；卖出时也依赖流动性。&quot;,
+        &quot;time_sensitivity_score&quot;: 7,
+        &quot;time_sensitivity_reason&quot;: &quot;买入窗口限定在 09:30-10:30 且需实时判断指数红盘及个股冲板，分钟级反应。&quot;,
+        &quot;overall_executability&quot;: 5,
+        &quot;overall_reason&quot;: &quot;小资金 (&lt;100w) 可人工或半自动完成，仍需抢单滑点大；大资金受限流动性与10%涨跌幅无法成交。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;可执行，单票5万，成交概率尚可，需手动挂涨停价或即时市价；滑点可控制在0.5%-1%。&quot;,
+            &quot;100w&quot;: &quot;单票50万，部分小盘股排队买入难度加大，滑点上升；仍勉强可做但收益会被侵蚀。&quot;,
+            &quot;1000w&quot;: &quot;单票500万，基本买不到涨停前股票且卖出冲击明显，不建议。&quot;,
+            &quot;1y&quot;: &quot;1亿级资金无法进场，容量极低策略失效。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;增加成交量/流通市值过滤以提高成交概率&quot;, &quot;改用限价排队+撤单逻辑并考虑 T+1 退出方式以降低滑点&quot;]
+    },
+
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 8,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;追涨停连板策略容量极小，稍大资金即排队首板难成交。&quot;,
+        &quot;behavioral_bias_score&quot;: 6,
+        &quot;behavioral_bias_reason&quot;: &quot;利用市场情绪、高位连板博弈短期资金追捧，属于典型动量/羊群行为套利。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;依赖高情绪环境；熊市或严监管下连板显著减少策略停摆。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.4,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差利用30% + 跨阶段稳健性30%&quot;,
+        &quot;worst_environments&quot;: [&quot;整体情绪低迷、涨停家数&lt;1%的熊市&quot;, &quot;监管打压题材股、连板高度受限的时期&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;连板高度扩散时期日内收益大幅正向&quot;, &quot;熊市阶段触发买入机会显著变少且收益为负&quot;, &quot;加严涨停制度（提升到20%或停盘）将削弱策略&quot;]
+    },
+
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;典型追二板短线策略，逻辑清晰但容量与滑点风险大，适合小资金短线测试。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 引入成交量、市值过滤降低流动性风险；2) 增加分时挂单价格策略及止损；3) 设置最大回撤/风控；4) 对科创/创业板20%涨跌幅单独处理。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 6,
+        &quot;cost&quot;: 6,
+        &quot;execution&quot;: 6,
+        &quot;time_sensitivity&quot;: 7,
+        &quot;executability&quot;: 5,
+        &quot;effectiveness_a&quot;: 8,
+        &quot;effectiveness_b&quot;: 6,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 5.4
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供初始资金规模，假设为100万人民币，聚宽默认值&quot;,
+        &quot;使用聚宽默认撮合：PriceFollowMatcher，无额外自定义滑点模型&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

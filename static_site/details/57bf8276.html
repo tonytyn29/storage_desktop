@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小市值成长轮动10股 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>小市值成长轮动10股</h1>
+        <p class="meta">
+            ID: 57bf8276 | 
+            类型: 小市值轮动 / 多因子选股 | 
+            来源: b2324_1.一颗耀眼的星—【回顾2】小市值成长股策略更新—改.txt |
+            分析日期: 2026-01-11 14:35:22
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>从A股中过滤掉科创板、次新、ST后，优先挑选流通市值小、成长性高且估值相对低（PEG低）的股票；每周一早盘以等权方式持有最多10只。依赖‘成长→估值修复’+‘小市值流动性折价’回归的溢价来获利；同时利用涨停板行为做短线止盈。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>剔除上市不足375天、科创板(68开头)、所有ST/退市/*标股票；停牌和涨跌停当日无法交易时跳过；持仓不超过10只。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>入选 get_stock_list 生成的 union_list（小市值+高增长+低PEG 交集）且通过停牌/涨跌停/黑名单过滤, 20日均线斜率&gt; -2（短期趋势不明显下跌）</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>周一调仓时不再位于 target_list, 昨日涨停的持仓，当日 14:00 打开涨停板则立即卖出</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>等权分配（满仓最多10只）；如 target 数&lt;10 则按 target_num/g.stock_num 比例使用资金。无单票止损、无指数仓控，仅依靠黑名单+趋势过滤+涨停打开出售做风险控制。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>周调仓（run_weekly 周一 09:30）；日内 14:00 可能针对昨日涨停股做止盈；每日 09:05 仅做列表准备，无交易。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前准备：更新财务数据计算候选池；周一 09:25 按上述规则生成买入清单并以等权委托；若持仓股前日涨停，14:00 手动观察是否放量跌破涨停并按计划卖出。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>全部因子使用 end_date=context.previous_date，价格数据使用 history()/get_price() 截止前一日，理论上安全；但 get_fundamentals 在 sorted_by_circulating_market_cap 未指定 date 参数，可能取到‘当天最新’流通市值（回测时属于未来数据）；同时未做财报披露期延迟处理，存在财务数据提前泄漏的灰区。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>财务因子是否严格按披露日生效需再次确认 jqfactor 具体实现, 场内实时流通市值可能回溯不完整，导致未来函数检测工具无法识别, 14:00 追踪涨停打开卖出逻辑在回测无法复现真实盘口队列情况</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小资金(&lt;1000w)较易执行；大资金易触发冲击及涨停板排队失败。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>完全可执行，冲击忽略不计</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>基本可执行，个别流动性差标的需分批成交</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>选股市值偏小，部分股票单日成交额 &lt;5000w，需显著拆单或降低占比</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>多数目标标的难以承接，易拖累收益；需改成分级买卖或对冲方案</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>依赖小市值溢价，容量有限；大资金易显著推高买价。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用市场对高增长小票的关注及涨停惯性，存在一定行为偏差捕捉，但非纯情绪博弈。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>成长+小市值溢价在多数年份有效，但牛市/大盘蓝筹行情下表现趋弱。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>价值蓝筹领涨、成长风格冷却的阶段, 流动性危机导致小盘股连续跌停时</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>牛市初期、小盘成长风格占优时策略年化胜过沪深300, 在大小盘风格切换到大盘时超额回撤显著扩大, 若剔除PEG和斜率过滤，组合波动和回撤明显上升</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>策略偏向小市值成长轮动，思路清晰但对财务未来函数与流动性存在中等风险。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>完善财务数据滞后处理、增加成交额过滤、引入动态仓位或指数对冲降低系统性回撤</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未在代码中看到资金规模、手续费、滑点模型等，默认聚宽回测默认费率（买卖佣金0.0003，印花税0.001）和无额外滑点, order_target_value 为市价委托，假设盘中能全部成交；14:00 涨停打开后可即时卖出</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>4</td></tr>
+                <tr><td>滑点</td><td>6</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>3</td></tr>
+                <tr><td>综合可执行性</td><td>6.3</td></tr>
+                <tr><td>大资金不友好</td><td>7</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>5.7</td></tr>
+                <tr><td>总分</td><td>59.7</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;小市值成长轮动10股&quot;,
+    &quot;strategy_type&quot;: &quot;小市值轮动 / 多因子选股&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;从A股中过滤掉科创板、次新、ST后，优先挑选流通市值小、成长性高且估值相对低（PEG低）的股票；每周一早盘以等权方式持有最多10只。依赖‘成长→估值修复’+‘小市值流动性折价’回归的溢价来获利；同时利用涨停板行为做短线止盈。&quot;,
+        &quot;data_and_indicators&quot;: &quot;（1）价格数据：日线收盘价、涨跌停价、MA20；（2）财务因子：营业收入增长率、利润总额增长率、净利润增长率、5年盈利增长率、sales_growth、PEG、turnover_volatility、流通市值；全部通过 get_factor_values / get_fundamentals 在每周一 09:30 取一次。&quot;,
+        &quot;stock_pool&quot;: &quot;剔除上市不足375天、科创板(68开头)、所有ST/退市/*标股票；停牌和涨跌停当日无法交易时跳过；持仓不超过10只。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;入选 get_stock_list 生成的 union_list（小市值+高增长+低PEG 交集）且通过停牌/涨跌停/黑名单过滤&quot;,
+            &quot;20日均线斜率&gt; -2（短期趋势不明显下跌）&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;周一调仓时不再位于 target_list&quot;,
+            &quot;昨日涨停的持仓，当日 14:00 打开涨停板则立即卖出&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;等权分配（满仓最多10只）；如 target 数&lt;10 则按 target_num/g.stock_num 比例使用资金。无单票止损、无指数仓控，仅依靠黑名单+趋势过滤+涨停打开出售做风险控制。&quot;,
+        &quot;trading_frequency&quot;: &quot;周调仓（run_weekly 周一 09:30）；日内 14:00 可能针对昨日涨停股做止盈；每日 09:05 仅做列表准备，无交易。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前准备：更新财务数据计算候选池；周一 09:25 按上述规则生成买入清单并以等权委托；若持仓股前日涨停，14:00 手动观察是否放量跌破涨停并按计划卖出。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;不确定&quot;,
+        &quot;risk_level&quot;: &quot;中&quot;,
+        &quot;risk_score&quot;: 4,
+        &quot;risk_score_reason&quot;: &quot;全部因子使用 end_date=context.previous_date，价格数据使用 history()/get_price() 截止前一日，理论上安全；但 get_fundamentals 在 sorted_by_circulating_market_cap 未指定 date 参数，可能取到‘当天最新’流通市值（回测时属于未来数据）；同时未做财报披露期延迟处理，存在财务数据提前泄漏的灰区。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;history(40,&#x27;1d&#x27;) 在 09:30 调用只拿到前一日收盘，安全。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_factor_values 与 jqfactor 默认已做披露日校正，但未保证；且自定义因子组合对‘operating_revenue_growth_rate’等不做 publish_date 滞后处理，若 jqfactor 内部未来可见则泄漏。&quot;,
+            &quot;index_component_leak&quot;: &quot;所有排序在当日 09:30 完成，无索引未来成分，风险低。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;已 set_option(&#x27;avoid_future_data&#x27;,True)，但 fundamental 接口仍有可能绕过。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;在 get_fundamentals(query,date=context.previous_date) 明确指定 date；对 get_factor_values 增加 delay=1 或使用 shift=True；或简单地把调仓日向后错一天。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;财务因子是否严格按披露日生效需再次确认 jqfactor 具体实现&quot;,
+            &quot;场内实时流通市值可能回溯不完整，导致未来函数检测工具无法识别&quot;,
+            &quot;14:00 追踪涨停打开卖出逻辑在回测无法复现真实盘口队列情况&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 6,
+        &quot;slippage_reason&quot;: &quot;主要持有小市值个股，早盘集合竞价或开盘成交冲击明显；涨停打开时 14:00 竞价卖出更易踩到滑点。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;周调仓+偶发 intra-day 卖出，年化换手约 50~70 次/年/股票，成本中低。&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;部分目标股成交量低且临近涨跌停价带，需拆单；10只等权仍可通过分仓控制。&quot;,
+        &quot;time_sensitivity_score&quot;: 3,
+        &quot;time_sensitivity_reason&quot;: &quot;核心调仓在周一 09:30，非高频；14:00 卖出窗口略敏感但仍有10分钟+缓冲。&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;小资金(&lt;1000w)较易执行；大资金易触发冲击及涨停板排队失败。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;完全可执行，冲击忽略不计&quot;,
+            &quot;100w&quot;: &quot;基本可执行，个别流动性差标的需分批成交&quot;,
+            &quot;1000w&quot;: &quot;选股市值偏小，部分股票单日成交额 &lt;5000w，需显著拆单或降低占比&quot;,
+            &quot;1y&quot;: &quot;多数目标标的难以承接，易拖累收益；需改成分级买卖或对冲方案&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;对流动性再做过滤：加入日均成交额&gt;5000万条件&quot;,
+            &quot;把涨停打开卖出逻辑改为 T+1 日早盘卖，降低实时滑点&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 7,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;依赖小市值溢价，容量有限；大资金易显著推高买价。&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;利用市场对高增长小票的关注及涨停惯性，存在一定行为偏差捕捉，但非纯情绪博弈。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;成长+小市值溢价在多数年份有效，但牛市/大盘蓝筹行情下表现趋弱。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.3,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;价值蓝筹领涨、成长风格冷却的阶段&quot;,
+            &quot;流动性危机导致小盘股连续跌停时&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;牛市初期、小盘成长风格占优时策略年化胜过沪深300&quot;,
+            &quot;在大小盘风格切换到大盘时超额回撤显著扩大&quot;,
+            &quot;若剔除PEG和斜率过滤，组合波动和回撤明显上升&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;策略偏向小市值成长轮动，思路清晰但对财务未来函数与流动性存在中等风险。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;完善财务数据滞后处理、增加成交额过滤、引入动态仓位或指数对冲降低系统性回撤&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 4,
+        &quot;slippage&quot;: 6,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 3,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 7,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.3
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未在代码中看到资金规模、手续费、滑点模型等，默认聚宽回测默认费率（买卖佣金0.0003，印花税0.001）和无额外滑点&quot;,
+        &quot;order_target_value 为市价委托，假设盘中能全部成交；14:00 涨停打开后可即时卖出&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

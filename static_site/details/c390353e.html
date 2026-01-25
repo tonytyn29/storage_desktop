@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首板弱转强日内2日抱板 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>首板弱转强日内2日抱板</h1>
+        <p class="meta">
+            ID: c390353e | 
+            类型: 事件驱动 + 情绪动量 | 
+            来源: b25_21【原创】年化123涨停弱转强竞价战法.txt |
+            分析日期: 2026-01-10 22:10:32
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>买入前一交易日涨停且当日集合竞价高开(1%~6%)、量价配合良好的个股，期待其在当日再次冲击涨停；若未能封板则快速止盈/止损，若封板则隔夜继续持有，利用A股短线涨停后次日资金博弈的上冲惯性获利。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全部 A 股（剔除科创板、创业板、北交所、ST、停牌、上市≤50天的新股、一字板个股）。市值≥70亿元，前一日成交额≥7亿。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>A. 前一交易日收盘价触及涨停，且前两日没有出现过涨停（排除 2 进 3 及以上连板）。, B. 当天 9:25 集合竞价量≥昨日总量的3%，且开盘价为昨收~+6%之间；同时昨日均价较收盘价溢价≥7%，昨日量能属阶段放量(≥90%前高)。</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>1. 盘中 9:30 若跌破成本 3% 立即止损；10:30 跌破成本 0% 止损；13:30 跌破成本+3% 止盈/止损。, 2. 14:50 若当日未涨停则清仓；若涨停则继续持有过夜，次日继续上述流程。</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>当日可买股票等权分配资金；买入前检查可用资金&gt;一手市值；未设置总仓上限→理论上可满仓；风险控制完全依赖盘内止损/尾盘清仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>每天 9:30 可能买入 0~N 只；同一天最多 4 次卖出检查(9:30/10:30/13:30/14:50)。平均持股 0.5~1.5 天，换手率极高。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前：根据昨日涨停股列表筛选候选；9:25 观察集合竞价量价，9:30(开盘瞬间)按等额下单；盘中盯盘三次分别做止损；14:50 若未封板全部卖出。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>主要疑点在 buy() 用 current_data[s].day_open 作为下单价格。回测中 9:30 时刻已知开盘价且直接按开盘价成交，现实中无法确保；但并未直接调用未来日期的价格或财报，故为中低风险。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>开盘价成交假设可能高估收益。, 集合竞价数据在实盘获取延迟风险：部分券商 API 9:25 数据可能不完整。, 尾盘 14:50 市价单可能因涨跌停限制而无法成交，引发隔夜持仓风险。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>适合≤500 万的量化小账户；需自动化盘中交易及容忍较大滑点。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>可执行，单票资金≈几万元，跟单难度低；滑点影响可控。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>仍可执行，但顺价抢板成功率下降，实际年化显著低于回测。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>明显冲击涨停板封单；排队买不到，滑点与吃跌停风险显著，策略失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>基本无法执行，容量严重不足，排单对价格造成影响且监管风险高。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>依赖涨停次日博弈，成交量集中在开盘 1~2 分钟；盘口容量有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用散户/游资对涨停股的情绪追涨；存在显著情绪驱动。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>强依赖市场情绪与监管环境；牛市/题材炒作期表现好，震荡或熊市显著回撤。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>监管打击炒小炒差、严格限制连板炒作的时期, 极端低波动或系统性下跌导致涨停股稀缺且快速开板</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>在题材活跃阶段（高涨停家数）策略收益显著正；低涨停日数阶段收益趋近于零或为负。, 加入真实滑点后，年化收益率将显著下降（&gt;30%）。, 策略净值峰值往往出现在指数单边上涨或流动性宽松时期。</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>典型首板弱转强打板体系，回测年化亮眼但对实盘滑点与容量极度敏感，未来函数风险较低但价格撮合偏乐观。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 改为 before_open 生成信号、开盘后按涨停价-1档挂单；2) 引入分时成交量及封单强度过滤；3) 加入总市值/仓位上限与跨日跟踪模块提升稳健性。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未给出佣金、滑点、印花税等成本参数，假设使用聚宽默认：佣金仓买卖各 0.0003，印花 0.001，滑点 0。, 默认初始资金 100 万，日内 4 次调仓操作可满足资金周转；若资金规模提高需按情景分析结果调整。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>3</td></tr>
+                <tr><td>滑点</td><td>7</td></tr>
+                <tr><td>成本</td><td>7</td></tr>
+                <tr><td>执行难度</td><td>6</td></tr>
+                <tr><td>时间敏感性</td><td>8</td></tr>
+                <tr><td>综合可执行性</td><td>4.2</td></tr>
+                <tr><td>大资金不友好</td><td>8</td></tr>
+                <tr><td>行为偏差利用</td><td>6</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>5.8</td></tr>
+                <tr><td>总分</td><td>50.7</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;首板弱转强日内2日抱板&quot;,
+    &quot;strategy_type&quot;: &quot;事件驱动 + 情绪动量&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;买入前一交易日涨停且当日集合竞价高开(1%~6%)、量价配合良好的个股，期待其在当日再次冲击涨停；若未能封板则快速止盈/止损，若封板则隔夜继续持有，利用A股短线涨停后次日资金博弈的上冲惯性获利。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 日频行情: 收盘价、最高价、最低价、涨跌停价、成交量、成交额。2) 分钟级集合竞价数据:get_call_auction(9:25)。3) 实时行情:get_current_data() 用于盘中判断涨跌停与价格。4) 基本面: 市值 market_cap、换手率 turnover_ratio（仅市值有效、换手率被注释）。更新频率分别为日/实时。&quot;,
+        &quot;stock_pool&quot;: &quot;全部 A 股（剔除科创板、创业板、北交所、ST、停牌、上市≤50天的新股、一字板个股）。市值≥70亿元，前一日成交额≥7亿。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;A. 前一交易日收盘价触及涨停，且前两日没有出现过涨停（排除 2 进 3 及以上连板）。&quot;,
+            &quot;B. 当天 9:25 集合竞价量≥昨日总量的3%，且开盘价为昨收~+6%之间；同时昨日均价较收盘价溢价≥7%，昨日量能属阶段放量(≥90%前高)。&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;1. 盘中 9:30 若跌破成本 3% 立即止损；10:30 跌破成本 0% 止损；13:30 跌破成本+3% 止盈/止损。&quot;,
+            &quot;2. 14:50 若当日未涨停则清仓；若涨停则继续持有过夜，次日继续上述流程。&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;当日可买股票等权分配资金；买入前检查可用资金&gt;一手市值；未设置总仓上限→理论上可满仓；风险控制完全依赖盘内止损/尾盘清仓。&quot;,
+        &quot;trading_frequency&quot;: &quot;每天 9:30 可能买入 0~N 只；同一天最多 4 次卖出检查(9:30/10:30/13:30/14:50)。平均持股 0.5~1.5 天，换手率极高。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前：根据昨日涨停股列表筛选候选；9:25 观察集合竞价量价，9:30(开盘瞬间)按等额下单；盘中盯盘三次分别做止损；14:50 若未封板全部卖出。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;不确定&quot;,
+        &quot;risk_level&quot;: &quot;中&quot;,
+        &quot;risk_score&quot;: 3,
+        &quot;risk_score_reason&quot;: &quot;主要疑点在 buy() 用 current_data[s].day_open 作为下单价格。回测中 9:30 时刻已知开盘价且直接按开盘价成交，现实中无法确保；但并未直接调用未来日期的价格或财报，故为中低风险。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;buy() 在 9:30 触发，使用 get_call_auction(… end_date=current_dt) 读取 9:25 数据→合理；但同时把 current_data.day_open 作为委托价格，回测会以已知开盘价成交，可能产生‘知道未来成交价’的偏差。&quot;,
+            &quot;financial_data_leak&quot;: &quot;只取当日之前的 market_cap/turnover_ratio，无提前量，风险低。&quot;,
+            &quot;index_component_leak&quot;: &quot;未使用未来成分或排名数据。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未发现跨日或数据对齐错误；唯一争议点仍是交易价格与撮合时序匹配。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;在 buy 中使用 MarketOrderStyle() 让系统按 9:31 的实时价格成交，或在 before_open 阶段生成信号、开盘后按限价高开价挂单；避免使用 day_open 。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;开盘价成交假设可能高估收益。&quot;,
+            &quot;集合竞价数据在实盘获取延迟风险：部分券商 API 9:25 数据可能不完整。&quot;,
+            &quot;尾盘 14:50 市价单可能因涨跌停限制而无法成交，引发隔夜持仓风险。&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 7,
+        &quot;slippage_reason&quot;: &quot;集中在高换手、情绪化涨停股，且用开盘价买入，实盘抢不到同价，易被高开秒杀造成 &gt;2% 滑点。&quot;,
+        &quot;cost_score&quot;: 7,
+        &quot;cost_reason&quot;: &quot;几乎日内高换手；买入+多次止损/尾盘卖出，佣金印花合计&gt;0.2%/日易触发。&quot;,
+        &quot;execution_score&quot;: 6,
+        &quot;execution_reason&quot;: &quot;需秒级下单且股票往往流动性受封单影响；小资金尚可，大资金需拆单且易冲击涨停板深度。&quot;,
+        &quot;time_sensitivity_score&quot;: 8,
+        &quot;time_sensitivity_reason&quot;: &quot;核心买点为 9:30 开盘瞬间；卖点也固定在 9:30/10:30/13:30/14:50，需要高频盯盘与自动化。&quot;,
+        &quot;overall_executability&quot;: 4,
+        &quot;overall_reason&quot;: &quot;适合≤500 万的量化小账户；需自动化盘中交易及容忍较大滑点。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;可执行，单票资金≈几万元，跟单难度低；滑点影响可控。&quot;,
+            &quot;100w&quot;: &quot;仍可执行，但顺价抢板成功率下降，实际年化显著低于回测。&quot;,
+            &quot;1000w&quot;: &quot;明显冲击涨停板封单；排队买不到，滑点与吃跌停风险显著，策略失效。&quot;,
+            &quot;1y&quot;: &quot;基本无法执行，容量严重不足，排单对价格造成影响且监管风险高。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;下单拆分+撤单重挂，减少冲击成本。&quot;,
+            &quot;引入仓位上限与分档参数，限制在极小容量内运行。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 8,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;依赖涨停次日博弈，成交量集中在开盘 1~2 分钟；盘口容量有限。&quot;,
+        &quot;behavioral_bias_score&quot;: 6,
+        &quot;behavioral_bias_reason&quot;: &quot;利用散户/游资对涨停股的情绪追涨；存在显著情绪驱动。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;强依赖市场情绪与监管环境；牛市/题材炒作期表现好，震荡或熊市显著回撤。&quot;,
+        &quot;effectiveness_total_score&quot;: 6.2,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;监管打击炒小炒差、严格限制连板炒作的时期&quot;,
+            &quot;极端低波动或系统性下跌导致涨停股稀缺且快速开板&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;在题材活跃阶段（高涨停家数）策略收益显著正；低涨停日数阶段收益趋近于零或为负。&quot;,
+            &quot;加入真实滑点后，年化收益率将显著下降（&gt;30%）。&quot;,
+            &quot;策略净值峰值往往出现在指数单边上涨或流动性宽松时期。&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;典型首板弱转强打板体系，回测年化亮眼但对实盘滑点与容量极度敏感，未来函数风险较低但价格撮合偏乐观。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 改为 before_open 生成信号、开盘后按涨停价-1档挂单；2) 引入分时成交量及封单强度过滤；3) 加入总市值/仓位上限与跨日跟踪模块提升稳健性。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 3,
+        &quot;slippage&quot;: 7,
+        &quot;cost&quot;: 7,
+        &quot;execution&quot;: 6,
+        &quot;time_sensitivity&quot;: 8,
+        &quot;executability&quot;: 4,
+        &quot;effectiveness_a&quot;: 8,
+        &quot;effectiveness_b&quot;: 6,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 6.2
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未给出佣金、滑点、印花税等成本参数，假设使用聚宽默认：佣金仓买卖各 0.0003，印花 0.001，滑点 0。&quot;,
+        &quot;默认初始资金 100 万，日内 4 次调仓操作可满足资金周转；若资金规模提高需按情景分析结果调整。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

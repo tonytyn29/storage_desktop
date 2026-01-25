@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>等权微市值400轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>等权微市值400轮动</h1>
+        <p class="meta">
+            ID: f09a69e8 | 
+            类型: 小市值轮动 | 
+            来源: b25_73微盘400每日再平衡.txt |
+            分析日期: 2026-01-10 22:50:10
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>假设微小市值股票存在长期超额收益（所谓“微盘效应”），每日开盘把资金均分到当日市值最小的400 只非 ST 股票，剔除科创板/北交所标的，期望通过持有极小市值股票来获取高贝塔与规模因子溢价；同时每日再平衡，力图把资金持续锁定在最新的最小市值股票集合。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>• 全市场 A 股（不含科创板 68 开头、北交所 8 开头、B 股 4 开头）;
+• 剔除带 ST、*、退市标记或 is_st==True 的股票;
+• 按市值从小到大排序取前 400 只。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>当日 9:30 计算后属于市值最小 400 且当前持仓低于目标市值</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>当日不再属于市值最小 400 列表时清仓</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>总仓位 100%，等权分配至 400 只标的（单票约 0.25%）。无其他风控、无换仓缓冲。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>每天 9:30 run_daily 调仓一次，理论上 400 支股票全部发单。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>若手动执行，需在开盘前准备上一交易日市值数据，开盘后立即按等权金额买入/卖出对应股票；盘前需确认剔除 ST/科创板/北交所股票列表。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>核心使用函数 get_fundamentals(valuation) 与 get_all_securities(date=当日) 均在 JQ 回测引擎中做好了时点截断；无使用 history()/attribute_history 的未来数据。唯一的潜在灰区是 9:30 时 valuation.market_cap 可能已用到当日开盘价，但策略紧接着就下单，属可实时获取信息，非未来函数。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>等权 400 小市值需要一次性 400 单，回测撮合和真实委托队列差异大, 市值过滤未考虑停牌流动性，可能产生大量买不到/卖不掉的个股, valuation.market_cap 属价格衍生指标，理论应 T+1 使用防止开盘瞬时价格变化带来排序漂移</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小资金（≤300 万）通过集合竞价或开盘后限价单可部分成交；大资金将明显冲击价格且受涨跌停所限。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>单票约 250 元，流动性足够；滑点可忽略。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>单票 2500 元，大部分可成交，少数一字板买不到；仍可运行但偏离目标。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>单票 2.5 万元，许多微盘股日成交额不足 200 万，冲击显著，需要分日建仓，实盘困难。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>单票 25 万元，等同于部分股票全天成交量，几乎无法成交，策略失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>微盘股容量极小，稍大资金就显著冲击价格。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>主要靠规模因子而非市场情绪或行为偏差获利。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>小盘溢价在 A 股存在阶段性显现；熊市及严监管期显著衰减。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>流动性枯竭的熊市, 监管加强、强化退市与壳价值下降时期</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>组合波动率远高于中证 500, 组合日度换手率高于 80%, 在2015年牛市及2020年科创行情之外表现平庸</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>策略思路极度简单，靠‘小市值溢价’博收益，但日度满仓换手导致成本与成交问题严重，难以大规模实盘复制。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>引入流动性过滤、降低换手频率、加入风险控制（跌停/PB约束），并评估市值因子在不同阶段的有效性</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供资金规模，默认总资金 100 万用于评分；若资金变化见情景分析, 使用聚宽默认手续费：双边万分之三+过户费；滑点模型为默认撮合系统价差，对分析中已按中高滑点估计</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>6</td></tr>
+                <tr><td>成本</td><td>8</td></tr>
+                <tr><td>执行难度</td><td>6</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>4.8</td></tr>
+                <tr><td>大资金不友好</td><td>8</td></tr>
+                <tr><td>行为偏差利用</td><td>3</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>5.3</td></tr>
+                <tr><td>总分</td><td>50.5</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;等权微市值400轮动&quot;,
+    &quot;strategy_type&quot;: &quot;小市值轮动&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;假设微小市值股票存在长期超额收益（所谓“微盘效应”），每日开盘把资金均分到当日市值最小的400 只非 ST 股票，剔除科创板/北交所标的，期望通过持有极小市值股票来获取高贝塔与规模因子溢价；同时每日再平衡，力图把资金持续锁定在最新的最小市值股票集合。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 基础行情数据（股票收盘价/实时开盘价，来自 use_real_price=True，日内 1 次）; 2) JQ valuation.market_cap （基于前一交易日收盘价*总股本，日频更新）; 3) get_current_data().is_st 与名称字段（实时，盘中可用）。&quot;,
+        &quot;stock_pool&quot;: &quot;• 全市场 A 股（不含科创板 68 开头、北交所 8 开头、B 股 4 开头）;\n• 剔除带 ST、*、退市标记或 is_st==True 的股票;\n• 按市值从小到大排序取前 400 只。&quot;,
+        &quot;buy_signals&quot;: [&quot;当日 9:30 计算后属于市值最小 400 且当前持仓低于目标市值&quot;],
+        &quot;sell_signals&quot;: [&quot;当日不再属于市值最小 400 列表时清仓&quot;],
+        &quot;position_and_risk&quot;: &quot;总仓位 100%，等权分配至 400 只标的（单票约 0.25%）。无其他风控、无换仓缓冲。&quot;,
+        &quot;trading_frequency&quot;: &quot;每天 9:30 run_daily 调仓一次，理论上 400 支股票全部发单。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;若手动执行，需在开盘前准备上一交易日市值数据，开盘后立即按等权金额买入/卖出对应股票；盘前需确认剔除 ST/科创板/北交所股票列表。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;核心使用函数 get_fundamentals(valuation) 与 get_all_securities(date=当日) 均在 JQ 回测引擎中做好了时点截断；无使用 history()/attribute_history 的未来数据。唯一的潜在灰区是 9:30 时 valuation.market_cap 可能已用到当日开盘价，但策略紧接着就下单，属可实时获取信息，非未来函数。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;use_real_price=True 会让今开价可在 9:30 获取，随后下单，符合现实场景；未看到跨日提前获取收盘后才知道的数据。&quot;,
+            &quot;financial_data_leak&quot;: &quot;valuation.market_cap 不涉及财报披露日期，只用总股本与价格，无公告滞后问题。&quot;,
+            &quot;index_component_leak&quot;: &quot;股票池基于当日信息，同步执行，无历史后视。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未调用可能含泄露的 high_level API（如 get_fundamentals_continuously）。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;若担心市场开盘瞬时价格波动导致排名变化，可改为使用上一交易日收盘价计算市值并 T+1 交易。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;等权 400 小市值需要一次性 400 单，回测撮合和真实委托队列差异大&quot;, &quot;市值过滤未考虑停牌流动性，可能产生大量买不到/卖不掉的个股&quot;, &quot;valuation.market_cap 属价格衍生指标，理论应 T+1 使用防止开盘瞬时价格变化带来排序漂移&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 6,
+        &quot;slippage_reason&quot;: &quot;微盘股流动性差，且策略高换手（日度再平衡）；即便单票权重低，仍易受涨跌停与买卖盘薄弱影响。&quot;,
+        &quot;cost_score&quot;: 8,
+        &quot;cost_reason&quot;: &quot;理论上每天几乎全仓换手一次，考虑千分之三双边费用，年化成本极高。&quot;,
+        &quot;execution_score&quot;: 6,
+        &quot;execution_reason&quot;: &quot;一次下 400 单 + 多数为小盘股，真实成交需分批或挂单，存在较高撤单/排队风险。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;策略只要求开盘后尽快执行，分钟级延迟可接受，但拉开时间过长会偏离等权目标。&quot;,
+        &quot;overall_executability&quot;: 5,
+        &quot;overall_reason&quot;: &quot;小资金（≤300 万）通过集合竞价或开盘后限价单可部分成交；大资金将明显冲击价格且受涨跌停所限。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;单票约 250 元，流动性足够；滑点可忽略。&quot;,
+            &quot;100w&quot;: &quot;单票 2500 元，大部分可成交，少数一字板买不到；仍可运行但偏离目标。&quot;,
+            &quot;1000w&quot;: &quot;单票 2.5 万元，许多微盘股日成交额不足 200 万，冲击显著，需要分日建仓，实盘困难。&quot;,
+            &quot;1y&quot;: &quot;单票 25 万元，等同于部分股票全天成交量，几乎无法成交，策略失效。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;降低调仓频率至周或月，减少成本&quot;, &quot;加流动性筛选（如过去 20 日成交额分位）以提升成交率&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 8,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;微盘股容量极小，稍大资金就显著冲击价格。&quot;,
+        &quot;behavioral_bias_score&quot;: 3,
+        &quot;behavioral_bias_reason&quot;: &quot;主要靠规模因子而非市场情绪或行为偏差获利。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;小盘溢价在 A 股存在阶段性显现；熊市及严监管期显著衰减。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.3,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40%+行为偏差利用30%+跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;流动性枯竭的熊市&quot;, &quot;监管加强、强化退市与壳价值下降时期&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;组合波动率远高于中证 500&quot;, &quot;组合日度换手率高于 80%&quot;, &quot;在2015年牛市及2020年科创行情之外表现平庸&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;策略思路极度简单，靠‘小市值溢价’博收益，但日度满仓换手导致成本与成交问题严重，难以大规模实盘复制。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;引入流动性过滤、降低换手频率、加入风险控制（跌停/PB约束），并评估市值因子在不同阶段的有效性&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 6,
+        &quot;cost&quot;: 8,
+        &quot;execution&quot;: 6,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 5,
+        &quot;effectiveness_a&quot;: 8,
+        &quot;effectiveness_b&quot;: 3,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 4.3
+    },
+    
+    &quot;assumptions&quot;: [&quot;未提供资金规模，默认总资金 100 万用于评分；若资金变化见情景分析&quot;, &quot;使用聚宽默认手续费：双边万分之三+过户费；滑点模型为默认撮合系统价差，对分析中已按中高滑点估计&quot;]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

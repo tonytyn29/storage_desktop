@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETF单品轮动动量 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>ETF单品轮动动量</h1>
+        <p class="meta">
+            ID: de37b437 | 
+            类型: 动量策略 | 
+            来源: b2324_56.韶华研究之五-ETF轮动，躺赚，夏普2.txt |
+            分析日期: 2026-01-11 18:21:50
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>用最近20个交易日（g.check_unit=20）的涨幅来比较一篮子宽基/主题指数，对应买入表现最强的那只 ETF，同时用沪深300、上证50等六大指数过去20日（含当日 11:15 最新价）的最大涨幅作为整体市场强弱阈值；只要最大涨幅&gt;0 就持仓，否则全部清空，空仓时可转买国债 ETF（代码写好了但未调用）。逻辑本质是抓取市场的中短期趋势和相对强弱切换，用轮动提高胜率、用空仓避免系统性下跌。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>仅限代码 g.etf_list 中列出的 12 只 ETF，对应 12 个宽基/主题指数。无 ST、停牌、流动性过滤；ETF 天然无涨跌停影响，但仍受 10%/20% 限制。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>过去 20 个交易日涨幅排名第 1（实际先取前 2，再取第 1）, 整体市场强（六大指数过去 20 日最大涨幅 &gt; 0）</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>整体市场弱（六大指数过去 20 日最大涨幅 ≤ 0）, 持仓 ETF 不再位列涨幅前 2</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>一次只持 1 只 ETF，目标市值=总资产/1。无止损/止盈；无单票/总仓位上限控制；空仓时未真正买入国债 ETF，实际持现金。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>理论上每日 11:15 检查并可能调仓；若榜首 ETF 不变则不交易，若榜首频繁变动会日切。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前：检查可交易 ETF是否上市满 5 日；盘中 11:15 计算 20 日涨幅并下单；收盘后无需处理。实盘复制时，只需在 11:15±1min 复刻脚本的买卖指令即可。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有排名使用的数据最晚到上一交易日收盘价；仅整体强弱阈值用到当日 11:15 最新价并同步下单，属于合法的当日信息，不构成未来函数。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>指数 11:15 点位可能与下一笔可成交价存在跳空，实盘仍有最小滞后误差, 若未来修改为直接用 ETF 当日涨幅做阈值，需重新检查回溯偏差, 如切换到周/月回测要同步修改 g.check_unit 与调仓频率</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>低换手、大容量标的、固定时间点，工程实现简单。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>影响忽略不计，买 1 手即可。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>依然轻松成交，滑点 &lt;0.02%。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>大部分宽基 ETF 单边日成交额&gt;10 亿，冲击 &lt;0.1%。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>需分批下单或做 T 型挂单；但仍远优于个股策略。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>ETF 体量大，容量友好；但若规模上亿仍需注意部分主题 ETF 深度。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用动量/趋势追随的行为惯性，属于中等行为偏差利用。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>逻辑简洁但参数固定（20 日、单品、阈值=0），不同市场环境下表现易波动。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>横盘震荡市（日内跳水又拉回）, 强轮动但领涨 ETF 频繁切换导致高换手冲击收益</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>当市场呈单边上行趋势时本策略将显著跑赢持有沪深300, 连续 2-3 个月横盘时收益接近 0 或略亏, 前一月涨幅越大，次月被选中概率越高</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>简洁的单 ETF 轮动+空仓保护，执行容易，未来函数风险低，但参数朴素、分散度不足。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>① 增加持仓数量和最小调仓阈值；② 研究不同 lookback（20/60 日）与阈值；③ 真空仓时自动买入国债 ETF 提升资金利用率。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>资金规模、滑点模型、国债 ETF 空仓处理均未在代码中给出，以上评估按 ETF 日内成交 1-5 bp 滑点假设, 佣金万 3、卖出千 1；若实盘更低则策略更优</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>2</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>8</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>7.0</td></tr>
+                <tr><td>大资金不友好</td><td>3</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>4.3</td></tr>
+                <tr><td>总分</td><td>54.8</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;ETF单品轮动动量&quot;,
+    &quot;strategy_type&quot;: &quot;动量策略&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;用最近20个交易日（g.check_unit=20）的涨幅来比较一篮子宽基/主题指数，对应买入表现最强的那只 ETF，同时用沪深300、上证50等六大指数过去20日（含当日 11:15 最新价）的最大涨幅作为整体市场强弱阈值；只要最大涨幅&gt;0 就持仓，否则全部清空，空仓时可转买国债 ETF（代码写好了但未调用）。逻辑本质是抓取市场的中短期趋势和相对强弱切换，用轮动提高胜率、用空仓避免系统性下跌。&quot;,
+        &quot;data_and_indicators&quot;: &quot;（1）指数和 ETF 日线收盘价（过去 20 日）\n（2）当日 11:15 的指数最新价（基准强弱判断）\n（3）可选 BBI 指标（4 条 30 分钟均线平均），但默认关闭\n更新频率：日级，盘中 11:15 重新计算&quot;,
+        &quot;stock_pool&quot;: &quot;仅限代码 g.etf_list 中列出的 12 只 ETF，对应 12 个宽基/主题指数。无 ST、停牌、流动性过滤；ETF 天然无涨跌停影响，但仍受 10%/20% 限制。&quot;,
+        &quot;buy_signals&quot;: [&quot;过去 20 个交易日涨幅排名第 1（实际先取前 2，再取第 1）&quot;, &quot;整体市场强（六大指数过去 20 日最大涨幅 &gt; 0）&quot;],
+        &quot;sell_signals&quot;: [&quot;整体市场弱（六大指数过去 20 日最大涨幅 ≤ 0）&quot;, &quot;持仓 ETF 不再位列涨幅前 2&quot;],
+        &quot;position_and_risk&quot;: &quot;一次只持 1 只 ETF，目标市值=总资产/1。无止损/止盈；无单票/总仓位上限控制；空仓时未真正买入国债 ETF，实际持现金。&quot;,
+        &quot;trading_frequency&quot;: &quot;理论上每日 11:15 检查并可能调仓；若榜首 ETF 不变则不交易，若榜首频繁变动会日切。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前：检查可交易 ETF是否上市满 5 日；盘中 11:15 计算 20 日涨幅并下单；收盘后无需处理。实盘复制时，只需在 11:15±1min 复刻脚本的买卖指令即可。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有排名使用的数据最晚到上一交易日收盘价；仅整体强弱阈值用到当日 11:15 最新价并同步下单，属于合法的当日信息，不构成未来函数。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;get_price(... end_date=lastd_date) 明确截断到昨日；BBI 版本虽然 include_now=True，但下单同时进行，无超前使用未来收盘价。&quot;,
+            &quot;financial_data_leak&quot;: &quot;完全未调用财务数据。&quot;,
+            &quot;index_component_leak&quot;: &quot;不依赖未来成分，仅用指数点位。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;set_option(\&quot;avoid_future_data\&quot;,True) 已开启；未发现偏移 bug。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;如启用 BBI 逻辑，建议把 BBI 计算区间也统一用到上一根 K 线再延后一根 bar 下单，以彻底规避争议。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;指数 11:15 点位可能与下一笔可成交价存在跳空，实盘仍有最小滞后误差&quot;, &quot;若未来修改为直接用 ETF 当日涨幅做阈值，需重新检查回溯偏差&quot;, &quot;如切换到周/月回测要同步修改 g.check_unit 与调仓频率&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 2,
+        &quot;slippage_reason&quot;: &quot;ETF 流动性好，11:15 挂市价成交对 10w~1000w 基本 1-2 个 bp 内。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;最多日调仓 1 笔买+1 笔卖，佣金万 3，印花税卖出千 1；低成本。&quot;,
+        &quot;execution_score&quot;: 8,
+        &quot;execution_reason&quot;: &quot;只交易 1 支 ETF，容量大；简单均分下单。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;固定 11:15 下单，错过当天也可次日执行但收益路径会偏离。&quot;,
+        &quot;overall_executability&quot;: 8,
+        &quot;overall_reason&quot;: &quot;低换手、大容量标的、固定时间点，工程实现简单。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;影响忽略不计，买 1 手即可。&quot;,
+            &quot;100w&quot;: &quot;依然轻松成交，滑点 &lt;0.02%。&quot;,
+            &quot;1000w&quot;: &quot;大部分宽基 ETF 单边日成交额&gt;10 亿，冲击 &lt;0.1%。&quot;,
+            &quot;1y&quot;: &quot;需分批下单或做 T 型挂单；但仍远优于个股策略。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;把 g.stocknum 调大到 2~3 提升分散度&quot;, &quot;加入最小调仓阈值（如权重变化&gt;10% 再交易）降低换手&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 3,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;ETF 体量大，容量友好；但若规模上亿仍需注意部分主题 ETF 深度。&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;利用动量/趋势追随的行为惯性，属于中等行为偏差利用。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;逻辑简洁但参数固定（20 日、单品、阈值=0），不同市场环境下表现易波动。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.6,
+        &quot;weight_explanation&quot;: &quot;大资金友好40%+行为偏差30%+跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;横盘震荡市（日内跳水又拉回）&quot;, &quot;强轮动但领涨 ETF 频繁切换导致高换手冲击收益&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;当市场呈单边上行趋势时本策略将显著跑赢持有沪深300&quot;, &quot;连续 2-3 个月横盘时收益接近 0 或略亏&quot;, &quot;前一月涨幅越大，次月被选中概率越高&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;简洁的单 ETF 轮动+空仓保护，执行容易，未来函数风险低，但参数朴素、分散度不足。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;① 增加持仓数量和最小调仓阈值；② 研究不同 lookback（20/60 日）与阈值；③ 真空仓时自动买入国债 ETF 提升资金利用率。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 2,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 8,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 8,
+        &quot;effectiveness_a&quot;: 3,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 4.6
+    },
+    
+    &quot;assumptions&quot;: [&quot;资金规模、滑点模型、国债 ETF 空仓处理均未在代码中给出，以上评估按 ETF 日内成交 1-5 bp 滑点假设&quot;, &quot;佣金万 3、卖出千 1；若实盘更低则策略更优&quot;]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三阳三阴情绪板 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>三阳三阴情绪板</h1>
+        <p class="meta">
+            ID: 8d44e45c | 
+            类型: 事件驱动/情绪动量 | 
+            来源: b2324_37.三阳三阴战法.txt |
+            分析日期: 2026-01-11 18:15:20
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>盘前寻找最近 3 根阳线且 30 日内刷新一年新高、且没有出现连续涨停的强势股；盘中突破昨日收盘价 1% 后追涨买板，尾盘及盘中根据均线、成本、当日涨幅、MACD 等条件快速止盈止损，试图捕捉情绪脉冲。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全 A 股（剔除科创板/创业板、ST、停牌、上市 &lt;1080 天）；盘前再根据涨停/阳线组合、近一年新高等条件筛选 help_stock。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>当日开盘后（每分钟检查）候选股现价 &gt; 昨日收盘 1% 且未触及涨停，上日条件满足“三阳三阴”筛选, 账户可用资金 &gt; 5000 元时按可用资金全仓买入</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>14:40 以后：现价跌破 MA10*0.98 或盈利&gt;110%+MACD转弱等 5 组条件, 14:40 以前：针对高开低走、连板高度、开盘放量回落、浮盈/浮亏阈值等 10 组条件</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>单笔 order_value(cash)＝账户剩余全部资金；可能一次买多只股票但不做均衡；无总仓或回撤控制。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>理论上日内高频检查（run_daily time=&#x27;every_bar&#x27; → 默认 1 分钟）；买入发生在满足条件瞬间；卖出可能多次触发但 order_target(0) 后仓位清零。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前运行选股脚本得到待关注名单；盘中盯盘 09:31 之后出现触发价立即全仓买；14:40 以后重点监控提示的卖出条件，否则收盘前全部平仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有 get_price / attribute_history 的 end_date 至多使用当前日期的前一交易日；盘中决策仅用到实时及历史数据。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>attribute_history 默认包含当日已产生的分钟 K 线，若在 9:31 前调用可能掺杂今日数据, 高频 run_daily(…,&#x27;every_bar&#x27;) 与真实撮合速度差异大, 聚宽回测买不到一字板，但实盘排队可能买不到涨停附近筹码</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小资金手工盯盘可做，但需要极速下单与风控；资金规模稍大难以跟随。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>可手动快速打板，滑点可控。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>需拆单，部分弱势票成交困难。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>冲击涨停板深度不足，成交率低且易推高成本。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>基本无法执行，多数票成交额 &lt;1 亿，冲击成本过高。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>追击连板小票，市场容量有限，稍大资金即显著推升价格。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用短期情绪（涨停板、龙头接力），属于典型行为溢价捕捉。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>连板博弈对监管态度、情绪周期高度敏感；熊市或严监管期失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>大盘单边下跌无涨停情绪, 监管加强连板限制、T+0 迟迟未放开</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>样本内收益主要集中在情绪周期高潮阶段, 成交额低于 3 亿的标的超额收益更高但易闪崩, 熊市阶段胜率快速下降至 &lt;30%</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>典型短线打板脚本，低资金可玩，高滑点高风险。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>加仓位控制与限价；改为盘后选股、次日竞价买以减轻时效压力；加入指数过滤避免系统性风险。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>资金规模、滑点模型、bar 频率均未在代码给出，评价假设使用聚宽默认分钟级撮合、0 滑点。, 默认 order_value 为市价成交且无涨跌停无法成交问题，实盘需按涨停限制处理。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>3</td></tr>
+                <tr><td>滑点</td><td>7</td></tr>
+                <tr><td>成本</td><td>6</td></tr>
+                <tr><td>执行难度</td><td>4</td></tr>
+                <tr><td>时间敏感性</td><td>8</td></tr>
+                <tr><td>综合可执行性</td><td>4.9</td></tr>
+                <tr><td>大资金不友好</td><td>8</td></tr>
+                <tr><td>行为偏差利用</td><td>6</td></tr>
+                <tr><td>跨阶段稳健性</td><td>3</td></tr>
+                <tr><td>有效性总分</td><td>5.4</td></tr>
+                <tr><td>总分</td><td>51.6</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;三阳三阴情绪板&quot;,
+    &quot;strategy_type&quot;: &quot;事件驱动/情绪动量&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;盘前寻找最近 3 根阳线且 30 日内刷新一年新高、且没有出现连续涨停的强势股；盘中突破昨日收盘价 1% 后追涨买板，尾盘及盘中根据均线、成本、当日涨幅、MACD 等条件快速止盈止损，试图捕捉情绪脉冲。&quot;,
+        &quot;data_and_indicators&quot;: &quot;仅用价格与成交额数据（get_price / get_ticks / attribute_history），分钟级和日级；技术指标 MACD、10 日均价。&quot;,
+        &quot;stock_pool&quot;: &quot;全 A 股（剔除科创板/创业板、ST、停牌、上市 &lt;1080 天）；盘前再根据涨停/阳线组合、近一年新高等条件筛选 help_stock。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;当日开盘后（每分钟检查）候选股现价 &gt; 昨日收盘 1% 且未触及涨停，上日条件满足“三阳三阴”筛选&quot;,
+            &quot;账户可用资金 &gt; 5000 元时按可用资金全仓买入&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;14:40 以后：现价跌破 MA10*0.98 或盈利&gt;110%+MACD转弱等 5 组条件&quot;,
+            &quot;14:40 以前：针对高开低走、连板高度、开盘放量回落、浮盈/浮亏阈值等 10 组条件&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;单笔 order_value(cash)＝账户剩余全部资金；可能一次买多只股票但不做均衡；无总仓或回撤控制。&quot;,
+        &quot;trading_frequency&quot;: &quot;理论上日内高频检查（run_daily time=&#x27;every_bar&#x27; → 默认 1 分钟）；买入发生在满足条件瞬间；卖出可能多次触发但 order_target(0) 后仓位清零。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前运行选股脚本得到待关注名单；盘中盯盘 09:31 之后出现触发价立即全仓买；14:40 以后重点监控提示的卖出条件，否则收盘前全部平仓。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 3,
+        &quot;risk_score_reason&quot;: &quot;所有 get_price / attribute_history 的 end_date 至多使用当前日期的前一交易日；盘中决策仅用到实时及历史数据。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;未见使用今天收盘后数据；所有 end_date 为 yesterday 或 context.current_dt。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未用财务数据。&quot;,
+            &quot;index_component_leak&quot;: &quot;无因子排名或指数成分未来泄露。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未使用 order_target_percent 等可能出现撮合漏洞的日线模式；风险可忽略。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;保持 end_date=yesterday 的写法；如需稳妥可把 before_market_open 内所有 get_price 改为 history API 保证不会被聚宽未来函数检测误判。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;attribute_history 默认包含当日已产生的分钟 K 线，若在 9:31 前调用可能掺杂今日数据&quot;,
+            &quot;高频 run_daily(…,&#x27;every_bar&#x27;) 与真实撮合速度差异大&quot;,
+            &quot;聚宽回测买不到一字板，但实盘排队可能买不到涨停附近筹码&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 7,
+        &quot;slippage_reason&quot;: &quot;追涨&gt;1% 且要求未封板，属于高动量场景；实盘挂市价易被冲击，滑点显著。&quot;,
+        &quot;cost_score&quot;: 6,
+        &quot;cost_reason&quot;: &quot;平均持股 &lt;1 天，换手率极高；虽单边佣金低，但频繁进出叠加滑点。&quot;,
+        &quot;execution_score&quot;: 4,
+        &quot;execution_reason&quot;: &quot;order_value 全仓市价单易爆仓；热门板块排队、冷门股成交不足。&quot;,
+        &quot;time_sensitivity_score&quot;: 8,
+        &quot;time_sensitivity_reason&quot;: &quot;买入信号触发窗口极窄（突破昨日收盘 1%）；晚几秒成交价差明显。&quot;,
+        &quot;overall_executability&quot;: 4,
+        &quot;overall_reason&quot;: &quot;小资金手工盯盘可做，但需要极速下单与风控；资金规模稍大难以跟随。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;可手动快速打板，滑点可控。&quot;,
+            &quot;100w&quot;: &quot;需拆单，部分弱势票成交困难。&quot;,
+            &quot;1000w&quot;: &quot;冲击涨停板深度不足，成交率低且易推高成本。&quot;,
+            &quot;1y&quot;: &quot;基本无法执行，多数票成交额 &lt;1 亿，冲击成本过高。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;加入限价单：买入挂昨收价*1.03，卖出挂触发价±1tick&quot;,
+            &quot;设置最大单票金额/市值占流通 2% 以内以控制冲击&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 8,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;追击连板小票，市场容量有限，稍大资金即显著推升价格。&quot;,
+        &quot;behavioral_bias_score&quot;: 6,
+        &quot;behavioral_bias_reason&quot;: &quot;利用短期情绪（涨停板、龙头接力），属于典型行为溢价捕捉。&quot;,
+        &quot;cross_period_robustness_score&quot;: 3,
+        &quot;cross_period_robustness_reason&quot;: &quot;连板博弈对监管态度、情绪周期高度敏感；熊市或严监管期失效。&quot;,
+        &quot;effectiveness_total_score&quot;: 3.5,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健性30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;大盘单边下跌无涨停情绪&quot;,
+            &quot;监管加强连板限制、T+0 迟迟未放开&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;样本内收益主要集中在情绪周期高潮阶段&quot;,
+            &quot;成交额低于 3 亿的标的超额收益更高但易闪崩&quot;,
+            &quot;熊市阶段胜率快速下降至 &lt;30%&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;典型短线打板脚本，低资金可玩，高滑点高风险。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;加仓位控制与限价；改为盘后选股、次日竞价买以减轻时效压力；加入指数过滤避免系统性风险。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 3,
+        &quot;slippage&quot;: 7,
+        &quot;cost&quot;: 6,
+        &quot;execution&quot;: 4,
+        &quot;time_sensitivity&quot;: 8,
+        &quot;executability&quot;: 4,
+        &quot;effectiveness_a&quot;: 8,
+        &quot;effectiveness_b&quot;: 6,
+        &quot;effectiveness_c&quot;: 3,
+        &quot;effectiveness_total&quot;: 3.5
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;资金规模、滑点模型、bar 频率均未在代码给出，评价假设使用聚宽默认分钟级撮合、0 滑点。&quot;,
+        &quot;默认 order_value 为市价成交且无涨跌停无法成交问题，实盘需按涨停限制处理。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

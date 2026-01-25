@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大市值高股息PB&lt;1策略 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>大市值高股息PB&lt;1策略</h1>
+        <p class="meta">
+            ID: dbae9314 | 
+            类型: 多因子选股 | 
+            来源: b25_67大市值价投高股息爱国者策略（爱我中华）.txt |
+            分析日期: 2026-01-10 22:45:38
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>在中证全指（000985）成份股中，优先选择市净率低于1、现金流与利润为正、净利润同比增长为正且过去三年累计分红收益率位于前50%的“大市值+高股息+低估值”股票，并进一步要求公司名称中含有“爱/我/中/华”等字样。每月月初等权调仓持有，辅以简单的涨停板行为博弈（前一日涨停未打开则暂缓卖出）。盈利来源假设为：1）低估值+高分红提升安全边际；2）大市值、现金流充裕的公司长期股价回归；3）高分红带来红利再投资收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>母池为中证全指指数成份；过滤规则：①剔除科创/创业/北交所（代码 3/4/8/68 开头）；②剔除停牌、ST、*ST、含退字样；③剔除上市不足 375 个交易日的新股；④剔除开盘即涨/跌停股票。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>每月第1个交易日 9:30 重新计算通过全部因子和过滤条件后的 target_list 中的股票, 若当前未持仓且在 target_list，则按可用资金等权买入</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>调仓日：持仓不再位于 target_list 且昨日未涨停，直接清仓, 对昨日涨停股，若14:00发现涨停被打开，则提前在当日卖出</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>满仓等权分配；未设置单票上限与组合现金保留；未设置跌幅/回撤控制；超额现金因整数股舍入残留。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>核心为月度调仓（run_monthly 每月1号 9:30），遇到昨日涨停个股可能在次日 14:00 额外卖出。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>1) 盘前：生成候选池与目标持仓；2) 9:25-9:30 下买单等权建仓；3) 14:00 检查前日涨停个股，如涨停打开则市价卖出；4) 月末关注下月初调仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>设置了 avoid_future_data；绝大多数数据查询基于 context.previous_date。唯一值得注意的是 get_index_stocks(… , today) 在当日 9:05 调用，可能轻微提前获知当日指数调样，但指数调整通常提前公布且在当日开盘生效，故风险较低。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>分红数据以日期区间查询，需确认上市公司披露滞后是否已由 avoid_future_data 处理, 使用 set_slippage(0) 与真实成交偏差较大，回测易高估收益, 名称包含&#x27;爱/我/中/华&#x27;为主观噪声过滤，可能导致过拟合</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>对 10–1000 万资金较易执行，但需考虑滑点与买入金额配比；大资金仍可操作但分批更稳。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>流动性充裕，几乎无冲击；可用限价单买入。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>依旧可行，单股持仓规模约几十万，流动性足够。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>需分批建仓；大盘股流动性尚可，部分分红高低流动性股可能吃滑点。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>组合容量不足，需扩展股票池或限制仓位；冲击与撮合概率显著下降。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>以大市值股票为主且月调仓，容量相对充足，但名称过滤大幅削弱池子规模。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>主要依赖基本面高股息低估价值，非情绪驱动；仅小部分利用涨停行为。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>价值+分红逻辑在长期有一定稳健性，但怪异的名称过滤增加不确定性；参数较随意。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>价值、高股息风格极端失效时（如成长/题材牛市）, 银行地产周期性下行且分红政策变动</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>组合的分红收益率将长期显著高于中证全指, 组合回撤相对指数更可控, 在熊市或震荡市跑赢指数，在强成长牛市可能落后</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>属于低估值高股息月度轮动，逻辑稳健但名称过滤显得随意，整体未来数据风险低，执行可行。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 去除或替换‘爱/我/中/华’名称筛选以扩大样本；2) 完善仓位控制与止损机制；3) 引入真实滑点与成本评估；4) 进一步验证指数成份日期前视问题并修正</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供初始资金规模——假设回测默认 100 万元, 滑点模型被强行设为0——实际执行将有正负滑点，本文在评分时按一般大盘股日内滑点 2–5bp 考虑, 佣金按万3，印花税万10 为默认聚宽设置, 使用 order_target_value 默认为限价单，模拟实盘需拆单或用市价 FOK</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>3</td></tr>
+                <tr><td>滑点</td><td>4</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>6</td></tr>
+                <tr><td>时间敏感性</td><td>3</td></tr>
+                <tr><td>综合可执行性</td><td>6.8</td></tr>
+                <tr><td>大资金不友好</td><td>4</td></tr>
+                <tr><td>行为偏差利用</td><td>3</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>4.3</td></tr>
+                <tr><td>总分</td><td>54.1</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>{
+    &quot;strategy_name&quot;: &quot;大市值高股息PB&lt;1策略&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;在中证全指（000985）成份股中，优先选择市净率低于1、现金流与利润为正、净利润同比增长为正且过去三年累计分红收益率位于前50%的“大市值+高股息+低估值”股票，并进一步要求公司名称中含有“爱/我/中/华”等字样。每月月初等权调仓持有，辅以简单的涨停板行为博弈（前一日涨停未打开则暂缓卖出）。盈利来源假设为：1）低估值+高分红提升安全边际；2）大市值、现金流充裕的公司长期股价回归；3）高分红带来红利再投资收益。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 价格数据（日频、分钟）；2) 基本面数据（valuation、indicator、cash_flow，按公告日更新）；3) 分红数据（finance.STK_XR_XD，3 年累计）；4) 指数成份（get_index_stocks，当日更新）。&quot;,
+        &quot;stock_pool&quot;: &quot;母池为中证全指指数成份；过滤规则：①剔除科创/创业/北交所（代码 3/4/8/68 开头）；②剔除停牌、ST、*ST、含退字样；③剔除上市不足 375 个交易日的新股；④剔除开盘即涨/跌停股票。&quot;,
+        &quot;buy_signals&quot;: [&quot;每月第1个交易日 9:30 重新计算通过全部因子和过滤条件后的 target_list 中的股票&quot;, &quot;若当前未持仓且在 target_list，则按可用资金等权买入&quot;],
+        &quot;sell_signals&quot;: [&quot;调仓日：持仓不再位于 target_list 且昨日未涨停，直接清仓&quot;, &quot;对昨日涨停股，若14:00发现涨停被打开，则提前在当日卖出&quot;],
+        &quot;position_and_risk&quot;: &quot;满仓等权分配；未设置单票上限与组合现金保留；未设置跌幅/回撤控制；超额现金因整数股舍入残留。&quot;,
+        &quot;trading_frequency&quot;: &quot;核心为月度调仓（run_monthly 每月1号 9:30），遇到昨日涨停个股可能在次日 14:00 额外卖出。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;1) 盘前：生成候选池与目标持仓；2) 9:25-9:30 下买单等权建仓；3) 14:00 检查前日涨停个股，如涨停打开则市价卖出；4) 月末关注下月初调仓。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 3,
+        &quot;risk_score_reason&quot;: &quot;设置了 avoid_future_data；绝大多数数据查询基于 context.previous_date。唯一值得注意的是 get_index_stocks(… , today) 在当日 9:05 调用，可能轻微提前获知当日指数调样，但指数调整通常提前公布且在当日开盘生效，故风险较低。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;全部价格数据通过 get_price/history 并以 end_date=context.previous_date 或计数1m实时读取，无跨日未来泄漏。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals 未显式指定 date，但在回测框架+avoid_future_data=True 下默认使用上个可得财报，不构成明显未来函数；风险可忽略。&quot;,
+            &quot;index_component_leak&quot;: &quot;get_index_stocks 使用 today（9:05 前），理论上当日成份已生效且信息可公开，但若回测跨越历史指数换仓日，可能提前获知当天才生效的调整，存在轻微前视。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未见对尚未完成的交易日数据、未结算资金等的引用，风险低。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;将 get_index_stocks 的日期参数改为 context.previous_date，或显式提前一个交易日获取，彻底消除前视争议。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;分红数据以日期区间查询，需确认上市公司披露滞后是否已由 avoid_future_data 处理&quot;, &quot;使用 set_slippage(0) 与真实成交偏差较大，回测易高估收益&quot;, &quot;名称包含&#x27;爱/我/中/华&#x27;为主观噪声过滤，可能导致过拟合&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 4,
+        &quot;slippage_reason&quot;: &quot;月度开盘集合竞价等权买入，多为大盘+低估值高股息股，流动性较好；但 set_slippage(0) 会低估；实际滑点中等。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;月度主调仓，外加偶发卖出，换手率中低；佣金税费可控。&quot;,
+        &quot;execution_score&quot;: 6,
+        &quot;execution_reason&quot;: &quot;一次性等权买入多只股票，需要拆分委托；大市值股普遍成交量高，1000 万量级以下问题不大。&quot;,
+        &quot;time_sensitivity_score&quot;: 3,
+        &quot;time_sensitivity_reason&quot;: &quot;主要在 9:30 前后挂单即可；14:00 对涨停股的观察可人工调整，时效中等。&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;对 10–1000 万资金较易执行，但需考虑滑点与买入金额配比；大资金仍可操作但分批更稳。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;流动性充裕，几乎无冲击；可用限价单买入。&quot;,
+            &quot;100w&quot;: &quot;依旧可行，单股持仓规模约几十万，流动性足够。&quot;,
+            &quot;1000w&quot;: &quot;需分批建仓；大盘股流动性尚可，部分分红高低流动性股可能吃滑点。&quot;,
+            &quot;1y&quot;: &quot;组合容量不足，需扩展股票池或限制仓位；冲击与撮合概率显著下降。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;在回测使用真实滑点与交易成本模型以评估收益稳定性&quot;, &quot;设置最大单只股票权重与分单逻辑，降低大额资金冲击&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 4,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;以大市值股票为主且月调仓，容量相对充足，但名称过滤大幅削弱池子规模。&quot;,
+        &quot;behavioral_bias_score&quot;: 3,
+        &quot;behavioral_bias_reason&quot;: &quot;主要依赖基本面高股息低估价值，非情绪驱动；仅小部分利用涨停行为。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;价值+分红逻辑在长期有一定稳健性，但怪异的名称过滤增加不确定性；参数较随意。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.0,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;价值、高股息风格极端失效时（如成长/题材牛市）&quot;, &quot;银行地产周期性下行且分红政策变动&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;组合的分红收益率将长期显著高于中证全指&quot;, &quot;组合回撤相对指数更可控&quot;, &quot;在熊市或震荡市跑赢指数，在强成长牛市可能落后&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;属于低估值高股息月度轮动，逻辑稳健但名称过滤显得随意，整体未来数据风险低，执行可行。&quot;,
+        &quot;recommendation&quot;: &quot;继续研究&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 去除或替换‘爱/我/中/华’名称筛选以扩大样本；2) 完善仓位控制与止损机制；3) 引入真实滑点与成本评估；4) 进一步验证指数成份日期前视问题并修正&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 3,
+        &quot;slippage&quot;: 4,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 6,
+        &quot;time_sensitivity&quot;: 3,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 4,
+        &quot;effectiveness_b&quot;: 3,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 4.0
+    },
+    
+    &quot;assumptions&quot;: [&quot;未提供初始资金规模——假设回测默认 100 万元&quot;, &quot;滑点模型被强行设为0——实际执行将有正负滑点，本文在评分时按一般大盘股日内滑点 2–5bp 考虑&quot;, &quot;佣金按万3，印花税万10 为默认聚宽设置&quot;, &quot;使用 order_target_value 默认为限价单，模拟实盘需拆单或用市价 FOK&quot;]
+}</pre>
+        </div>
+
+    </div>
+</body>
+</html>

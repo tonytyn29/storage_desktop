@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SalesGrowth-SmallCap_Timing - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>SalesGrowth-SmallCap_Timing</h1>
+        <p class="meta">
+            ID: ab939c61 | 
+            类型: 多因子选股 + 指数短周期趋势择时 | 
+            来源: b2324_54.sales_growth今年最优版.txt |
+            分析日期: 2026-01-11 18:21:10
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>（1）先判断大盘是否处于短期上升（2日均线&gt;前 2 日均线）；若是，则在小市值股票里挑选销售收入增速最高且近期成交量放大的个股持有 5 只；（2）若大盘 3 日均线向下，则全部清仓。通过财务高成长 + 量价活跃捕捉个股 Alpha，同时用大盘趋势过滤大幅回撤。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全 A 股（get_all_securities），剔除上市 &lt;250 日、ST/退市、科创板 688、停牌、涨跌停。再取 sales_growth 前 10% → EPS&gt;0 → 按流通市值从小到大取 10 → 最近 10 日放量次数排序取 5 只。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>大盘 2 日均线上升且当前空仓, 上述筛选得到的 5 只股票中不在涨跌停且未停牌</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>大盘 3 日均线下降（即 g.idx3_1 &lt; g.idx3_2）全部清仓, 周一调仓时股票不再出现在最新 buy list</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多 5 只，等价值分配（order_target_value），无单只或组合止损，靠指数过滤防守；指数下跌时可全仓空置。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>理论上一周最多调仓一次（周一 09:31），若大盘趋势反转可在任意交易日 09:30 触发清仓或再次建仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前：08:30-09:10 跑选股脚本生成候选池；09:25 后观察指数是否满足多头；09:30-09:35 按等权下单；盘中无需操作；收盘关注是否出现 3 日均线拐头准备次日 09:30 清仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>开启 set_option(&#x27;avoid_future_data&#x27;,True)；所有因子用 end_date=yesterday；无使用 history(count=0) 等未来函数。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>sales_growth 因子若未对财报发布日期做 lag，会产生轻微前视, 09:15 调用 get_factor_values 会得到 T-1 收盘后已知的信息，需确认发布时点, attribute_history 默认包含当天已产生的分钟级数据，跨日回测 OK，实盘需注意前后复权一致</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小资金运行通畅；&gt;3000 万开始遇到容量与冲击成本。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>全部可成交，滑点可忽略。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>大部分可成交，偶有小票拆单。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>明显冲击，需扩容到 10-15 只或分批建仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>接近极限，不建议，需改用中盘池 + 量化拆单。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>依赖小市值 &amp; 放量特征，容量有限；大单导致冲击。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>部分利用量价情绪（放量、涨跌停过滤），但主要还是基本面增速。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>财务成长 + 小盘溢价在多数年份存在，但 2016、2018 价值风格或熊市时失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>小盘持续杀估值/流动性枯竭的熊市, 销售增速因疫情等造成基数错配失真</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>小市值高 sales_growth 个股未来一周超额收益为正, 若上证指数 2 日均线上穿，则组合收益显著好于空仓, 指数 3 日均线下行期间持股胜率 &lt; 40%</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>简单的小盘成长 + 短线趋势策略，逻辑直观但容量有限；未来函数风险低，可小规模实盘验证。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 增加成交额过滤和持仓数量提高容量；2) 替换指数均线为更 robust 的风险模型；3) 对 sales_growth 做公告日滞后处理。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>默认资金规模 &lt;3000 万，order_target_value 能完全成交, 未给出滑点模型，假设真实成交价 = 市价；费用按代码 set_order_cost</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>3</td></tr>
+                <tr><td>滑点</td><td>4</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>6.7</td></tr>
+                <tr><td>大资金不友好</td><td>7</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>5.5</td></tr>
+                <tr><td>总分</td><td>60.8</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;SalesGrowth-SmallCap_Timing&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股 + 指数短周期趋势择时&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;（1）先判断大盘是否处于短期上升（2日均线&gt;前 2 日均线）；若是，则在小市值股票里挑选销售收入增速最高且近期成交量放大的个股持有 5 只；（2）若大盘 3 日均线向下，则全部清仓。通过财务高成长 + 量价活跃捕捉个股 Alpha，同时用大盘趋势过滤大幅回撤。&quot;,
+        &quot;data_and_indicators&quot;: &quot;价格: 上证指数 5 日日线；个股收盘价、成交量 10 日日线；1 分钟行情用于涨跌停判断。财务/因子: jqfactor ‘sales_growth’（TTM 收入增速），indicator.eps，valuation.circulating_market_cap。全部日频更新，因子取上一交易日 end_date=yesterday。&quot;,
+        &quot;stock_pool&quot;: &quot;全 A 股（get_all_securities），剔除上市 &lt;250 日、ST/退市、科创板 688、停牌、涨跌停。再取 sales_growth 前 10% → EPS&gt;0 → 按流通市值从小到大取 10 → 最近 10 日放量次数排序取 5 只。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;大盘 2 日均线上升且当前空仓&quot;,
+            &quot;上述筛选得到的 5 只股票中不在涨跌停且未停牌&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;大盘 3 日均线下降（即 g.idx3_1 &lt; g.idx3_2）全部清仓&quot;,
+            &quot;周一调仓时股票不再出现在最新 buy list&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;最多 5 只，等价值分配（order_target_value），无单只或组合止损，靠指数过滤防守；指数下跌时可全仓空置。&quot;,
+        &quot;trading_frequency&quot;: &quot;理论上一周最多调仓一次（周一 09:31），若大盘趋势反转可在任意交易日 09:30 触发清仓或再次建仓。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前：08:30-09:10 跑选股脚本生成候选池；09:25 后观察指数是否满足多头；09:30-09:35 按等权下单；盘中无需操作；收盘关注是否出现 3 日均线拐头准备次日 09:30 清仓。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 3,
+        &quot;risk_score_reason&quot;: &quot;开启 set_option(&#x27;avoid_future_data&#x27;,True)；所有因子用 end_date=yesterday；无使用 history(count=0) 等未来函数。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;history/attribute_history 均向后取数，slice 不越界；无未来价。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_factor_values count=1 end_date=yesterday，若 jqfactor 已做时点处理，则无泄漏，小概率滞后披露风险。&quot;,
+            &quot;index_component_leak&quot;: &quot;无使用当日收盘排序；排序在 09:15 前完成，仍属于盘前数据，不涉及未来值。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未见向后引用当日收益或成交量之后信息。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;如需完全消除财报滞后，改用财报发布日期过滤；确认 jqfactor 采用发布日回溯。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;sales_growth 因子若未对财报发布日期做 lag，会产生轻微前视&quot;,
+            &quot;09:15 调用 get_factor_values 会得到 T-1 收盘后已知的信息，需确认发布时点&quot;,
+            &quot;attribute_history 默认包含当天已产生的分钟级数据，跨日回测 OK，实盘需注意前后复权一致&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 4,
+        &quot;slippage_reason&quot;: &quot;周一 09:31 下单，接近开盘集合竞价后流动性尚可；但目标为小市值高成长股，价差可能放大。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;平均每周调仓一次，清仓再买入，换手中等偏上；费率假设万 3 手续费 + 千 1 印花已设置。&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;单票等权，可能命中一字涨停无法买入；剔除涨停但仍需排队；量化下单系统化程度中等。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;分钟级，不要求毫秒竞价，但必须在 09:30-09:35 完成，下单延迟可能导致涨停买不到。&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;小资金运行通畅；&gt;3000 万开始遇到容量与冲击成本。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;全部可成交，滑点可忽略。&quot;,
+            &quot;100w&quot;: &quot;大部分可成交，偶有小票拆单。&quot;,
+            &quot;1000w&quot;: &quot;明显冲击，需扩容到 10-15 只或分批建仓。&quot;,
+            &quot;1y&quot;: &quot;接近极限，不建议，需改用中盘池 + 量化拆单。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;将持仓数由 5 扩大到 10-15 只降低单票冲击&quot;,
+            &quot;引入成交量或交易额阈值过滤（近 20 日日均成交额 &gt; 5000 万）&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 7,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;依赖小市值 &amp; 放量特征，容量有限；大单导致冲击。&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;部分利用量价情绪（放量、涨跌停过滤），但主要还是基本面增速。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;财务成长 + 小盘溢价在多数年份存在，但 2016、2018 价值风格或熊市时失效。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.5,
+        &quot;weight_explanation&quot;: &quot;大资金友好40% + 行为30% + 稳健30%；(7*0.4 + 4*0.3 + 5*0.3)=5.5&quot;,
+        &quot;worst_environments&quot;: [&quot;小盘持续杀估值/流动性枯竭的熊市&quot;, &quot;销售增速因疫情等造成基数错配失真&quot;],
+        &quot;verifiable_predictions&quot;: [
+            &quot;小市值高 sales_growth 个股未来一周超额收益为正&quot;,
+            &quot;若上证指数 2 日均线上穿，则组合收益显著好于空仓&quot;,
+            &quot;指数 3 日均线下行期间持股胜率 &lt; 40%&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;简单的小盘成长 + 短线趋势策略，逻辑直观但容量有限；未来函数风险低，可小规模实盘验证。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 增加成交额过滤和持仓数量提高容量；2) 替换指数均线为更 robust 的风险模型；3) 对 sales_growth 做公告日滞后处理。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 3,
+        &quot;slippage&quot;: 4,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 7,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.5
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;默认资金规模 &lt;3000 万，order_target_value 能完全成交&quot;,
+        &quot;未给出滑点模型，假设真实成交价 = 市价；费用按代码 set_order_cost&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

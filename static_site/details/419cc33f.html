@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7日量价突破多头策略 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>7日量价突破多头策略</h1>
+        <p class="meta">
+            ID: 419cc33f | 
+            类型: 动量/趋势跟踪 | 
+            来源: b2324_49.【7日趋势】交易策略.txt |
+            分析日期: 2026-01-11 18:19:09
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>寻找近阶段均线多头排列（13&gt;21&gt;55）且出现连续放量上涨、开盘跳空的个股，借助短期情绪与量价惯性，在开盘后快速介入，持有 1~3 天如未形成进一步拉升则快速退出；若进入加速段则使用移动止盈保护利润。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全 A 股去除科创板(688)、ST/*/退市、上市不足 365 日、停牌、涨跌停股票；市值 30~500 亿，最近换手率 2%~10%。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>昨日满足：收盘涨幅≥5%，量能≥上一日 1.5 倍，且 13&gt;21&gt;55 均线形成 6 日以上多头；过去 7 日内至少 3 次单日放量≥前一日 1.7 倍。, 当日 9:30 前后：开盘价 &gt; 昨日收盘且涨幅 &lt;3%。满足后取 Alpha11 评分最高的前 3 只。</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>止损：收益≤-7%。, 止盈回撤：浮盈≥20% 回撤≥3% 或 15%≤浮盈&lt;20% 回撤≥5%。, 时间+表现：持仓 3 日且收益&lt;5%，或持仓 1 日且收益&lt;0%。</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多持 3 只；初始等权（根据已有持仓数量将可用资金分 1~3 份）；set_option(&#x27;order_volume_ratio&#x27;,0.25) 约束下单量≤当日成交量 25%；单股止损/止盈逻辑见上。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>每日 09:00 盘前选股，09:30 按当日开盘价附近下单；平均换手 1~3 天一轮。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前（08:30-09:15）跑选股脚本并生成候选列表；开盘后 9:25-9:30 观察开盘价是否满足 &lt;3% 跳空，立即按资金比例下单；盘中与收盘后检查止盈/止损条件。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>核心选股使用前一交易日(p_date)数据；run_daily(trade, 09:30) 时仅引用当天 open 与 pre_close，属已发生信息。未发现调用 get_fundamentals_continuously / history_x 之类未来函数。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>开盘 9:30 下单在实盘并非一定拿到开盘价，回测无滑点可能高估收益。, Alpha11 排序函数未充分检验未来数据，但当前实现仍基于历史窗口；需保持一致窗口长度。, 大量依赖成交量倍数与涨跌停规则，若出现临停或集合竞价失真，实盘表现会异于回测。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小资金(&lt;1000w)可通过拆单完成，滑点可控；大资金难以在 9:30 完成建仓且风险集中。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>基本无冲击，单笔&lt;万股，滑点≈1-2bp。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>需多次拆单，滑点≈5-8bp，可接受。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>单票日需求可能占流通量&gt;5%，超出 order_volume_ratio 限制，需多日建仓 → 信号衰减。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>不可执行，容量与集中度不足。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>集中 3 只中小盘，且需在集合后 1 分钟成交；容量上限低。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用放量突破+短期追涨情绪，存在明显行为金融动量成分。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>对市场情绪与涨跌停制度敏感，震荡或单边下跌环境失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>无量下跌或缩量横盘市, 监管政策突变导致涨跌停规则或手续费大幅调整</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>信号出现后的首日涨幅显著高于基准 (&gt;1%), 持仓 3 日内收益分布右偏，尾部风控触发比例&lt;20%, 高换手+中市值组合在上涨行情中夏普值&gt;1.5</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>典型短线量价突破策略，逻辑清晰但容量有限且对滑点极度敏感。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>增加持仓数量、真实滑点建模、分时逐笔买入、使用动态止盈以提升盈亏比。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>默认初始资金为 1,000,000 元（聚宽回测默认值），代码未显式给出。, 滑点模型设定为 FixedSlippage(0)，实盘中实际滑点需自行估算并纳入风险控制。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>5</td></tr>
+                <tr><td>成本</td><td>5</td></tr>
+                <tr><td>执行难度</td><td>6</td></tr>
+                <tr><td>时间敏感性</td><td>7</td></tr>
+                <tr><td>综合可执行性</td><td>5.5</td></tr>
+                <tr><td>大资金不友好</td><td>7</td></tr>
+                <tr><td>行为偏差利用</td><td>6</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>5.5</td></tr>
+                <tr><td>总分</td><td>54.8</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;7日量价突破多头策略&quot;,
+    &quot;strategy_type&quot;: &quot;动量/趋势跟踪&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;寻找近阶段均线多头排列（13&gt;21&gt;55）且出现连续放量上涨、开盘跳空的个股，借助短期情绪与量价惯性，在开盘后快速介入，持有 1~3 天如未形成进一步拉升则快速退出；若进入加速段则使用移动止盈保护利润。&quot;,
+        &quot;data_and_indicators&quot;: &quot;行情数据：120 日日线 (open/high/low/close/volume) ；财务/估值数据：当日之前 1 个交易日的市值与换手率。技术指标：SMA(5/13/21/55)、MACD（仅用于评分函数）、成交量倍数、波动标准差。&quot;,
+        &quot;stock_pool&quot;: &quot;全 A 股去除科创板(688)、ST/*/退市、上市不足 365 日、停牌、涨跌停股票；市值 30~500 亿，最近换手率 2%~10%。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;昨日满足：收盘涨幅≥5%，量能≥上一日 1.5 倍，且 13&gt;21&gt;55 均线形成 6 日以上多头；过去 7 日内至少 3 次单日放量≥前一日 1.7 倍。&quot;,
+            &quot;当日 9:30 前后：开盘价 &gt; 昨日收盘且涨幅 &lt;3%。满足后取 Alpha11 评分最高的前 3 只。&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;止损：收益≤-7%。&quot;,
+            &quot;止盈回撤：浮盈≥20% 回撤≥3% 或 15%≤浮盈&lt;20% 回撤≥5%。&quot;,
+            &quot;时间+表现：持仓 3 日且收益&lt;5%，或持仓 1 日且收益&lt;0%。&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;最多持 3 只；初始等权（根据已有持仓数量将可用资金分 1~3 份）；set_option(&#x27;order_volume_ratio&#x27;,0.25) 约束下单量≤当日成交量 25%；单股止损/止盈逻辑见上。&quot;,
+        &quot;trading_frequency&quot;: &quot;每日 09:00 盘前选股，09:30 按当日开盘价附近下单；平均换手 1~3 天一轮。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前（08:30-09:15）跑选股脚本并生成候选列表；开盘后 9:25-9:30 观察开盘价是否满足 &lt;3% 跳空，立即按资金比例下单；盘中与收盘后检查止盈/止损条件。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;核心选股使用前一交易日(p_date)数据；run_daily(trade, 09:30) 时仅引用当天 open 与 pre_close，属已发生信息。未发现调用 get_fundamentals_continuously / history_x 之类未来函数。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;未发现越界索引；get_price(..., end_date=check_date) 均止于上一日；trade 阶段使用实时 open 数据符合时间序列。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals 取上一交易日数据，符合财报披露可得性要求。&quot;,
+            &quot;index_component_leak&quot;: &quot;未引用指数成分未来权重。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;设置 avoid_future_data=True；仅使用 FixedSlippage(0) 但不影响未来数据。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;将 skip_paused=True 改为 False 以避免删掉停牌日导致隐含未来信息的对齐偏差。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;开盘 9:30 下单在实盘并非一定拿到开盘价，回测无滑点可能高估收益。&quot;,
+            &quot;Alpha11 排序函数未充分检验未来数据，但当前实现仍基于历史窗口；需保持一致窗口长度。&quot;,
+            &quot;大量依赖成交量倍数与涨跌停规则，若出现临停或集合竞价失真，实盘表现会异于回测。&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 5,
+        &quot;slippage_reason&quot;: &quot;早盘抢筹+仅 3 只票 → 市价冲击可达 5~10bp；回测设 0 滑点低估。&quot;,
+        &quot;cost_score&quot;: 5,
+        &quot;cost_reason&quot;: &quot;平均持有 1-3 天，月换手率约数百 %，佣金+印花税约 20-30bp/月。&quot;,
+        &quot;execution_score&quot;: 6,
+        &quot;execution_reason&quot;: &quot;order_volume_ratio=25% 限制成交量；但目标股常为中小盘，早盘流动性有限需拆单。&quot;,
+        &quot;time_sensitivity_score&quot;: 7,
+        &quot;time_sensitivity_reason&quot;: &quot;必须在开盘涨幅&lt;3% 区间内成交，否则信号失效。&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;小资金(&lt;1000w)可通过拆单完成，滑点可控；大资金难以在 9:30 完成建仓且风险集中。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;基本无冲击，单笔&lt;万股，滑点≈1-2bp。&quot;,
+            &quot;100w&quot;: &quot;需多次拆单，滑点≈5-8bp，可接受。&quot;,
+            &quot;1000w&quot;: &quot;单票日需求可能占流通量&gt;5%，超出 order_volume_ratio 限制，需多日建仓 → 信号衰减。&quot;,
+            &quot;1y&quot;: &quot;不可执行，容量与集中度不足。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;在 trade 阶段使用 VWAP 拆单算法，减轻 9:30 的冲击。&quot;,
+            &quot;引入真实滑点模型回测，评估容量并适度提高持仓数量至 5-8 只分散冲击。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 7,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;集中 3 只中小盘，且需在集合后 1 分钟成交；容量上限低。&quot;,
+        &quot;behavioral_bias_score&quot;: 6,
+        &quot;behavioral_bias_reason&quot;: &quot;利用放量突破+短期追涨情绪，存在明显行为金融动量成分。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;对市场情绪与涨跌停制度敏感，震荡或单边下跌环境失效。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.8,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40%+行为偏差30%+跨阶段稳健性30%。&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;无量下跌或缩量横盘市&quot;,
+            &quot;监管政策突变导致涨跌停规则或手续费大幅调整&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;信号出现后的首日涨幅显著高于基准 (&gt;1%)&quot;,
+            &quot;持仓 3 日内收益分布右偏，尾部风控触发比例&lt;20%&quot;,
+            &quot;高换手+中市值组合在上涨行情中夏普值&gt;1.5&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;典型短线量价突破策略，逻辑清晰但容量有限且对滑点极度敏感。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;增加持仓数量、真实滑点建模、分时逐笔买入、使用动态止盈以提升盈亏比。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 5,
+        &quot;cost&quot;: 5,
+        &quot;execution&quot;: 6,
+        &quot;time_sensitivity&quot;: 7,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 7,
+        &quot;effectiveness_b&quot;: 6,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 5.8
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;默认初始资金为 1,000,000 元（聚宽回测默认值），代码未显式给出。&quot;,
+        &quot;滑点模型设定为 FixedSlippage(0)，实盘中实际滑点需自行估算并纳入风险控制。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

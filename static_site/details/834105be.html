@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行业宽度轮动-20日均线偏离 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>行业宽度轮动-20日均线偏离</h1>
+        <p class="meta">
+            ID: 834105be | 
+            类型: 动量/行业轮动 | 
+            来源: b25_92行业宽度轮动研究.txt |
+            分析日期: 2026-01-10 23:05:08
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>在若干固定的一线行业(军工、食品饮料、煤炭、银行、通信)中，统计各行业成分股中价格高于自身20日均线的股票占比(行业“宽度”)；每周选择占比最高的行业(动量最强)，再在该行业内选出近10日跌幅最大的5 只股票（短期回调中的强势股）买入，持有一周或直到出现卖出条件。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>从中证全指指数成分股出发，剔除  ST、停牌、上市 ≤375 日、科创板/北交所/创业板(代码4/8/68/3开头)、当日涨跌停股。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>每周一 09:30 计算5个备选行业的“宽度”，选出占比最高的行业, 在该行业内取近10日跌幅最大的5只股票且通过一系列过滤后等权买入</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>股票不在最新目标名单且昨日未涨停→市价清仓, 昨日涨停但今日盘中14:00 仍未封板→当下市价卖出</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>目标持股数量=5(可修改为 g.stock_num × g.num)，单票等权，满仓操作；无止损/止盈/资金上限 逻辑，其它风控缺失。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>周频调仓：run_weekly 在每周第一个交易日 09:30 执行；盘中14:00 可能触发个别卖出。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前准备前一日数据；09:25 前根据行业宽度与10日跌幅筛股，下单等权买入；14:00 检查昨日涨停股，如有打开跌停则立即卖出；收盘后复核持仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有核心计算均使用 context.previous_date 或实时行情；未发现 look-ahead 的 get_fundamentals(TTM) 或以未来日期索引的数据。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>行业列表硬编码，可能导致过拟合, 只选一个行业+5只股，集中度高, sell 逻辑依赖14:00 行情，实盘需确保风控脚本稳定</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小中资金易执行；&gt;5000万时部分个股流动性不足，需分批或加价成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>基本无冲击，佣金可忽略。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>稳健执行，滑点≈2~3bp。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>部分小市值股票需拆单成交，全天成交即可；冲击≈10bp。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>选股容量不足，部分股票单日成交额 &lt;2%资金，强行执行导致冲击 &gt;30bp。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>仅5只股票持仓且可能是中小市值，容量有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用‘高宽度行业动量+短期回调’的情绪回摆，存在明确非理性动量因素。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>固定5个行业 + 窄规则，易受结构行情影响；熊市/震荡期可能失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>主题轮动极快的日内行情, 行业整体转熊而无反弹</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>被选中的行业未来一周超额收益为正, 个股在被买入后一周内回到10日跌幅均值, 昨日涨停次日若继续封板则维持高收益</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>周频行业+个股动量逻辑简单易懂，但集中度高、容量有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 增加行业池或动态选择行业数量；2) 引入基本面或成交额过滤；3) 卖出规则加入止损/风控。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>默认资金规模≤1000万，超出需另行评估, 佣金0.03%+印花税千一，滑点设为0；如实盘存在滑点，需要在归因中调整</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>3</td></tr>
+                <tr><td>滑点</td><td>4</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>7</td></tr>
+                <tr><td>时间敏感性</td><td>5</td></tr>
+                <tr><td>综合可执行性</td><td>6.1</td></tr>
+                <tr><td>大资金不友好</td><td>7</td></tr>
+                <tr><td>行为偏差利用</td><td>6</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>5.5</td></tr>
+                <tr><td>总分</td><td>57.4</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;行业宽度轮动-20日均线偏离&quot;,
+    &quot;strategy_type&quot;: &quot;动量/行业轮动&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;在若干固定的一线行业(军工、食品饮料、煤炭、银行、通信)中，统计各行业成分股中价格高于自身20日均线的股票占比(行业“宽度”)；每周选择占比最高的行业(动量最强)，再在该行业内选出近10日跌幅最大的5 只股票（短期回调中的强势股）买入，持有一周或直到出现卖出条件。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 日线价格(过去21根K线)；2) 20日简单移动平均；3) 1分钟行情(判定涨/跌停、停牌)；4) 沪深300​中证全指指数成分（000985）；5) SW一级行业归属；数据日频更新，部分1分钟级别实时过滤。&quot;,
+        &quot;stock_pool&quot;: &quot;从中证全指指数成分股出发，剔除  ST、停牌、上市 ≤375 日、科创板/北交所/创业板(代码4/8/68/3开头)、当日涨跌停股。&quot;,
+        &quot;buy_signals&quot;: [&quot;每周一 09:30 计算5个备选行业的“宽度”，选出占比最高的行业&quot;, &quot;在该行业内取近10日跌幅最大的5只股票且通过一系列过滤后等权买入&quot;],
+        &quot;sell_signals&quot;: [&quot;股票不在最新目标名单且昨日未涨停→市价清仓&quot;, &quot;昨日涨停但今日盘中14:00 仍未封板→当下市价卖出&quot;],
+        &quot;position_and_risk&quot;: &quot;目标持股数量=5(可修改为 g.stock_num × g.num)，单票等权，满仓操作；无止损/止盈/资金上限 逻辑，其它风控缺失。&quot;,
+        &quot;trading_frequency&quot;: &quot;周频调仓：run_weekly 在每周第一个交易日 09:30 执行；盘中14:00 可能触发个别卖出。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前准备前一日数据；09:25 前根据行业宽度与10日跌幅筛股，下单等权买入；14:00 检查昨日涨停股，如有打开跌停则立即卖出；收盘后复核持仓。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 3,
+        &quot;risk_score_reason&quot;: &quot;所有核心计算均使用 context.previous_date 或实时行情；未发现 look-ahead 的 get_fundamentals(TTM) 或以未来日期索引的数据。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;get_price() 的 end_date 使用 previous_date；实时过滤仅用当前时点可得信息 → 无泄漏&quot;,
+            &quot;financial_data_leak&quot;: &quot;财务数据查询被注释掉，实际未调用 → 无风险&quot;,
+            &quot;index_component_leak&quot;: &quot;get_index_stocks 使用 today(当前回测日期) 属于当天已知成分，回测合法 → 低风险&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未见直接操作 context.portfolio 未来值、亦未使用 rolling 未来窗口 → 无显著风险&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;1) 仍建议把 get_index_stocks 调用的日期统一改为 previous_date 增强稳健；2) filter_kcbj_stock 建议用列表推导避免遍历时删除元素。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;行业列表硬编码，可能导致过拟合&quot;, &quot;只选一个行业+5只股，集中度高&quot;, &quot;sell 逻辑依赖14:00 行情，实盘需确保风控脚本稳定&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 4,
+        &quot;slippage_reason&quot;: &quot;周频+等权分仓，对象大多为中证全指成分，早盘集合竞价或开盘价成交，影响中等。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;平均每周换手≈80~100%(全部调仓概率高)，佣金+印花税中等。&quot;,
+        &quot;execution_score&quot;: 7,
+        &quot;execution_reason&quot;: &quot;集中挑选当期回调个股，可能流动性较差（军工、通信次新）；大于千万资金会推高冲击。&quot;,
+        &quot;time_sensitivity_score&quot;: 5,
+        &quot;time_sensitivity_reason&quot;: &quot;买入在09:30 开盘即可，下单窗口较宽；14:00 卖出触发需要盘中监控。&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;小中资金易执行；&gt;5000万时部分个股流动性不足，需分批或加价成交。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;基本无冲击，佣金可忽略。&quot;,
+            &quot;100w&quot;: &quot;稳健执行，滑点≈2~3bp。&quot;,
+            &quot;1000w&quot;: &quot;部分小市值股票需拆单成交，全天成交即可；冲击≈10bp。&quot;,
+            &quot;1y&quot;: &quot;选股容量不足，部分股票单日成交额 &lt;2%资金，强行执行导致冲击 &gt;30bp。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;扩大行业与股票数量提高容量&quot;, &quot;使用 VWAP 或分时拆单降低冲击&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 7,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;仅5只股票持仓且可能是中小市值，容量有限。&quot;,
+        &quot;behavioral_bias_score&quot;: 6,
+        &quot;behavioral_bias_reason&quot;: &quot;利用‘高宽度行业动量+短期回调’的情绪回摆，存在明确非理性动量因素。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;固定5个行业 + 窄规则，易受结构行情影响；熊市/震荡期可能失效。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.4,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40%+行为偏差30%+跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;主题轮动极快的日内行情&quot;, &quot;行业整体转熊而无反弹&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;被选中的行业未来一周超额收益为正&quot;, &quot;个股在被买入后一周内回到10日跌幅均值&quot;, &quot;昨日涨停次日若继续封板则维持高收益&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;周频行业+个股动量逻辑简单易懂，但集中度高、容量有限。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 增加行业池或动态选择行业数量；2) 引入基本面或成交额过滤；3) 卖出规则加入止损/风控。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 3,
+        &quot;slippage&quot;: 4,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 7,
+        &quot;time_sensitivity&quot;: 5,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 7,
+        &quot;effectiveness_b&quot;: 6,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 5.4
+    },
+    
+    &quot;assumptions&quot;: [&quot;默认资金规模≤1000万，超出需另行评估&quot;, &quot;佣金0.03%+印花税千一，滑点设为0；如实盘存在滑点，需要在归因中调整&quot;]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

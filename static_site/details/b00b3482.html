@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北向持仓+资金温度轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>北向持仓+资金温度轮动</h1>
+        <p class="meta">
+            ID: b00b3482 | 
+            类型: 资金流向轮动 / 动量策略 | 
+            来源: b2324_20.北向资金股票轮动-优质策略可直接实盘.txt |
+            分析日期: 2026-01-11 15:03:47
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>用最近 3 个交易日北向资金净流入作为大盘情绪温度计：当累计流出超过 10（代码中的单位应为亿元，具体未给出，视为绝对值）则空仓，只持有货币 ETF；其余时间等权买入前一交易日港股通持股比例最高的 15 只 A 股。逻辑假设：1）北向资金具有信息优势，持续大幅流出往往对应市场风险升高；2）被外资大量持有的标的代表质地优/流动性好，后续存在超额收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>未显式过滤 ST、停牌、涨跌停、上市天数或流动性，仅以港股通持股表返回的股票为准（实际多为大盘蓝筹）。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>北向资金 3 日累计净流入 ≥ -10（即未出现大额流出）, 所选股票属于前一日港股通持仓占比 Top 15</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>北向资金 3 日累计净流出 &lt; -10 时全仓清空, 标的不再位列 Top 15 时被调出</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多 15 只股票等权，个股≈1/15仓位；空仓时全仓买入 511880（7 日期国债 ETF）。无止损/止盈；无行业/市值/波动率控制。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>每日 8:30 计算资金温度，9:30 市场开盘立即调仓。若 Top15 变化不大则换手较低；若变动大则几乎日调整体仓位。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前（≥8:30）先统计北向数据→决定是否清仓；开盘后按最新 Top15 等权下单即可。若使用人工下单，需保证在集合竞价或开盘后尽快完成。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有查询均限定 day &lt; today 或等于 context.previous_date；且在 run_daily(8:30,9:30) 执行。已 set_option(&#x27;avoid_future_data&#x27;,True)。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>finance.STK_HK_HOLD_INFO 发布时点未知，若真实披露晚于开盘，会产生未来函数风险, 未过滤停牌/ST，回测成交与实盘可能偏差, 使用整数阈值 -10 未说明单位，需与实盘数据对齐</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>交易品种流动性+等权分散，对 1 亿以内资金友好；需简单工程化即可落地。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>极易执行，佣金与滑点可忽略</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>轻松成交，单票 6~7 万，盘中任意时段皆可</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>单票 ~600 万；大盘蓝筹可胜任，需分批挂单避免冲击</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>流动性仍够，但需做 VWAP 或冰山挂单，且可能影响盘口</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>标的多为沪深 300 大市值，容量充足，对大资金友好</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用外资偏好与资金流，属弱行为成分，非纯情绪</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>逻辑简单但缺乏多周期验证；外资行为可能阶段性失效</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>外资持续净流出但市场单边大涨, 北向数据发布延迟/异常</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>北向三日净买≥0 时持股组合未来 1~5 日收益优于沪深 300, 组合年化波动低于中证 500, 北向净卖超额时空仓（511880）能显著降低回撤</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>简洁易跑的资金温度+轮动模型，未来函数风险低，执行性好，但缺乏多维风控与长期验证。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>补充风险过滤（ST/停牌）、动态仓位控制、长期回测及分区检验</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供资金规模，默认评估 10w~1亿区间, 使用聚宽默认手续费 1‰ 单边+印花税 1‰；滑点模型为 0, finance.STK_HK_HOLD_INFO 与 STK_ML_QUOTA 最晚在开盘前已完整披露</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>4</td></tr>
+                <tr><td>成本</td><td>5</td></tr>
+                <tr><td>执行难度</td><td>7</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>6.0</td></tr>
+                <tr><td>大资金不友好</td><td>3</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>4.1</td></tr>
+                <tr><td>总分</td><td>49.4</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;北向持仓+资金温度轮动&quot;,
+    &quot;strategy_type&quot;: &quot;资金流向轮动 / 动量策略&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;用最近 3 个交易日北向资金净流入作为大盘情绪温度计：当累计流出超过 10（代码中的单位应为亿元，具体未给出，视为绝对值）则空仓，只持有货币 ETF；其余时间等权买入前一交易日港股通持股比例最高的 15 只 A 股。逻辑假设：1）北向资金具有信息优势，持续大幅流出往往对应市场风险升高；2）被外资大量持有的标的代表质地优/流动性好，后续存在超额收益。&quot;,
+        &quot;data_and_indicators&quot;: &quot;a) finance.STK_ML_QUOTA 获取北向买卖金额（日频）；b) finance.STK_HK_HOLD_INFO 获取前一日港股通持股比例（日频）；c) context.portfolio 实时持仓市值；无任何价格/技术指标。&quot;,
+        &quot;stock_pool&quot;: &quot;未显式过滤 ST、停牌、涨跌停、上市天数或流动性，仅以港股通持股表返回的股票为准（实际多为大盘蓝筹）。&quot;,
+        &quot;buy_signals&quot;: [&quot;北向资金 3 日累计净流入 ≥ -10（即未出现大额流出）&quot;, &quot;所选股票属于前一日港股通持仓占比 Top 15&quot;],
+        &quot;sell_signals&quot;: [&quot;北向资金 3 日累计净流出 &lt; -10 时全仓清空&quot;, &quot;标的不再位列 Top 15 时被调出&quot;],
+        &quot;position_and_risk&quot;: &quot;最多 15 只股票等权，个股≈1/15仓位；空仓时全仓买入 511880（7 日期国债 ETF）。无止损/止盈；无行业/市值/波动率控制。&quot;,
+        &quot;trading_frequency&quot;: &quot;每日 8:30 计算资金温度，9:30 市场开盘立即调仓。若 Top15 变化不大则换手较低；若变动大则几乎日调整体仓位。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前（≥8:30）先统计北向数据→决定是否清仓；开盘后按最新 Top15 等权下单即可。若使用人工下单，需保证在集合竞价或开盘后尽快完成。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有查询均限定 day &lt; today 或等于 context.previous_date；且在 run_daily(8:30,9:30) 执行。已 set_option(&#x27;avoid_future_data&#x27;,True)。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;未使用未来价格；交易信号于 9:30 基于前一日数据生成。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未调用财报数据，仅用北向、持股表，均为 T-1 可得。&quot;,
+            &quot;index_component_leak&quot;: &quot;排序使用前一日 share_ratio，不含未来信息；无成分股穿透。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无自定义回测时间序列，未见跨日 look-ahead。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;仍建议在 calc_change() 中将 .day==context.previous_date 改为 &lt; context.current_date 且 limit 1，避免非交易日错位。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;finance.STK_HK_HOLD_INFO 发布时点未知，若真实披露晚于开盘，会产生未来函数风险&quot;,
+            &quot;未过滤停牌/ST，回测成交与实盘可能偏差&quot;,
+            &quot;使用整数阈值 -10 未说明单位，需与实盘数据对齐&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 4,
+        &quot;slippage_reason&quot;: &quot;开盘一次性下 15 只等权篮子，以大盘蓝筹为主，滑点通常 &lt;0.1%。&quot;,
+        &quot;cost_score&quot;: 5,
+        &quot;cost_reason&quot;: &quot;理论上每日检查且可能调仓；实际换手取决于 Top15 变动，估算周级~日级。&quot;,
+        &quot;execution_score&quot;: 7,
+        &quot;execution_reason&quot;: &quot;标的流动性好，集合竞价或 T+0 开盘即可成交；容量较大。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;信号基于日频数据，允许开盘当日成交即可，非分钟级高频。&quot;,
+        &quot;overall_executability&quot;: 7,
+        &quot;overall_reason&quot;: &quot;交易品种流动性+等权分散，对 1 亿以内资金友好；需简单工程化即可落地。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;极易执行，佣金与滑点可忽略&quot;,
+            &quot;100w&quot;: &quot;轻松成交，单票 6~7 万，盘中任意时段皆可&quot;,
+            &quot;1000w&quot;: &quot;单票 ~600 万；大盘蓝筹可胜任，需分批挂单避免冲击&quot;,
+            &quot;1y&quot;: &quot;流动性仍够，但需做 VWAP 或冰山挂单，且可能影响盘口&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;加入 ST/停牌/涨跌停过滤，提高实盘一致性&quot;,
+            &quot;用动态阈值或 Z 分数替代固定 -10，提高适应性&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 3,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;标的多为沪深 300 大市值，容量充足，对大资金友好&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;利用外资偏好与资金流，属弱行为成分，非纯情绪&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;逻辑简单但缺乏多周期验证；外资行为可能阶段性失效&quot;,
+        &quot;effectiveness_total_score&quot;: 4.2,
+        &quot;weight_explanation&quot;: &quot;大资金友好40% (0.4*3) + 行为偏差30% (0.3*4) + 跨期稳健30% (0.3*5)&quot;,
+        &quot;worst_environments&quot;: [&quot;外资持续净流出但市场单边大涨&quot;, &quot;北向数据发布延迟/异常&quot;],
+        &quot;verifiable_predictions&quot;: [
+            &quot;北向三日净买≥0 时持股组合未来 1~5 日收益优于沪深 300&quot;,
+            &quot;组合年化波动低于中证 500&quot;,
+            &quot;北向净卖超额时空仓（511880）能显著降低回撤&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;简洁易跑的资金温度+轮动模型，未来函数风险低，执行性好，但缺乏多维风控与长期验证。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;补充风险过滤（ST/停牌）、动态仓位控制、长期回测及分区检验&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 4,
+        &quot;cost&quot;: 5,
+        &quot;execution&quot;: 7,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 7,
+        &quot;effectiveness_a&quot;: 3,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 4.2
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供资金规模，默认评估 10w~1亿区间&quot;,
+        &quot;使用聚宽默认手续费 1‰ 单边+印花税 1‰；滑点模型为 0&quot;,
+        &quot;finance.STK_HK_HOLD_INFO 与 STK_ML_QUOTA 最晚在开盘前已完整披露&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

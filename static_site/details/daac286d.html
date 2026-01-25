@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>周调3只小市值因子轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>周调3只小市值因子轮动</h1>
+        <p class="meta">
+            ID: daac286d | 
+            类型: 多因子选股 | 
+            来源: b25_10.10年52倍，年化59，全新因子方法超稳定.txt |
+            分析日期: 2026-01-10 22:01:52
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>每周一开盘先用技术面因子(ARBR)做一次粗筛，然后从符合条件的股票中按流通市值由小到大排序，选择EPS为正的最小市值股票（最多 3 只）建仓；持有期间若股票前一日涨停且当日 14:00 仍封板则继续持有，否则在 14:00 打板松动即卖出。4 月 5-30 日期间全部清仓观望。策略企图利用：(1) 小市值股票的超额收益；(2) ARBR 因子对短期情绪/趋势的捕捉；(3) 涨停次日板块情绪的延续。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>初始池=全 A 股；过滤条件：①上市≥252 个交易日；②非创业板/科创板/北交所；③非停牌、非 ST、名称不含 ST、*、退；④当天开盘未一字涨跌停；⑤接下来再按 ARBR 范围筛选；⑥EPS&gt;0；⑦按流通市值升序取前 3 只。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>每周一 09:30 运行 get_stock_list() 产生 target_list，不在持仓且在 target_list 的股票按等额资金买入, 若上周持仓股票昨日涨停且今日仍封板，则即使不在 target_list 也暂不卖出</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>每周一 09:30 若持仓股票不在 target_list 且昨日未涨停则市价清仓, 昨日涨停股，若当日 14:00 不再封板则立即清仓, 每年 4 月 5-30 日期间不做交易，若有持仓全部卖出</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多持 3 只股票，等权（按剩余现金均分），未设置单票或组合止损；无市值／行业集中度控制；无动态仓位管理。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>正常年份：周调仓（每周一 09:30）+可能的 14:00 卖出；4 月份清仓后静默约 1 个月。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前：跑选股脚本得到目标股；09:25 等开盘后按等权买入；盘中 14:00 检查昨日涨停股是否开板；尾盘 14:30 如在 4 月观望期则清仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>已调用 set_option(&#x27;avoid_future_data&#x27;,True)，大部分价格数据使用上一交易日或当前分钟。但 get_fundamentals 在 JoinQuant 默认以报告期而非真实披露日对齐，可能产生财务未来偏差；此外 get_all_securities(date=today) 在 09:05 获取全部证券名单，会包含当天上市的新股，理论上仍合法。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>零滑点设置只适用于研究，实盘请引入合理滑点模型, 14:00 使用 1 分钟数据下单，对不同券商通道延迟敏感, 4 月观望窗口属于经验规则，可能降低长期有效性</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>对中小资金（&lt;500 万）较易落地；需加滑点控制与分批下单。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>极易成交，组合分散度不足导致波动大但无流动性瓶颈</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>仍可一次性下单，需注意跌停无法卖出风险</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>买入3只小盘股会显著冲击盘口，需拆单或提高标的数量</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>几乎无法执行，换手受成交量限制</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>只买 3 只小市值股票，对大资金容量非常有限</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>依赖 ARBR（情绪/趋势）+涨停回溯，利用短期情绪行为偏差</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>核心驱动为小市值溢价+技术指标，可能随监管及市场风格变化失效；但逻辑简单，有一定可迁移性</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>小盘股流动性骤降/连续跌停, 监管强化、限制小盘炒作的时期</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>ARBR 在样本外对下周收益有正向预测力, 小市值且 EPS&gt;0 的股票组合超额收益显著, 4 月财报空窗期观望能减少回撤</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>依赖小市值+技术情绪的周频策略，对小资金或许有效，但存在前视财务数据风险和执行/容量限制。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 修正财报发布日期滞后，彻底消除未来函数；2) 引入流动性与跌停风控并扩充持仓数量；3) 使用真实滑点与限价成交模型</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供初始资金规模，默认按 JoinQuant 默认 100 万测试账户, 未给出实盘滑点/冲击模型，假设 0.1%–0.5% 真实滑点将出现；已在评分中考虑</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>5</td></tr>
+                <tr><td>滑点</td><td>4</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>5</td></tr>
+                <tr><td>综合可执行性</td><td>6.6</td></tr>
+                <tr><td>大资金不友好</td><td>7</td></tr>
+                <tr><td>行为偏差利用</td><td>6</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>5.9</td></tr>
+                <tr><td>总分</td><td>62.3</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;周调3只小市值因子轮动&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;每周一开盘先用技术面因子(ARBR)做一次粗筛，然后从符合条件的股票中按流通市值由小到大排序，选择EPS为正的最小市值股票（最多 3 只）建仓；持有期间若股票前一日涨停且当日 14:00 仍封板则继续持有，否则在 14:00 打板松动即卖出。4 月 5-30 日期间全部清仓观望。策略企图利用：(1) 小市值股票的超额收益；(2) ARBR 因子对短期情绪/趋势的捕捉；(3) 涨停次日板块情绪的延续。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) jqfactor 提供的技术因子 ARBR（日频） 2) 基础行情数据（日线、1 分钟） 3) 基本面数据 valuation.circulating_market_cap, indicator.eps（季报，按最新可用一期） 4) 交易日历、涨跌停价格&quot;,
+        &quot;stock_pool&quot;: &quot;初始池=全 A 股；过滤条件：①上市≥252 个交易日；②非创业板/科创板/北交所；③非停牌、非 ST、名称不含 ST、*、退；④当天开盘未一字涨跌停；⑤接下来再按 ARBR 范围筛选；⑥EPS&gt;0；⑦按流通市值升序取前 3 只。&quot;,
+        &quot;buy_signals&quot;: [&quot;每周一 09:30 运行 get_stock_list() 产生 target_list，不在持仓且在 target_list 的股票按等额资金买入&quot;, &quot;若上周持仓股票昨日涨停且今日仍封板，则即使不在 target_list 也暂不卖出&quot;],
+        &quot;sell_signals&quot;: [&quot;每周一 09:30 若持仓股票不在 target_list 且昨日未涨停则市价清仓&quot;, &quot;昨日涨停股，若当日 14:00 不再封板则立即清仓&quot;, &quot;每年 4 月 5-30 日期间不做交易，若有持仓全部卖出&quot;],
+        &quot;position_and_risk&quot;: &quot;最多持 3 只股票，等权（按剩余现金均分），未设置单票或组合止损；无市值／行业集中度控制；无动态仓位管理。&quot;,
+        &quot;trading_frequency&quot;: &quot;正常年份：周调仓（每周一 09:30）+可能的 14:00 卖出；4 月份清仓后静默约 1 个月。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前：跑选股脚本得到目标股；09:25 等开盘后按等权买入；盘中 14:00 检查昨日涨停股是否开板；尾盘 14:30 如在 4 月观望期则清仓。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;不确定&quot;,
+        &quot;risk_level&quot;: &quot;中&quot;,
+        &quot;risk_score&quot;: 5,
+        &quot;risk_score_reason&quot;: &quot;已调用 set_option(&#x27;avoid_future_data&#x27;,True)，大部分价格数据使用上一交易日或当前分钟。但 get_fundamentals 在 JoinQuant 默认以报告期而非真实披露日对齐，可能产生财务未来偏差；此外 get_all_securities(date=today) 在 09:05 获取全部证券名单，会包含当天上市的新股，理论上仍合法。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;所有选股用 yesterday（context.previous_date）的因子与价格，未出现跨日提前引用；风险低。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals 未指定 date 的发布日对齐，若 JQ 基本面仍按报告期填充，则在历史回测中可能提前看到尚未披露的 EPS，存在中等风险。&quot;,
+            &quot;index_component_leak&quot;: &quot;未使用指数成分，风险低。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;设置了零滑点、固定手续费，但不影响未来函数判断。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;使用 get_fundamentals_continuously 或 finance.run_query 并加 publish_date 过滤，确保财报在回测日已披露；或对 EPS 相关条件完全去除以避免基本面前视。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;零滑点设置只适用于研究，实盘请引入合理滑点模型&quot;, &quot;14:00 使用 1 分钟数据下单，对不同券商通道延迟敏感&quot;, &quot;4 月观望窗口属于经验规则，可能降低长期有效性&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 4,
+        &quot;slippage_reason&quot;: &quot;周一 09:30 开盘直接市价等额买入小市值股，竞价涨跌停过滤虽降低价格跳空，但依旧可能高开导致成交价偏离开盘价；盘中 14:00 清仓动作对小票冲击有限但仍有 1–2 档差。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;周级换手（理论上 0–3 只换手/周），成交成本可控；但买入卖出均用市价 order_target_value，可能打穿盘口。&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;只交易 3 只小市值股，深度有限；10–100 万易成交，&gt;1000 万开始吃深度。&quot;,
+        &quot;time_sensitivity_score&quot;: 5,
+        &quot;time_sensitivity_reason&quot;: &quot;09:30 开盘立刻下单+14:00 盘中判断，需要盘中执行但非秒级；对延迟有中等要求。&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;对中小资金（&lt;500 万）较易落地；需加滑点控制与分批下单。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;极易成交，组合分散度不足导致波动大但无流动性瓶颈&quot;,
+            &quot;100w&quot;: &quot;仍可一次性下单，需注意跌停无法卖出风险&quot;,
+            &quot;1000w&quot;: &quot;买入3只小盘股会显著冲击盘口，需拆单或提高标的数量&quot;,
+            &quot;1y&quot;: &quot;几乎无法执行，换手受成交量限制&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;引入成交量/流动性过滤或扩大持仓数量至≥20 只降低冲击&quot;, &quot;加入分批委托、限价单与合理滑点，避免高开高买&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 7,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;只买 3 只小市值股票，对大资金容量非常有限&quot;,
+        &quot;behavioral_bias_score&quot;: 6,
+        &quot;behavioral_bias_reason&quot;: &quot;依赖 ARBR（情绪/趋势）+涨停回溯，利用短期情绪行为偏差&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;核心驱动为小市值溢价+技术指标，可能随监管及市场风格变化失效；但逻辑简单，有一定可迁移性&quot;,
+        &quot;effectiveness_total_score&quot;: 5.9,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;小盘股流动性骤降/连续跌停&quot;, &quot;监管强化、限制小盘炒作的时期&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;ARBR 在样本外对下周收益有正向预测力&quot;, &quot;小市值且 EPS&gt;0 的股票组合超额收益显著&quot;, &quot;4 月财报空窗期观望能减少回撤&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;依赖小市值+技术情绪的周频策略，对小资金或许有效，但存在前视财务数据风险和执行/容量限制。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 修正财报发布日期滞后，彻底消除未来函数；2) 引入流动性与跌停风控并扩充持仓数量；3) 使用真实滑点与限价成交模型&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 5,
+        &quot;slippage&quot;: 4,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 5,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 7,
+        &quot;effectiveness_b&quot;: 6,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.9
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供初始资金规模，默认按 JoinQuant 默认 100 万测试账户&quot;,
+        &quot;未给出实盘滑点/冲击模型，假设 0.1%–0.5% 真实滑点将出现；已在评分中考虑&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

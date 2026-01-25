@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>财务质量筛选月调十股 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>财务质量筛选月调十股</h1>
+        <p class="meta">
+            ID: 09829a70 | 
+            类型: 多因子选股 | 
+            来源: b2324_73.稳健趋势策略，回测小，无未来函数.txt |
+            分析日期: 2026-01-11 18:27:14
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>每月末第 4 个交易日前后，先剔除近三年内上市的新股、停牌/涨跌停股票，然后按照“低负债→适度坏资产→高优质资产周转→ROA 改善→估值便宜(PB、PS)” 逐层过滤，最终选出 10 只财务质量持续向好且估值不过高的股票等权持有，期望赚取基本面改善带来的估值上移和业绩兑现收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全部 A 股(不含未上市满 3 年的股票)。硬过滤：当日涨停/跌停/停牌。不再过滤 ST/创业板/科创板(代码中已注释)，无市值和流动性过滤。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>月调仓日 11:30 取得的候选股经过五层财务过滤进入前 10 名, 组合中不存在该股票</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>月调仓日股票不再出现在最新前 10 名列表, 组合规模超出 10 只时的多余持仓</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>目标 10 只等权，组合总仓位 g.position=1(满仓)，无单只上限或止损；剩余现金不买入时留存。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>run_monthly，每月倒数第 4 个交易日 11:30 下单一次；实际换手取决于股票是否被剔除。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘中 11:25-11:30 导出最新筛选名单，下单按等权分配剩余资金；可接受 T+1 早盘执行，因指标为日频且无价量信号。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>使用 get_fundamentals 与 get_history_fundamentals 时已 set_option(&#x27;avoid_future_data&#x27;,True)，无明显未来数据调用；未见 history/minute_bar 的未来切片。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>财报披露滞后导致的‘信息提前’仍可能轻微存在, 未过滤 ST/退市股易触发停牌或流动性问题, 月内极端行情无法及时止损</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>低频+少标的+宽滑点，个人及中小机构易执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>完全可行，滑点与冲击忽略不计。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>可行；单票平均 10 万→日均成交额&gt;2000 万的股票已足够。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>需要关注流动性。若集中买入小盘、换手率偏低个股会有冲击，但月调仓可分批。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>组合 10 亿单票 1 亿，对多数股票已构成冲击，需扩大股票数、分散交易时段或使用 VWAP 交易。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>10 只持仓等权，容量有限但月度低换手，典型中等容量策略。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>主要依赖财务基本面，行为偏差利用度有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>因子体系对经济周期敏感，未加行业/宏观分层，历史有效性中等。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>财报集中爆雷或财务造假高发阶段, 价值风格显著跑输、成长或主题炒作占优阶段</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>组合 ROA 同比增速显著高于沪深 300 成分股中位数, 组合未来 3-6 个月 PB 收敛/提升幅度高于全市场平均, 组合在价值因子强势年份超额收益较高、成长因子强势年份跑输</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>朴素财务多因子月调策略，逻辑简洁、执行易，但对财务披露时滞与流动性管理处理不足。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>补充 ST/流动性过滤、延迟财报窗口、加入止损或指数对冲，提升抗风险能力。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>默认资金规模未给出——以上执行难度评分以 1000 万以内资金为主假设, 未给出滑点/佣金模型——沿用代码中固定滑点 2%、万五佣金、千一印花税</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>5</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>8</td></tr>
+                <tr><td>时间敏感性</td><td>3</td></tr>
+                <tr><td>综合可执行性</td><td>5.9</td></tr>
+                <tr><td>大资金不友好</td><td>5</td></tr>
+                <tr><td>行为偏差利用</td><td>3</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>4.6</td></tr>
+                <tr><td>总分</td><td>51.9</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;财务质量筛选月调十股&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;每月末第 4 个交易日前后，先剔除近三年内上市的新股、停牌/涨跌停股票，然后按照“低负债→适度坏资产→高优质资产周转→ROA 改善→估值便宜(PB、PS)” 逐层过滤，最终选出 10 只财务质量持续向好且估值不过高的股票等权持有，期望赚取基本面改善带来的估值上移和业绩兑现收益。&quot;,
+        &quot;data_and_indicators&quot;: &quot;主要使用 JQ 的财务因子：资产负债表、利润表、指标库(ROA)；历史窗口 4 个季度；价格只用于过滤涨跌停及下单。数据更新频率按聚宽财务库—日度快照。价格数据为分钟级实时价格(use_real_price=True)。&quot;,
+        &quot;stock_pool&quot;: &quot;全部 A 股(不含未上市满 3 年的股票)。硬过滤：当日涨停/跌停/停牌。不再过滤 ST/创业板/科创板(代码中已注释)，无市值和流动性过滤。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;月调仓日 11:30 取得的候选股经过五层财务过滤进入前 10 名&quot;,
+            &quot;组合中不存在该股票&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;月调仓日股票不再出现在最新前 10 名列表&quot;,
+            &quot;组合规模超出 10 只时的多余持仓&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;目标 10 只等权，组合总仓位 g.position=1(满仓)，无单只上限或止损；剩余现金不买入时留存。&quot;,
+        &quot;trading_frequency&quot;: &quot;run_monthly，每月倒数第 4 个交易日 11:30 下单一次；实际换手取决于股票是否被剔除。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘中 11:25-11:30 导出最新筛选名单，下单按等权分配剩余资金；可接受 T+1 早盘执行，因指标为日频且无价量信号。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;使用 get_fundamentals 与 get_history_fundamentals 时已 set_option(&#x27;avoid_future_data&#x27;,True)，无明显未来数据调用；未见 history/minute_bar 的未来切片。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;仅使用当日实时 open 与涨跌停价格进行过滤，无未来价格。&quot;,
+            &quot;financial_data_leak&quot;: &quot;所有财务数据 watch_date&lt;=当天，且 avoid_future_data=True；但未显式考虑财报公布滞后，仍可能略高估回测表现。&quot;,
+            &quot;index_component_leak&quot;: &quot;未使用指数成分或未来权重。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未调用 history(N=&#x27;?&#x27;) 跨未来区间等函数；风险可忽略。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;为稳妥起见，可将财务因子整体向后移动 1~2 个月，或过滤 announcement_date 未公布的季度报表。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;财报披露滞后导致的‘信息提前’仍可能轻微存在&quot;,
+            &quot;未过滤 ST/退市股易触发停牌或流动性问题&quot;,
+            &quot;月内极端行情无法及时止损&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 5,
+        &quot;slippage_reason&quot;: &quot;策略默认 set_slippage=0.02(2%) 已是极大预留，现实等权 10 只月换手滑点较低，但若 11:30 成交活跃度不足仍需吃价。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;月调仓，换手率有限；佣金万 5、印花税千 1 影响小。&quot;,
+        &quot;execution_score&quot;: 8,
+        &quot;execution_reason&quot;: &quot;单次 10 只等权，品种大概率为中大盘，易成交；极端流动性风险有限。&quot;,
+        &quot;time_sensitivity_score&quot;: 3,
+        &quot;time_sensitivity_reason&quot;: &quot;信号为日频财务因子，T+0/T+1 执行差异不大。&quot;,
+        &quot;overall_executability&quot;: 8,
+        &quot;overall_reason&quot;: &quot;低频+少标的+宽滑点，个人及中小机构易执行。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;完全可行，滑点与冲击忽略不计。&quot;,
+            &quot;100w&quot;: &quot;可行；单票平均 10 万→日均成交额&gt;2000 万的股票已足够。&quot;,
+            &quot;1000w&quot;: &quot;需要关注流动性。若集中买入小盘、换手率偏低个股会有冲击，但月调仓可分批。&quot;,
+            &quot;1y&quot;: &quot;组合 10 亿单票 1 亿，对多数股票已构成冲击，需扩大股票数、分散交易时段或使用 VWAP 交易。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;增加流动性和 ST 过滤，降低踩雷概率&quot;,
+            &quot;加入最大回撤控制或动态仓位，以防系统性风险&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 5,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;10 只持仓等权，容量有限但月度低换手，典型中等容量策略。&quot;,
+        &quot;behavioral_bias_score&quot;: 3,
+        &quot;behavioral_bias_reason&quot;: &quot;主要依赖财务基本面，行为偏差利用度有限。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;因子体系对经济周期敏感，未加行业/宏观分层，历史有效性中等。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.4,
+        &quot;weight_explanation&quot;: &quot;容量40%+行为30%+跨阶段30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;财报集中爆雷或财务造假高发阶段&quot;,
+            &quot;价值风格显著跑输、成长或主题炒作占优阶段&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;组合 ROA 同比增速显著高于沪深 300 成分股中位数&quot;,
+            &quot;组合未来 3-6 个月 PB 收敛/提升幅度高于全市场平均&quot;,
+            &quot;组合在价值因子强势年份超额收益较高、成长因子强势年份跑输&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;朴素财务多因子月调策略，逻辑简洁、执行易，但对财务披露时滞与流动性管理处理不足。&quot;,
+        &quot;recommendation&quot;: &quot;小中仓资金可继续跟踪并实盘小规模试验。&quot;,
+        &quot;optimization_suggestions&quot;: &quot;补充 ST/流动性过滤、延迟财报窗口、加入止损或指数对冲，提升抗风险能力。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 5,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 8,
+        &quot;time_sensitivity&quot;: 3,
+        &quot;executability&quot;: 8,
+        &quot;effectiveness_a&quot;: 5,
+        &quot;effectiveness_b&quot;: 3,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 4.4
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;默认资金规模未给出——以上执行难度评分以 1000 万以内资金为主假设&quot;,
+        &quot;未给出滑点/佣金模型——沿用代码中固定滑点 2%、万五佣金、千一印花税&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4ETF动量轮动+4%日内止损 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>4ETF动量轮动+4%日内止损</h1>
+        <p class="meta">
+            ID: 84bb48bf | 
+            类型: 动量策略 | 
+            来源: b25_22带上止损的核心资产轮动才更安心，低回撤，高收益率.txt |
+            分析日期: 2026-01-10 22:11:10
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>在黄金ETF、纳指100ETF、创业板100ETF、上证180ETF四只‘核心资产’之间做日频动量排名，每天选取过去25个自然日对数收益线性回归斜率（代表收益率）×R²（代表趋势稳定度）得分最高的1 只ETF满仓持有；若当日收盘价低于昨日收盘价4%，则空仓止损。重新买入需满足价格重新站上最近4日均价。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>固定 ETF 池：518880(黄金)、513100(纳指100)、159915(创业板100)、510180(上证180)。不涉及个股过滤，attribute_history 内置 skip_paused=True，自动剔除停牌日；不关心涨跌停限制（ETF 无涨跌停限制）。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>每日 9:30 计算 4 只 ETF 25 日动量得分，选择最高分的 ETF 作为目标。, 若当前空仓且目标ETF当日收盘价≥近4日均价，且上次止损并空仓的标的不等于当前目标，或已等到价格重新站上4日均价，则用所有可用资金买入目标ETF。</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>轮动调仓：持仓ETF 非当日动量第一名，则市价全卖出。, 止损：若持仓 ETF 当日收盘价 ≤ 昨日收盘价 ×0.96 则全清仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多同时持有 1 只 ETF，目标仓位 100%。止损触发后暂时空仓，等待条件再次满足才重建；未显式设置最大跌幅/回撤或单日交易额限制。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>理论上日频检查，但只有当动量排序变化或触发止损时才交易，年化换手约 20~40 次；下单在每天 9:30 run_daily(trade) 时一次性完成。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前（7:00）更新数据并计算四日均价、历史最高价等；开盘后尽快（≥9:30）根据最新收盘价未知，实盘需将条件改为昨日数据或用盘中即时价做风控。根据动量排行决定是否调仓并一次性成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>使用 attribute_history(g.m_days, &#x27;1d&#x27;) 在 9:30 回调中调用，在聚宽回测，‘1d’频率在当日 9:30 前只返回到昨日收盘数据，因此通常安全；但如果回测引擎的日线更新在开盘前完成则无未来数据。风险评分 5（中）以反映对此行为的常见争议。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>止损/买入逻辑使用当天收盘价进行判断，但下单在 9:30 开盘，实盘无法获知收盘价，需改为昨日收盘或盘中价格阈值。, 零滑点设置在回测中过度乐观，实盘需引入合理滑点模型。, 回测交易在 9:30 直接以开盘价成交，注意开盘价冲击与偏差。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>流动性好、换手低、时点要求低，适合自动或手动执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>几手 ETF，流动性充裕，无影响。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>单笔百万级买卖在 ETF 中毫无压力，冲击可忽略。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>需分批或盘中成交，但问题有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>上亿资金对 510180/159915/518880/513100 也能成交，但需注意市场冲击与申购赎回节奏，仍可操作。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>ETF 日均成交量百亿级，容量充足，对大资金友好。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>依赖短期动量和止损再入，部分利用追涨杀跌和情绪延续。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>简单 25 日动量+R² 逻辑在历史多阶段可能有效，但仅 4 只资产、无宏观滤波，可能在震荡市失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>四只ETF同步震荡或横盘, 极端单日大跳空低开导致错位止损、再高开买不回</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>动量最高的ETF未来一段时间收益&gt;其他ETF, 单日-4%收盘价下的止损能减少后续回撤, 价格重回4日均线上方后重新买入提高整体收益</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>简洁的四资产动量+止损逻辑，低换手、易执行，理论上有一定超额，但需要修正未来价引用与实际滑点。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 使用昨日收盘价进行信号判断+次日开盘交易；2) 研究不同动量窗口/得分权重与资产池扩展；3) 引入资金面或宏观过滤提高横盘期表现。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未给定资金规模，默认少于 1 亿元用于评分。, 实际手续费、滑点、申购赎回差异未在代码中体现，评估时按常见 ETF 交易情形假设。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>5</td></tr>
+                <tr><td>滑点</td><td>3</td></tr>
+                <tr><td>成本</td><td>2</td></tr>
+                <tr><td>执行难度</td><td>8</td></tr>
+                <tr><td>时间敏感性</td><td>3</td></tr>
+                <tr><td>综合可执行性</td><td>6.9</td></tr>
+                <tr><td>大资金不友好</td><td>2</td></tr>
+                <tr><td>行为偏差利用</td><td>6</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>4.1</td></tr>
+                <tr><td>总分</td><td>53.5</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;4ETF动量轮动+4%日内止损&quot;,
+    &quot;strategy_type&quot;: &quot;动量策略&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;在黄金ETF、纳指100ETF、创业板100ETF、上证180ETF四只‘核心资产’之间做日频动量排名，每天选取过去25个自然日对数收益线性回归斜率（代表收益率）×R²（代表趋势稳定度）得分最高的1 只ETF满仓持有；若当日收盘价低于昨日收盘价4%，则空仓止损。重新买入需满足价格重新站上最近4日均价。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 价格数据：4 只ETF 的复权收盘价，日频；2) 动量指标：25 日对数收益线性回归斜率（年化）×R²；3) 止损 &amp; 再入指标：当日收盘价/昨日收盘价、当日收盘价/历史最高价、当日收盘价/近 10 日最高价、近 4 日均价。&quot;,
+        &quot;stock_pool&quot;: &quot;固定 ETF 池：518880(黄金)、513100(纳指100)、159915(创业板100)、510180(上证180)。不涉及个股过滤，attribute_history 内置 skip_paused=True，自动剔除停牌日；不关心涨跌停限制（ETF 无涨跌停限制）。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;每日 9:30 计算 4 只 ETF 25 日动量得分，选择最高分的 ETF 作为目标。&quot;,
+            &quot;若当前空仓且目标ETF当日收盘价≥近4日均价，且上次止损并空仓的标的不等于当前目标，或已等到价格重新站上4日均价，则用所有可用资金买入目标ETF。&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;轮动调仓：持仓ETF 非当日动量第一名，则市价全卖出。&quot;,
+            &quot;止损：若持仓 ETF 当日收盘价 ≤ 昨日收盘价 ×0.96 则全清仓。&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;最多同时持有 1 只 ETF，目标仓位 100%。止损触发后暂时空仓，等待条件再次满足才重建；未显式设置最大跌幅/回撤或单日交易额限制。&quot;,
+        &quot;trading_frequency&quot;: &quot;理论上日频检查，但只有当动量排序变化或触发止损时才交易，年化换手约 20~40 次；下单在每天 9:30 run_daily(trade) 时一次性完成。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前（7:00）更新数据并计算四日均价、历史最高价等；开盘后尽快（≥9:30）根据最新收盘价未知，实盘需将条件改为昨日数据或用盘中即时价做风控。根据动量排行决定是否调仓并一次性成交。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;不确定&quot;,
+        &quot;risk_level&quot;: &quot;中&quot;,
+        &quot;risk_score&quot;: 5,
+        &quot;risk_score_reason&quot;: &quot;使用 attribute_history(g.m_days, &#x27;1d&#x27;) 在 9:30 回调中调用，在聚宽回测，‘1d’频率在当日 9:30 前只返回到昨日收盘数据，因此通常安全；但如果回测引擎的日线更新在开盘前完成则无未来数据。风险评分 5（中）以反映对此行为的常见争议。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;使用 attribute_history 获取日线，默认只到 T-1；若聚宽未来修改更新逻辑可能发生穿透，但当前版本安全。&quot;,
+            &quot;financial_data_leak&quot;: &quot;完全未用财务数据，故无风险。&quot;,
+            &quot;index_component_leak&quot;: &quot;固定 ETF 代码，无变动筛选，安全。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;设置 set_option(&#x27;avoid_future_data&#x27;,True)；无明显引擎级别漏洞。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;显式指定 attribute_history 的引擎行为，例如在 9:30 回调中加入 if context.current_dt.date()==df.index[-1].date(): df=df.iloc[:-1]，确保不使用未收盘价。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;止损/买入逻辑使用当天收盘价进行判断，但下单在 9:30 开盘，实盘无法获知收盘价，需改为昨日收盘或盘中价格阈值。&quot;, &quot;零滑点设置在回测中过度乐观，实盘需引入合理滑点模型。&quot;, &quot;回测交易在 9:30 直接以开盘价成交，注意开盘价冲击与偏差。&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 3,
+        &quot;slippage_reason&quot;: &quot;日内一次性下单，标的为高流动性 ETF；但开盘时价差和集合竞价冲击可能带来 1~3 跳动点的滑点，仍属低~中等水平。&quot;,
+        &quot;cost_score&quot;: 2,
+        &quot;cost_reason&quot;: &quot;换手不高（单只满仓，月度级别），且 ETF 费率 0.02%，成本极低。&quot;,
+        &quot;execution_score&quot;: 8,
+        &quot;execution_reason&quot;: &quot;ETF 体量大，买卖一笔即可完成，拆单需求小；成交容易。&quot;,
+        &quot;time_sensitivity_score&quot;: 3,
+        &quot;time_sensitivity_reason&quot;: &quot;只需开盘或盘中完成交易即可，非高频。&quot;,
+        &quot;overall_executability&quot;: 8,
+        &quot;overall_reason&quot;: &quot;流动性好、换手低、时点要求低，适合自动或手动执行。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;几手 ETF，流动性充裕，无影响。&quot;,
+            &quot;100w&quot;: &quot;单笔百万级买卖在 ETF 中毫无压力，冲击可忽略。&quot;,
+            &quot;1000w&quot;: &quot;需分批或盘中成交，但问题有限。&quot;,
+            &quot;1y&quot;: &quot;上亿资金对 510180/159915/518880/513100 也能成交，但需注意市场冲击与申购赎回节奏，仍可操作。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;在回测中加入合理的滑点和成交量约束，以评估真实可行性。&quot;, &quot;将交易触发时点改为收盘后发单第二天开盘执行，避免使用未来收盘价。&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 2,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;ETF 日均成交量百亿级，容量充足，对大资金友好。&quot;,
+        &quot;behavioral_bias_score&quot;: 6,
+        &quot;behavioral_bias_reason&quot;: &quot;依赖短期动量和止损再入，部分利用追涨杀跌和情绪延续。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;简单 25 日动量+R² 逻辑在历史多阶段可能有效，但仅 4 只资产、无宏观滤波，可能在震荡市失效。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.3,
+        &quot;weight_explanation&quot;: &quot;大资金友好(40%)+行为偏差(30%)+跨阶段稳健(30%)&quot;,
+        &quot;worst_environments&quot;: [&quot;四只ETF同步震荡或横盘&quot;, &quot;极端单日大跳空低开导致错位止损、再高开买不回&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;动量最高的ETF未来一段时间收益&gt;其他ETF&quot;, &quot;单日-4%收盘价下的止损能减少后续回撤&quot;, &quot;价格重回4日均线上方后重新买入提高整体收益&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;简洁的四资产动量+止损逻辑，低换手、易执行，理论上有一定超额，但需要修正未来价引用与实际滑点。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 使用昨日收盘价进行信号判断+次日开盘交易；2) 研究不同动量窗口/得分权重与资产池扩展；3) 引入资金面或宏观过滤提高横盘期表现。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 5,
+        &quot;slippage&quot;: 3,
+        &quot;cost&quot;: 2,
+        &quot;execution&quot;: 8,
+        &quot;time_sensitivity&quot;: 3,
+        &quot;executability&quot;: 8,
+        &quot;effectiveness_a&quot;: 2,
+        &quot;effectiveness_b&quot;: 6,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.3
+    },
+    
+    &quot;assumptions&quot;: [&quot;未给定资金规模，默认少于 1 亿元用于评分。&quot;, &quot;实际手续费、滑点、申购赎回差异未在代码中体现，评估时按常见 ETF 交易情形假设。&quot;]
+}
+```
+</pre>
+        </div>
+
+    </div>
+</body>
+</html>

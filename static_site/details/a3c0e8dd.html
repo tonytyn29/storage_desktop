@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concept-Attack Dragon-Head Scanner - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>Concept-Attack Dragon-Head Scanner</h1>
+        <p class="meta">
+            ID: a3c0e8dd | 
+            类型: 事件驱动 / 情绪-动量选股 | 
+            来源: b25_98热点行业和热点概念-成分股-及龙一龙二龙三.py |
+            分析日期: 2026-01-10 23:09:19
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>通过统计最近 N 个交易日里日涨幅＞9%（视同涨停）的股票出现次数，将其映射到所属概念/行业，按“攻击次数”与“攻击比例”判断当下最热门的行业与概念；再在该概念/行业中挑选攻击次数最多的若干只龙头股（龙一/二/三）作为备选买入标的，或在牛市环境中寻找补涨股。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全 A 股(剔除 4*/8*/9*、68*科创、ST、停牌或无名称股票)；概念/行业成分若&gt;300只可选参数剔除；无进一步流动性/市值过滤。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>a) 概念/行业在最近 N 日内攻击家数或攻击比例排名居前；, b) 概念内个股在 N 日内出现≥k 次涨停(&gt;9%)，按次数择‘龙头’买入。</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>（代码未明确）可参考：①攻击次数明显衰竭；②主力净流持续流出；③股价跌破短期均线等自定义条件。</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>代码未给出资金体量、单票权重、仓位上限、止损等任何风控规则。（缺失信息/你的假设）</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>依赖研究者手动调用；建议盘前/开盘前 9:25~9:30 生成榜单并决定当日操作，若追涨须盘中委托挂涨停价抢筹。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>1) 每日收盘后或次日盘前运行 Notebook 更新数据；2) 盘前确认 g.end_date=前一交易日、g.auc_date=当日；3) 查看热点表与 lead_stocks_in_category 图，人工挑选标的；4) 开盘 9:25 竞价或盘中视量价抢筹；5) 盘中关注资金流监控模块作动态止盈止损。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>① score_by_return_at_dt 与 option2 中直接用 end_dt=g.auc_date(当日) 会在盘后复盘时把当日收盘价用于择股，属于未来价格泄漏；② 概念成分表使用固定 2024-09-28/12-09 CSV，回测历史年时会用未来已知概念构成；存在潜在未来信息渗漏。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>即使手动交易，一旦当日晚间运行也可能含当日数据导致自我验证偏差。, 资金流数据 T+1 发布，盘中无法使用；若用于盘中交易需确认数据可得性。, 涨停股买入存在封板买不进及次日一字高开的成交问题，需额外滑点/成交仿真。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>需要盘中监控+打板能力+较小资金，自动化执行难度高；稍大资金将面临流动性和隔日风险。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>可手动参与，冲板难度低，滑点尚可。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>需拆单排板或分散多标的，影响价格明显增大。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>主题股容量不足，频繁冲击涨停几乎不可行。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>基本无法实盘执行，流动性限制与涨跌停封单量限制。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>依赖短线情绪与次新/小市值/涨停股，容量有限；千万级以上难以快速建仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>核心利用涨停/龙头效应及资金排队，显著依赖市场情绪与从众行为。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>仅在短期情绪高涨、题材轮动快的阶段有效；震荡或单边下行时衰减。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>连续跌停或大幅杀跌环境无法买入/止损, 无明显题材炒作的震荡市</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>过去 N 日涨停家数最多的概念次日超额收益为正, 龙头股攻击次数越多，未来 1-3 日收益越高, 主力净流入出现高峰后的 3-7 日内该板块回撤概率增大</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>这是一个人工辅助的题材热度/龙头扫描工具，多用于短线情绪交易，自动化交易难度大且存在适度未来函数风险。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 引入历史时点正确的概念成分；2) 明确买卖规则并考虑涨跌停、滑点与资金容量；3) 将数据取样限定于可得时间截面避免未来函数；4) 增加持仓与风控模块。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未给出手续费、滑点、资金规模等，默认假设万 8 手续费 + 0.3% 单边滑点, 默认可在涨停价排单且最终成交成功；若不成功则需次日低开买入，可能显著影响收益</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>6</td></tr>
+                <tr><td>滑点</td><td>7</td></tr>
+                <tr><td>成本</td><td>6</td></tr>
+                <tr><td>执行难度</td><td>8</td></tr>
+                <tr><td>时间敏感性</td><td>8</td></tr>
+                <tr><td>综合可执行性</td><td>3.8</td></tr>
+                <tr><td>大资金不友好</td><td>8</td></tr>
+                <tr><td>行为偏差利用</td><td>7</td></tr>
+                <tr><td>跨阶段稳健性</td><td>3</td></tr>
+                <tr><td>有效性总分</td><td>5.5</td></tr>
+                <tr><td>总分</td><td>47.8</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;Concept-Attack Dragon-Head Scanner&quot;,
+    &quot;strategy_type&quot;: &quot;事件驱动 / 情绪-动量选股&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;通过统计最近 N 个交易日里日涨幅＞9%（视同涨停）的股票出现次数，将其映射到所属概念/行业，按“攻击次数”与“攻击比例”判断当下最热门的行业与概念；再在该概念/行业中挑选攻击次数最多的若干只龙头股（龙一/二/三）作为备选买入标的，或在牛市环境中寻找补涨股。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 日线行情 get_price(open/high/low/close, pre_close) ；2) 资金流 get_money_flow(净主力、大/中/小单)；3) 同花顺/聚宽概念成分表（离线 CSV，月度更新）；4) 申万一级/二级/三级行业分类 get_industry；5) 主要指标：单日涨幅&gt;9% 的布尔打分(attack)、行业/概念累计 attack 之和、攻击比例=攻击总数/成分股数、资金流相关指标(主力净流、总流、单股平均流)。全部以日频更新。&quot;,
+        &quot;stock_pool&quot;: &quot;全 A 股(剔除 4*/8*/9*、68*科创、ST、停牌或无名称股票)；概念/行业成分若&gt;300只可选参数剔除；无进一步流动性/市值过滤。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;a) 概念/行业在最近 N 日内攻击家数或攻击比例排名居前；&quot;,
+            &quot;b) 概念内个股在 N 日内出现≥k 次涨停(&gt;9%)，按次数择‘龙头’买入。&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;（代码未明确）可参考：①攻击次数明显衰竭；②主力净流持续流出；③股价跌破短期均线等自定义条件。&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;代码未给出资金体量、单票权重、仓位上限、止损等任何风控规则。（缺失信息/你的假设）&quot;,
+        &quot;trading_frequency&quot;: &quot;依赖研究者手动调用；建议盘前/开盘前 9:25~9:30 生成榜单并决定当日操作，若追涨须盘中委托挂涨停价抢筹。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;1) 每日收盘后或次日盘前运行 Notebook 更新数据；2) 盘前确认 g.end_date=前一交易日、g.auc_date=当日；3) 查看热点表与 lead_stocks_in_category 图，人工挑选标的；4) 开盘 9:25 竞价或盘中视量价抢筹；5) 盘中关注资金流监控模块作动态止盈止损。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;不确定&quot;,
+        &quot;risk_level&quot;: &quot;中&quot;,
+        &quot;risk_score&quot;: 6,
+        &quot;risk_score_reason&quot;: &quot;① score_by_return_at_dt 与 option2 中直接用 end_dt=g.auc_date(当日) 会在盘后复盘时把当日收盘价用于择股，属于未来价格泄漏；② 概念成分表使用固定 2024-09-28/12-09 CSV，回测历史年时会用未来已知概念构成；存在潜在未来信息渗漏。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;在注释“#2 用 g.auc_date 当日的竞价数据”路径中调用 get_price(... end_dt=g.auc_date ...)；若盘后运行会拿到全天收盘价—未来数据。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未用财务因子，故无此风险。&quot;,
+            &quot;index_component_leak&quot;: &quot;概念/行业成分硬编码为 2024-09-28/12-09 版本，若分析历史区间会泄漏未来成分。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未使用回测引擎下单，但若移植到回测框架，上述两处仍为未来函数源。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;1) 回测/盘后复盘时禁止使用当日 end_dt，改用上一交易日收盘；2) 引入带时间截面的概念/行业历史成分；3) 明确 buy/sell 在 before_trading_start/handle_data 分别使用当日开盘前可得数据。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;即使手动交易，一旦当日晚间运行也可能含当日数据导致自我验证偏差。&quot;,
+            &quot;资金流数据 T+1 发布，盘中无法使用；若用于盘中交易需确认数据可得性。&quot;,
+            &quot;涨停股买入存在封板买不进及次日一字高开的成交问题，需额外滑点/成交仿真。&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 7,
+        &quot;slippage_reason&quot;: &quot;标的多为近期涨停龙头与小市值题材股，真实成交需打板或高挂成交，正反转时滑点显著。&quot;,
+        &quot;cost_score&quot;: 6,
+        &quot;cost_reason&quot;: &quot;频繁日级轮动、可能打板或高换手；按万 8 费用计合计日换手&gt;50% 将带来 ~0.08%+ 的费用。&quot;,
+        &quot;execution_score&quot;: 8,
+        &quot;execution_reason&quot;: &quot;多数龙头在涨停板或高开位置无法买入；成交需排板或用涨停价扫单，成功率受市场情绪影响大。&quot;,
+        &quot;time_sensitivity_score&quot;: 8,
+        &quot;time_sensitivity_reason&quot;: &quot;核心在早盘竞价/集合竞价时抢筹，延迟执行大幅降低收益。&quot;,
+        &quot;overall_executability&quot;: 4,
+        &quot;overall_reason&quot;: &quot;需要盘中监控+打板能力+较小资金，自动化执行难度高；稍大资金将面临流动性和隔日风险。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;可手动参与，冲板难度低，滑点尚可。&quot;,
+            &quot;100w&quot;: &quot;需拆单排板或分散多标的，影响价格明显增大。&quot;,
+            &quot;1000w&quot;: &quot;主题股容量不足，频繁冲击涨停几乎不可行。&quot;,
+            &quot;1y&quot;: &quot;基本无法实盘执行，流动性限制与涨跌停封单量限制。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;引入流动性/成交额过滤，放弃一字板无法买入的票。&quot;,
+            &quot;增加机器下单与自动排板模块或改为次日低吸策略降低滑点。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 8,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;依赖短线情绪与次新/小市值/涨停股，容量有限；千万级以上难以快速建仓。&quot;,
+        &quot;behavioral_bias_score&quot;: 7,
+        &quot;behavioral_bias_reason&quot;: &quot;核心利用涨停/龙头效应及资金排队，显著依赖市场情绪与从众行为。&quot;,
+        &quot;cross_period_robustness_score&quot;: 3,
+        &quot;cross_period_robustness_reason&quot;: &quot;仅在短期情绪高涨、题材轮动快的阶段有效；震荡或单边下行时衰减。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.9,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为动量30% + 稳健性30%&quot;,
+        &quot;worst_environments&quot;: [&quot;连续跌停或大幅杀跌环境无法买入/止损&quot;, &quot;无明显题材炒作的震荡市&quot;],
+        &quot;verifiable_predictions&quot;: [
+            &quot;过去 N 日涨停家数最多的概念次日超额收益为正&quot;,
+            &quot;龙头股攻击次数越多，未来 1-3 日收益越高&quot;,
+            &quot;主力净流入出现高峰后的 3-7 日内该板块回撤概率增大&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;这是一个人工辅助的题材热度/龙头扫描工具，多用于短线情绪交易，自动化交易难度大且存在适度未来函数风险。&quot;,
+        &quot;recommendation&quot;: &quot;小仓位手动验证或作为盘前/盘中参考工具；若要系统化交易需严格去除未来数据并完善风控与成交逻辑。&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 引入历史时点正确的概念成分；2) 明确买卖规则并考虑涨跌停、滑点与资金容量；3) 将数据取样限定于可得时间截面避免未来函数；4) 增加持仓与风控模块。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 6,
+        &quot;slippage&quot;: 7,
+        &quot;cost&quot;: 6,
+        &quot;execution&quot;: 8,
+        &quot;time_sensitivity&quot;: 8,
+        &quot;executability&quot;: 4,
+        &quot;effectiveness_a&quot;: 8,
+        &quot;effectiveness_b&quot;: 7,
+        &quot;effectiveness_c&quot;: 3,
+        &quot;effectiveness_total&quot;: 4.9
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未给出手续费、滑点、资金规模等，默认假设万 8 手续费 + 0.3% 单边滑点&quot;,
+        &quot;默认可在涨停价排单且最终成交成功；若不成功则需次日低开买入，可能显著影响收益&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

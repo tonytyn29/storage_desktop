@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>周调小盘多因子 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>周调小盘多因子</h1>
+        <p class="meta">
+            ID: 39669247 | 
+            类型: 多因子选股 + 小市值轮动 | 
+            来源: b2324_5.尝试用机器学习批量生产小盘策略.txt |
+            分析日期: 2026-01-11 18:19:47
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>用三个简单因子（近端价格、成本费用利润率、存货周转率）做线性加权打分，先选出得分前10%的股票，再在其中择小（流通市值越小越优），并要求EPS为正；每周一早盘把资金均分买入最多10只股票，持有期间若上一交易日涨停则下午2点检查，如涨停被打开则提前卖出，否则继续持有。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全 A 股（剔除科创板、北交所、ST、退市、停牌、上市未满 375 天的新股、当日涨跌停股票）。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>周一 9:30，对符合过滤条件的股票计算线性因子得分，取前 10%, 在前 10%中按流通市值从小到大排序，EPS&gt;0，依次取不超过 10 只</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>周一换仓时，若股票不在新目标池且前一日未涨停，则卖出, 若前一日涨停且当日下午 14:00 观察到跌破涨停，则立即卖出</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多 10 只等权仓位；没有指数对冲或止损；14:00 的涨停保护机制为主要风控。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>标准为周频（每周一次主调仓）+ 可能的日内 14:00 卖出操作。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前生成候选池 → 周一 9:25 集合竞价或 9:30 市价/限价买入；持仓中如出现前日涨停则需下午 14:00 盯盘以决定是否卖出；其余时间无需操作。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>全部因子和财务数据以 context.previous_date 或默认 T-1 公告日获取，没有引用当日或未来数据；回测已开启 avoid_future_data；仅用到 history(1,&#x27;1m&#x27;) 和 get_price 截至当前分钟，不属于未来函数。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>get_fundamentals 默认行为依赖聚宽引擎，建议手动指定日期, price_no_fq 因子内部实现不可见，如其对未来复权点敏感需二次确认, 滑点被强行设为 0，回测结果高估收益</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小资金 (&lt;1000 万) 基本可执行，需考虑滑点与封板买不到的问题。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>易执行，单票~1 万，市场冲击可忽略。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>仍可执行；单票~10 万，对小盘股需拆单几分钟成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>容量开始吃紧，部分标的无法在涨停前买入，需增加股票数量或降低权重。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>难以实现，成交与冲击成本大幅上升，需改造为分批建仓/换大市值池</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>依赖小市值溢价，容量有限</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>因子主要为基本面质量，行为利用度一般</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>仅 3 个因子 + 固定线性系数，可能随市场风格而波动</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>小盘股系统性杀估值（14-16、21 年 7-8 月）, 财报造假或流动性枯竭导致小盘质量因子失效的阶段</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>选中组合的加权流通市值将显著低于全市场中位数, 组合在单边小盘风格强势阶段收益大幅跑赢基准, 组合在大盘权重风格占优阶段跑输沪深 300</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>一个结构简单、低维因子的周频小盘策略，未来函数风险低，但容量和滑点问题需谨慎。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>加入流动性筛选、动态因子权重或滚动回归、真实滑点模型、扩充持股数降低单票冲击</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供资金规模，默认按聚宽回测初始 100 万计算, 成交费用按照代码 set_order_cost（万 3 手续费 + 千 1 印花税）, 默认全部订单以限价方式于 9:30 立即提交，并可一次成交；实际可能需拆分</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>6</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>3</td></tr>
+                <tr><td>综合可执行性</td><td>6.0</td></tr>
+                <tr><td>大资金不友好</td><td>7</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>5.5</td></tr>
+                <tr><td>总分</td><td>57.7</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;周调小盘多因子&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股 + 小市值轮动&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;用三个简单因子（近端价格、成本费用利润率、存货周转率）做线性加权打分，先选出得分前10%的股票，再在其中择小（流通市值越小越优），并要求EPS为正；每周一早盘把资金均分买入最多10只股票，持有期间若上一交易日涨停则下午2点检查，如涨停被打开则提前卖出，否则继续持有。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) jqfactor 因子：price_no_fq、total_profit_to_cost_ratio、inventory_turnover_rate，日频；2) 基础财务表 valuation.circulating_market_cap、indicator.eps，季频/公告日更新；3) 当日分钟级行情用于过滤涨跌停。&quot;,
+        &quot;stock_pool&quot;: &quot;全 A 股（剔除科创板、北交所、ST、退市、停牌、上市未满 375 天的新股、当日涨跌停股票）。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;周一 9:30，对符合过滤条件的股票计算线性因子得分，取前 10%&quot;,
+            &quot;在前 10%中按流通市值从小到大排序，EPS&gt;0，依次取不超过 10 只&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;周一换仓时，若股票不在新目标池且前一日未涨停，则卖出&quot;,
+            &quot;若前一日涨停且当日下午 14:00 观察到跌破涨停，则立即卖出&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;最多 10 只等权仓位；没有指数对冲或止损；14:00 的涨停保护机制为主要风控。&quot;,
+        &quot;trading_frequency&quot;: &quot;标准为周频（每周一次主调仓）+ 可能的日内 14:00 卖出操作。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前生成候选池 → 周一 9:25 集合竞价或 9:30 市价/限价买入；持仓中如出现前日涨停则需下午 14:00 盯盘以决定是否卖出；其余时间无需操作。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;全部因子和财务数据以 context.previous_date 或默认 T-1 公告日获取，没有引用当日或未来数据；回测已开启 avoid_future_data；仅用到 history(1,&#x27;1m&#x27;) 和 get_price 截至当前分钟，不属于未来函数。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;history 与 get_price 请求的 end_date &lt;= 当前时点，安全&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_factor_values end_date=yesterday，get_fundamentals 未指定 date 但回测引擎自动回溯，符合披露日可得性&quot;,
+            &quot;index_component_leak&quot;: &quot;无使用指数成分或未来权重信息&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未发现 look-ahead 或多次调用导致的数据提前暴露&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;真实交易中仍需确认财报披露滞后期，可考虑显式指定 date=context.previous_date 以避免早读季报。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;get_fundamentals 默认行为依赖聚宽引擎，建议手动指定日期&quot;,
+            &quot;price_no_fq 因子内部实现不可见，如其对未来复权点敏感需二次确认&quot;,
+            &quot;滑点被强行设为 0，回测结果高估收益&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 6,
+        &quot;slippage_reason&quot;: &quot;主要买入小市值股票且常伴随涨停封板，低流动性导致冲击成本明显；回测设定 0 滑点不现实。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;周调仓 + 可能的日内止盈，换手率中等，按万 3 手续费约落在评分 3-4 区间。&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;10 只股票均分资金，集合竞价或早盘吃单可解决，但小盘股高开高封风险需要拆单；大额资金难度上升。&quot;,
+        &quot;time_sensitivity_score&quot;: 3,
+        &quot;time_sensitivity_reason&quot;: &quot;买卖点固定在周一 9:30 &amp; 14:00，非毫秒级，但需盘中盯盘。&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;小资金 (&lt;1000 万) 基本可执行，需考虑滑点与封板买不到的问题。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;易执行，单票~1 万，市场冲击可忽略。&quot;,
+            &quot;100w&quot;: &quot;仍可执行；单票~10 万，对小盘股需拆单几分钟成交。&quot;,
+            &quot;1000w&quot;: &quot;容量开始吃紧，部分标的无法在涨停前买入，需增加股票数量或降低权重。&quot;,
+            &quot;1y&quot;: &quot;难以实现，成交与冲击成本大幅上升，需改造为分批建仓/换大市值池&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;设置实际滑点模型（如冲击成本随市值/成交额增加）&quot;,
+            &quot;对目标池容量进行流动性过滤（如日成交额 &gt; 2000 万）&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 7,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;依赖小市值溢价，容量有限&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;因子主要为基本面质量，行为利用度一般&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;仅 3 个因子 + 固定线性系数，可能随市场风格而波动&quot;,
+        &quot;effectiveness_total_score&quot;: 5.4,
+        &quot;weight_explanation&quot;: &quot;大资金不友好 40% + 行为偏差 30% + 跨阶段稳健 30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;小盘股系统性杀估值（14-16、21 年 7-8 月）&quot;,
+            &quot;财报造假或流动性枯竭导致小盘质量因子失效的阶段&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;选中组合的加权流通市值将显著低于全市场中位数&quot;,
+            &quot;组合在单边小盘风格强势阶段收益大幅跑赢基准&quot;,
+            &quot;组合在大盘权重风格占优阶段跑输沪深 300&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;一个结构简单、低维因子的周频小盘策略，未来函数风险低，但容量和滑点问题需谨慎。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;加入流动性筛选、动态因子权重或滚动回归、真实滑点模型、扩充持股数降低单票冲击&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 6,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 3,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 7,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.4
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供资金规模，默认按聚宽回测初始 100 万计算&quot;,
+        &quot;成交费用按照代码 set_order_cost（万 3 手续费 + 千 1 印花税）&quot;,
+        &quot;默认全部订单以限价方式于 9:30 立即提交，并可一次成交；实际可能需拆分&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

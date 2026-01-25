@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>半年动量基金轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>半年动量基金轮动</h1>
+        <p class="meta">
+            ID: 3a4c0969 | 
+            类型: 动量策略 | 
+            来源: b2324_77.【基金增强思考2.0】优秀基金的持续性与周期的关系密不可分.txt |
+            分析日期: 2026-01-11 18:28:21
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>每 6 个月统计全部股票型场外基金近 180 个自然日（≈半年）的累计净值涨幅，选择涨幅排名前 100 的基金进行等额申购，意图捕捉基金净值的持续上涨动量。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>all_open_fund 中 type==&#x27;stock_fund&#x27; 且 start_date ≤ 开始日；无流动性/规模/封闭期/暂停申购过滤；不剔除高费率或清盘风险基金。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>当 g.monthnum%6==0（即每 6 个月的第一次 run_monthly）且 g.adjustpositions==True 时触发, 基金近 180 日累计涨幅排名前 100</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>（空缺）代码中赎回逻辑已被完全注释，导致无任何卖出/减仓</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>对所有待买基金等额分配当期可用现金（percash=int(cash/len(buylist))）。历史持仓不被处理，仓位随时间单向增加，没有上限控制，也无止损/风控。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>理论上 6 个月一次调入；由于不卖出，调仓只涉及买入。下单在 run_monthly(...,time=&#x27;open&#x27;) 的开盘时刻调用 purchase()。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>可在调仓日 9:30 之前确认可用现金、目标基金名单并一次性申购；实盘中基金申购以 15:00 截单后当晚确认净值，次日建仓，不需要盘中盯盘。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>仅用到 T-1 日净值；get_trade_days、get_extras 取值区间均 ≤ 当前回测日期；未出现聚宽典型未来函数（如history、attribute历史用法错误）。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>基金净值 T+1 公布，真实实盘无法在当日开盘就知道前一日净值，可能造成轻微信息时差。, 大量基金可能暂停申购/额度受限，回测可以买到但实盘买不到。, 未考虑申购/赎回费率，回测默认 0 费率会高估收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>低频、容量大、操作简单；只需解决实际费率与暂停申购问题即可。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>一次申购 100 只基金，每只 1 千元左右；完全可执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>平均每只 ~1 万元，同样无压力。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>平均每只 ~10 万元，绝大多数股票型基金容量充裕，仍可执行，注意部分限购基金。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>平均每只 ~100 万元，需要确认限购/渠道问题但理论可行。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>场外基金容量巨大，单只可承载亿级资金；策略对大资金友好。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用动量/追涨效应与资金流入行为，但逻辑较简单未深度挖掘情绪。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>仅依赖单一半年动量指标，易受市场风格切换影响，缺乏多维度验证。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>市场快速风格反转导致高位基金回撤, 监管调整基金费率/限购造成实际买卖受阻</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>过去半年涨幅前 100 的股票型基金未来 3～6 个月平均收益率高于基准, 加入赎回费后年化收益显著下降, 当动量出现负值占比提升时策略表现弱化</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>属于一个思路清晰但实现粗糙的半年基金动量轮动模型，回测未出现未来函数，但缺少卖出与费率处理导致结果失真。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>补充赎回、费用模型及暂停申购过滤；可尝试缩小基金池、结合回撤控制提升风险收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供资金规模/费率/滑点模型，假设 0 滑点、0 费率、任意申购均可成交。, 假设 purchase() 与 redeem() 的实际成交价为当日收盘后确认的基金份额净值。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>2</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>8</td></tr>
+                <tr><td>时间敏感性</td><td>2</td></tr>
+                <tr><td>综合可执行性</td><td>7.2</td></tr>
+                <tr><td>大资金不友好</td><td>3</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>3.8</td></tr>
+                <tr><td>总分</td><td>53.3</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;半年动量基金轮动&quot;,
+    &quot;strategy_type&quot;: &quot;动量策略&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;每 6 个月统计全部股票型场外基金近 180 个自然日（≈半年）的累计净值涨幅，选择涨幅排名前 100 的基金进行等额申购，意图捕捉基金净值的持续上涨动量。&quot;,
+        &quot;data_and_indicators&quot;: &quot;仅使用 get_extras(&#x27;acc_net_value&#x27;) 提取的基金累计单位净值（日频），不涉及成交量及财务因子。更新频率：运行日当天只用到 T-1 的净值。&quot;,
+        &quot;stock_pool&quot;: &quot;all_open_fund 中 type==&#x27;stock_fund&#x27; 且 start_date ≤ 开始日；无流动性/规模/封闭期/暂停申购过滤；不剔除高费率或清盘风险基金。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;当 g.monthnum%6==0（即每 6 个月的第一次 run_monthly）且 g.adjustpositions==True 时触发&quot;,
+            &quot;基金近 180 日累计涨幅排名前 100&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;（空缺）代码中赎回逻辑已被完全注释，导致无任何卖出/减仓&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;对所有待买基金等额分配当期可用现金（percash=int(cash/len(buylist))）。历史持仓不被处理，仓位随时间单向增加，没有上限控制，也无止损/风控。&quot;,
+        &quot;trading_frequency&quot;: &quot;理论上 6 个月一次调入；由于不卖出，调仓只涉及买入。下单在 run_monthly(...,time=&#x27;open&#x27;) 的开盘时刻调用 purchase()。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;可在调仓日 9:30 之前确认可用现金、目标基金名单并一次性申购；实盘中基金申购以 15:00 截单后当晚确认净值，次日建仓，不需要盘中盯盘。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;仅用到 T-1 日净值；get_trade_days、get_extras 取值区间均 ≤ 当前回测日期；未出现聚宽典型未来函数（如history、attribute历史用法错误）。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;get_extras 取 end_date=day2 (T-1)；无未来泄漏。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未调用财务表，故无风险。&quot;,
+            &quot;index_component_leak&quot;: &quot;无指数成分或因子引用。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未使用 portfolio 属性预测未来收益；逻辑简单，未见引擎层面漏洞。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;保持对 end_date 使用当前交易日前一日；避免将 day2 设为当日。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;基金净值 T+1 公布，真实实盘无法在当日开盘就知道前一日净值，可能造成轻微信息时差。&quot;,
+            &quot;大量基金可能暂停申购/额度受限，回测可以买到但实盘买不到。&quot;,
+            &quot;未考虑申购/赎回费率，回测默认 0 费率会高估收益。&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 2,
+        &quot;slippage_reason&quot;: &quot;场外基金以当日收盘后未知净值成交，无盘口冲击，理论滑点极低。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;半年换仓一次，换手极低，但申购费/赎回费对收益有一次性伤害；代码中未计费率。&quot;,
+        &quot;execution_score&quot;: 8,
+        &quot;execution_reason&quot;: &quot;基金申购额度大、成交以份额确认，容量高且无成交难度；唯一难点是部分基金可能暂停申购。&quot;,
+        &quot;time_sensitivity_score&quot;: 2,
+        &quot;time_sensitivity_reason&quot;: &quot;15:00 前提交申请即可；对秒级不敏感。&quot;,
+        &quot;overall_executability&quot;: 8,
+        &quot;overall_reason&quot;: &quot;低频、容量大、操作简单；只需解决实际费率与暂停申购问题即可。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;一次申购 100 只基金，每只 1 千元左右；完全可执行。&quot;,
+            &quot;100w&quot;: &quot;平均每只 ~1 万元，同样无压力。&quot;,
+            &quot;1000w&quot;: &quot;平均每只 ~10 万元，绝大多数股票型基金容量充裕，仍可执行，注意部分限购基金。&quot;,
+            &quot;1y&quot;: &quot;平均每只 ~100 万元，需要确认限购/渠道问题但理论可行。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;补全赎回逻辑，使仓位可控、避免无限扩张。&quot;,
+            &quot;在回测与实盘中显式加入申购/赎回费用模型。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 3,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;场外基金容量巨大，单只可承载亿级资金；策略对大资金友好。&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;利用动量/追涨效应与资金流入行为，但逻辑较简单未深度挖掘情绪。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;仅依赖单一半年动量指标，易受市场风格切换影响，缺乏多维度验证。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.2,
+        &quot;weight_explanation&quot;: &quot;容量友好30%+行为利用30%+跨阶段稳健40%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;市场快速风格反转导致高位基金回撤&quot;,
+            &quot;监管调整基金费率/限购造成实际买卖受阻&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;过去半年涨幅前 100 的股票型基金未来 3～6 个月平均收益率高于基准&quot;,
+            &quot;加入赎回费后年化收益显著下降&quot;,
+            &quot;当动量出现负值占比提升时策略表现弱化&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;属于一个思路清晰但实现粗糙的半年基金动量轮动模型，回测未出现未来函数，但缺少卖出与费率处理导致结果失真。&quot;,
+        &quot;recommendation&quot;: &quot;继续研究&quot;,
+        &quot;optimization_suggestions&quot;: &quot;补充赎回、费用模型及暂停申购过滤；可尝试缩小基金池、结合回撤控制提升风险收益。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 2,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 8,
+        &quot;time_sensitivity&quot;: 2,
+        &quot;executability&quot;: 8,
+        &quot;effectiveness_a&quot;: 3,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 4.2
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供资金规模/费率/滑点模型，假设 0 滑点、0 费率、任意申购均可成交。&quot;,
+        &quot;假设 purchase() 与 redeem() 的实际成交价为当日收盘后确认的基金份额净值。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

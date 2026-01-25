@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基金超配跟随(CSI300) - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>基金超配跟随(CSI300)</h1>
+        <p class="meta">
+            ID: cc715bad | 
+            类型: 事件驱动（机构持仓披露） | 
+            来源: b2324_53.利用聚宽的数据库，研究基金.txt |
+            分析日期: 2026-01-11 18:20:49
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>定期读取公募基金披露的重仓股数据，与同期沪深300指数权重做差。超配&gt;0.5% 的成份股视为“基金青睐股”加仓，低配&lt;-0.5% 的成份股减仓或空仓，以期跟随公募基金的选股能力而获得超额收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>固定为沪深300成份股；代码未排除ST、停牌、上市天数等特殊情况。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>当基金组合权重 - 指数权重大于0.5%，买入该股票, 权重大小按超配程度或基金权重分配</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>当基金组合权重 - 指数权重小于-0.5%，减仓/卖出该股票, 若股票被调出沪深300则被动卖出（代码未显式写出）</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>理论上按fweight 或 fdelta 归一化配置；未写最大单票/总仓位限制，实际须限定单票≤10%，现金留5% 以防流动性冲击。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>每个基金季报全部披露完成后（约每年4次）整体调仓一次；代码示例只做了一期。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘后跑脚本生成新仓单 → 次日集合竞价挂单；考虑涨跌停约束需追踪未成交部分并用竞价或盘中限价单补足。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>策略在行号15-26处将 2020-10-01~2021-01-01 区间内全部 pub_date 的基金持仓一次性用来计算10月1日的权重，属于明显的前视（未来函数）问题。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>公募季报披露时点不一致，需处理缺失/更新, ST/停牌股票可能因流动性无法成交, 剧烈市场环境下基金超配股并不一定跑赢指数</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>低频、股票容量大，可通过普通券商通道执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>完全可行，滑点忽略不计</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>可行</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>可行，需要分批成交</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>仍可行，但需关注成份股日均成交额最低一档（几亿级）时的冲击</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>沪深300股票容量充足，对资金规模友好</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用基金经理选股偏好与资金流，存在一定行为金融成分</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>仅验证一个季度，未展示多时段、牛熊周期效果</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>公募基金整体跑输指数的阶段, 监管对公募集中度进行限制导致超配失效</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>超配组合未来一季度超额收益为正, 低配组合未来表现显著落后指数, 组合跟踪误差低于指数增强基准</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>逻辑清晰但当前脚本存在严重前视偏差，回测结论无效。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>严格按披露滞后期构建样本，多周期回测后再决定实盘</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>默认全部股票可完全成交，无涨跌停和滑点模型具体设定——缺失信息, 默认使用普通 A 股交易费率：单边佣金万三，印花税千一——缺失信息</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>8</td></tr>
+                <tr><td>滑点</td><td>4</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>8</td></tr>
+                <tr><td>时间敏感性</td><td>2</td></tr>
+                <tr><td>综合可执行性</td><td>6.2</td></tr>
+                <tr><td>大资金不友好</td><td>3</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>3.8</td></tr>
+                <tr><td>总分</td><td>48.7</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;基金超配跟随(CSI300)&quot;,
+    &quot;strategy_type&quot;: &quot;事件驱动（机构持仓披露）&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;定期读取公募基金披露的重仓股数据，与同期沪深300指数权重做差。超配&gt;0.5% 的成份股视为“基金青睐股”加仓，低配&lt;-0.5% 的成份股减仓或空仓，以期跟随公募基金的选股能力而获得超额收益。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) finance.FUND_PORTFOLIO_STOCK：公募基金季度重仓股披露（T+30~60 日）。2) get_index_weights：沪深300成份及权重（日频可查）。3) get_price：收盘价（日线）用来回测收益。&quot;,
+        &quot;stock_pool&quot;: &quot;固定为沪深300成份股；代码未排除ST、停牌、上市天数等特殊情况。&quot;,
+        &quot;buy_signals&quot;: [&quot;当基金组合权重 - 指数权重大于0.5%，买入该股票&quot;, &quot;权重大小按超配程度或基金权重分配&quot;],
+        &quot;sell_signals&quot;: [&quot;当基金组合权重 - 指数权重小于-0.5%，减仓/卖出该股票&quot;, &quot;若股票被调出沪深300则被动卖出（代码未显式写出）&quot;],
+        &quot;position_and_risk&quot;: &quot;理论上按fweight 或 fdelta 归一化配置；未写最大单票/总仓位限制，实际须限定单票≤10%，现金留5% 以防流动性冲击。&quot;,
+        &quot;trading_frequency&quot;: &quot;每个基金季报全部披露完成后（约每年4次）整体调仓一次；代码示例只做了一期。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘后跑脚本生成新仓单 → 次日集合竞价挂单；考虑涨跌停约束需追踪未成交部分并用竞价或盘中限价单补足。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;是&quot;,
+        &quot;risk_level&quot;: &quot;高&quot;,
+        &quot;risk_score&quot;: 8,
+        &quot;risk_score_reason&quot;: &quot;策略在行号15-26处将 2020-10-01~2021-01-01 区间内全部 pub_date 的基金持仓一次性用来计算10月1日的权重，属于明显的前视（未来函数）问题。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;未在信号端使用未来价格，风险低&quot;,
+            &quot;financial_data_leak&quot;: &quot;finance.FUND_PORTFOLIO_STOCK 在 dt_start 之前并未完整披露，但代码直接使用之后才公布的数据 → 漏洞确认&quot;,
+            &quot;index_component_leak&quot;: &quot;get_index_weights(index, dt_start) 合规，无前视&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未使用回测引擎，低风险&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;信号计算日必须≥最近一次季报全部披露完毕日期，例如将 dt_start 设为 2020-11-01 并只取 2020-09-30 期报；或按每只基金 pub_date 做 T+1/T+2 延迟。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;公募季报披露时点不一致，需处理缺失/更新&quot;, &quot;ST/停牌股票可能因流动性无法成交&quot;, &quot;剧烈市场环境下基金超配股并不一定跑赢指数&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 4,
+        &quot;slippage_reason&quot;: &quot;沪深300成份股整体流动性好，季调仓时一次性买卖几十只股票，需要一定拆单但影响有限。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;年换手≈100%-150%（季度换仓），佣金+千三印花税可控。&quot;,
+        &quot;execution_score&quot;: 8,
+        &quot;execution_reason&quot;: &quot;高流动性指数成份股，集合竞价即可成交，成交难度低。&quot;,
+        &quot;time_sensitivity_score&quot;: 2,
+        &quot;time_sensitivity_reason&quot;: &quot;信号在披露后数天内有效，不需分钟级执行。&quot;,
+        &quot;overall_executability&quot;: 8,
+        &quot;overall_reason&quot;: &quot;低频、股票容量大，可通过普通券商通道执行。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;完全可行，滑点忽略不计&quot;,
+            &quot;100w&quot;: &quot;可行&quot;,
+            &quot;1000w&quot;: &quot;可行，需要分批成交&quot;,
+            &quot;1y&quot;: &quot;仍可行，但需关注成份股日均成交额最低一档（几亿级）时的冲击&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;加入流动性过滤与涨跌停处理&quot;, &quot;对持仓权重做行业/个股暴露约束&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 3,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;沪深300股票容量充足，对资金规模友好&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;利用基金经理选股偏好与资金流，存在一定行为金融成分&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;仅验证一个季度，未展示多时段、牛熊周期效果&quot;,
+        &quot;effectiveness_total_score&quot;: 4.2,
+        &quot;weight_explanation&quot;: &quot;大资金友好40%+行为利用30%+跨周期30%&quot;,
+        &quot;worst_environments&quot;: [&quot;公募基金整体跑输指数的阶段&quot;, &quot;监管对公募集中度进行限制导致超配失效&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;超配组合未来一季度超额收益为正&quot;, &quot;低配组合未来表现显著落后指数&quot;, &quot;组合跟踪误差低于指数增强基准&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;逻辑清晰但当前脚本存在严重前视偏差，回测结论无效。&quot;,
+        &quot;recommendation&quot;: &quot;继续研究&quot;,
+        &quot;optimization_suggestions&quot;: &quot;严格按披露滞后期构建样本，多周期回测后再决定实盘&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 8,
+        &quot;slippage&quot;: 4,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 8,
+        &quot;time_sensitivity&quot;: 2,
+        &quot;executability&quot;: 8,
+        &quot;effectiveness_a&quot;: 3,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 4.2
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;默认全部股票可完全成交，无涨跌停和滑点模型具体设定——缺失信息&quot;,
+        &quot;默认使用普通 A 股交易费率：单边佣金万三，印花税千一——缺失信息&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

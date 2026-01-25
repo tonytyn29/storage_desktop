@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>铁矿石月移仓多头均线CTA - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>铁矿石月移仓多头均线CTA</h1>
+        <p class="meta">
+            ID: 2e8bf64a | 
+            类型: 趋势跟踪 | 
+            来源: b25_29穿越牛熊2.0(非小市值)年化50%的cta策略.txt |
+            分析日期: 2026-01-10 22:15:38
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>只做铁矿石期货（I）多头。当日收盘价高于20日均线或20日均线高于60日均线时，视为多头环境，在每月换月至次月合约后于次日 9:02 开多仓；若当日收盘价跌破20日均线且 20 日均线也在 60 日均线下方，则认为进入空头环境，立即全部平仓。通过顺势做多、下破离场，在上涨行情中获取趋势收益，避免下跌时大幅回撤，并用月度换仓保持近月合约流动性。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>单品种 CTA，仅交易大商所铁矿石期货近月及次近月合约（Rolling 按月移仓）。不涉及股票池过滤。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>当日 isdown() == 0（即未出现『收盘价 &lt; MA20 且 MA20 &lt; MA60』的空头排列）, 无持仓状态（g.flag==0）</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>当日 isdown() == -1（收盘价跌破 MA20 且 MA20 低于 MA60）, 月度换月时先清掉当月合约</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>目标持仓 = 账户总资产 ÷（合约昨收 × 合约乘数100），相当于满仓单边做多；不做空；保证金率全局设 15%；未设置其它风控（如最大仓位、跌幅止损、回撤控制），无资金分散。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>1）每月第一个交易日 09:01 执行 month_open：换月 + 开仓决策；2）每个交易日 09:02 执行 day_open：根据均线条件择时开平；若区间震荡可能日内/隔夜频繁开平。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前：计算 MA20、MA60 与多空状态；若为多头且无仓，可在 09:00-09:15 集合竞价挂单开仓；若转空头需平仓。月末到期前一月第一天需换到次次月。持仓期间每日检查均线并在开盘前下单。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>未发现使用 history()/attribute_history()/最近未来日期的引用；get_bars 仅取历史（含前一交易日收盘）数据；month_open 09:01 时当日尚未生成日线，属于回测引擎允许的正常用法。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>主连价格与真实可交易合约有价差，过度依赖主连 MA 可能产生基差错配。, 09:01-09:02 期间夜盘已经结束，若夜盘价格跳空，使用上一日结算价可能导致信号延迟。, 全仓单边做多未考虑强平/穿仓风险，期货杠杆放大可能导致极端风险。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>流动性好+低频开平；主要挑战在于夜盘风险和全仓杠杆。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>1手=≈7-8万保证金；10w只能做1手且高杠杆，风险高。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>可做约13手，成交无压力，保证金占用约20%，风险可控。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>可做约130手，占当日总量&lt;1%，仍能成交但需分批。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>约1300手，单日冲击率会升高，需要算法交易或分时执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>交易标的容量较大，千万元至数亿元仍可执行，但全仓杠杆放大后冲击加大。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>策略基于趋势跟随，利用行为惯性有限，更多依赖趋势存在。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>20/60 均线顺势在商品上长期有效但在不同波段表现差异大；单边做多导致某些阶段失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>长时间震荡行情：价格横盘上下穿越均线导致高频平仓损耗。, 快速单边下跌或夜盘大幅跳水：全多头仓位可能触及强平。</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>在铁矿石价格持续上升周期内，持仓周期&gt;20日，策略将持有多头并显著跑赢基准。, 在长时间震荡（MA20≈MA60）期间，策略会多次开平产生手续费拖累并可能亏损。, 在价格跌破 MA20 并持续下行时，策略大概率空仓，回撤小于做多持有基准。</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>简单的单品种 MA 过滤多头策略，易理解、低频可执行，但缺乏对下跌或震荡保护与多空双向布局，长期有效性和风险收益需进一步验证。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 增加空头策略或对冲，提升熊市收益；2) 引入波动率滤波/ATR止损+加仓规则；3) 更合理的资金管理（定杠杆而非满仓）。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>默认聚宽 get_bars 在 09:01 仅返回上一交易日数据，未包含未来。, 资金规模、滑点、手续费均仅依据代码 set_order_cost 与 StepRelatedSlippage(2)；实盘可能不同。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>3</td></tr>
+                <tr><td>滑点</td><td>4</td></tr>
+                <tr><td>成本</td><td>5</td></tr>
+                <tr><td>执行难度</td><td>7</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>6.0</td></tr>
+                <tr><td>大资金不友好</td><td>4</td></tr>
+                <tr><td>行为偏差利用</td><td>3</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>4.3</td></tr>
+                <tr><td>总分</td><td>50.4</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;铁矿石月移仓多头均线CTA&quot;,
+    &quot;strategy_type&quot;: &quot;趋势跟踪&quot;,
+
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;只做铁矿石期货（I）多头。当日收盘价高于20日均线或20日均线高于60日均线时，视为多头环境，在每月换月至次月合约后于次日 9:02 开多仓；若当日收盘价跌破20日均线且 20 日均线也在 60 日均线下方，则认为进入空头环境，立即全部平仓。通过顺势做多、下破离场，在上涨行情中获取趋势收益，避免下跌时大幅回撤，并用月度换仓保持近月合约流动性。&quot;,
+        &quot;data_and_indicators&quot;: &quot;I8888.XDCE（铁矿石主连）最近 60 个交易日日线收盘价；计算 20 日、60 日简单移动平均线；每日/每月调用 get_bars 更新。&quot;,
+        &quot;stock_pool&quot;: &quot;单品种 CTA，仅交易大商所铁矿石期货近月及次近月合约（Rolling 按月移仓）。不涉及股票池过滤。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;当日 isdown() == 0（即未出现『收盘价 &lt; MA20 且 MA20 &lt; MA60』的空头排列）&quot;,
+            &quot;无持仓状态（g.flag==0）&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;当日 isdown() == -1（收盘价跌破 MA20 且 MA20 低于 MA60）&quot;,
+            &quot;月度换月时先清掉当月合约&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;目标持仓 = 账户总资产 ÷（合约昨收 × 合约乘数100），相当于满仓单边做多；不做空；保证金率全局设 15%；未设置其它风控（如最大仓位、跌幅止损、回撤控制），无资金分散。&quot;,
+        &quot;trading_frequency&quot;: &quot;1）每月第一个交易日 09:01 执行 month_open：换月 + 开仓决策；2）每个交易日 09:02 执行 day_open：根据均线条件择时开平；若区间震荡可能日内/隔夜频繁开平。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前：计算 MA20、MA60 与多空状态；若为多头且无仓，可在 09:00-09:15 集合竞价挂单开仓；若转空头需平仓。月末到期前一月第一天需换到次次月。持仓期间每日检查均线并在开盘前下单。&quot;
+    },
+
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 3,
+        &quot;risk_score_reason&quot;: &quot;未发现使用 history()/attribute_history()/最近未来日期的引用；get_bars 仅取历史（含前一交易日收盘）数据；month_open 09:01 时当日尚未生成日线，属于回测引擎允许的正常用法。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;get_bars(unit=&#x27;1d&#x27;) 在 09:01 只拿到上一交易日数据，未提前看到未来收盘价。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未调用财务/因子接口，不存在财务数据漏看。&quot;,
+            &quot;index_component_leak&quot;: &quot;无相关调用。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无利用 context.portfolio.* 查看当日成交结果来调整策略。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;为保险起见，可在 get_bars 中显式加 include_now=False；并在日内波动较大时切换到分钟级别实时过滤。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;主连价格与真实可交易合约有价差，过度依赖主连 MA 可能产生基差错配。&quot;,
+            &quot;09:01-09:02 期间夜盘已经结束，若夜盘价格跳空，使用上一日结算价可能导致信号延迟。&quot;,
+            &quot;全仓单边做多未考虑强平/穿仓风险，期货杠杆放大可能导致极端风险。&quot;
+        ]
+    },
+
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 4,
+        &quot;slippage_reason&quot;: &quot;开仓在早盘集合成交，铁矿石主力流动性尚可，但全仓市价单+StepRelatedSlippage(2) 表示 2Tick 滑点假设；实盘夜盘跳空或早盘缺口导致滑点中等。&quot;,
+        &quot;cost_score&quot;: 5,
+        &quot;cost_reason&quot;: &quot;月度换仓必有一次换约；震荡时均线反复可能周级别换手；手续费按万 0.23×双边，成本处于中等水平。&quot;,
+        &quot;execution_score&quot;: 7,
+        &quot;execution_reason&quot;: &quot;铁矿石成交量常年居前，几万手都能成交；小中资金可直接打单，大资金需分批但仍能成交。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;仅需在每日开盘前后完成，不需秒级响应；但开盘价与夜盘波动差异仍影响收益。&quot;,
+        &quot;overall_executability&quot;: 7,
+        &quot;overall_reason&quot;: &quot;流动性好+低频开平；主要挑战在于夜盘风险和全仓杠杆。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;1手=≈7-8万保证金；10w只能做1手且高杠杆，风险高。&quot;,
+            &quot;100w&quot;: &quot;可做约13手，成交无压力，保证金占用约20%，风险可控。&quot;,
+            &quot;1000w&quot;: &quot;可做约130手，占当日总量&lt;1%，仍能成交但需分批。&quot;,
+            &quot;1y&quot;: &quot;约1300手，单日冲击率会升高，需要算法交易或分时执行。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;引入仓位管理，如最多50%资金或固定杠杆，降低爆仓风险。&quot;,
+            &quot;增加波动率过滤或ATR止损，减少震荡期反复开平。&quot;
+        ]
+    },
+
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 4,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;交易标的容量较大，千万元至数亿元仍可执行，但全仓杠杆放大后冲击加大。&quot;,
+        &quot;behavioral_bias_score&quot;: 3,
+        &quot;behavioral_bias_reason&quot;: &quot;策略基于趋势跟随，利用行为惯性有限，更多依赖趋势存在。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;20/60 均线顺势在商品上长期有效但在不同波段表现差异大；单边做多导致某些阶段失效。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.0,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40%（4*0.4） + 行为偏差30%（3*0.3） + 跨阶段稳健30%（5*0.3）&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;长时间震荡行情：价格横盘上下穿越均线导致高频平仓损耗。&quot;,
+            &quot;快速单边下跌或夜盘大幅跳水：全多头仓位可能触及强平。&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;在铁矿石价格持续上升周期内，持仓周期&gt;20日，策略将持有多头并显著跑赢基准。&quot;,
+            &quot;在长时间震荡（MA20≈MA60）期间，策略会多次开平产生手续费拖累并可能亏损。&quot;,
+            &quot;在价格跌破 MA20 并持续下行时，策略大概率空仓，回撤小于做多持有基准。&quot;
+        ]
+    },
+
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;简单的单品种 MA 过滤多头策略，易理解、低频可执行，但缺乏对下跌或震荡保护与多空双向布局，长期有效性和风险收益需进一步验证。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 增加空头策略或对冲，提升熊市收益；2) 引入波动率滤波/ATR止损+加仓规则；3) 更合理的资金管理（定杠杆而非满仓）。&quot;
+    },
+
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 3,
+        &quot;slippage&quot;: 4,
+        &quot;cost&quot;: 5,
+        &quot;execution&quot;: 7,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 7,
+        &quot;effectiveness_a&quot;: 4,
+        &quot;effectiveness_b&quot;: 3,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 4.0
+    },
+
+    &quot;assumptions&quot;: [
+        &quot;默认聚宽 get_bars 在 09:01 仅返回上一交易日数据，未包含未来。&quot;,
+        &quot;资金规模、滑点、手续费均仅依据代码 set_order_cost 与 StepRelatedSlippage(2)；实盘可能不同。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

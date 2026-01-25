@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月度多因子10%超额收益分类模型 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>月度多因子10%超额收益分类模型</h1>
+        <p class="meta">
+            ID: 2901a942 | 
+            类型: 多因子选股 | 
+            来源: b25_49干货贴《机器学习5折保形回归》 .py |
+            分析日期: 2026-01-10 22:31:08
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>在每月月末收盘后，用当时可获得的5个风格/估值/成长因子（非线性市值、β、市净率倒数、盈利收益率、成长）对全部 A 股（剔除 ST/次新/停牌/北交所及科创板等）进行截面打分；随后以下一月个股相对上证综指的超额收益是否超过 +10% 作为标签，对历史 10 年的样本进行机器学习（代码中预留了 SVM/PCA/网格搜索等）；实盘中预期将用训练好的模型预测下月将大幅（&gt;10%）跑赢大盘的股票并买入，持有 1 个月后等权调仓，如此形成月度滚动的超额收益策略。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>以沪深 A 股（剔除 68/4/8 开头代码的科创板、北交所）为基础；过滤 ST、停牌、上市不足 3 个月及退市股票；无市值/流动性/涨跌停价过滤。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>机器学习模型预测某股票下月相对上证综指超额收益 &gt;10% 的概率最高（具体阈值/TopN 未在代码中给出，须另行设定）</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>持股满 1 个月后例行调仓, 个股被*ST/退市/长期停牌时被动卖出（代码未显式实现）</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>代码未给出资金规模、单票权重、持仓数或风险控制逻辑。通常做法是假设等权买入预测为 1 的股票。缺失信息/你的假设。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>月度。每个自然月的最后一个交易日收盘后计算因子并预测，次一交易日集合竞价下单。（下单函数缺失）</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>1) 每月最后一个交易日收盘后运行脚本生成因子并调用训练好的模型得到选股名单；2) 次日 9:25 前挂集合竞价买入入选股票、卖出上期持仓；3) 过程中留意 ST/停牌/涨跌停限制；4) 每月重复。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>在同一脚本中用 get_price(..., date, date+1月) 计算下一月收益并立即写入数据。若用于在线训练/调仓而非仅离线样本生成，则存在日期前置、未来数据泄漏风险。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>月末收盘后是否能即时拿到全部因子需确认数据延迟, 训练集切割与超参数调优未封装交叉验证，可能高估效果, 未考虑 survivorship bias：get_stock(&#x27;A&#x27;,date) 用历史成分但实际退市股最终可能被剔除</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>月频+等权降低滑点与成本， 但需要完整因子库、机器学习部署及对小盘股流动性处理。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>几乎无障碍，可全仓买入预测个股。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>若持股数量&gt;20 只，流动性仍够用；需控制单票占比。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>部分小市值股票成交有压力；需做分级风控或剔除流动性差品种。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>策略容量受限，需要限制股票池至中大盘或分批建仓；可考虑指数增强思路。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>股票池含全市场且可能挑选小盘高波动股；中等容量。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>主要依赖基本面/风格因子，弱利用情绪；部分阈值（10%超额）体现了人类主观设定。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>因子较通用且用 10 年训练，跨期有一定稳健性，但盈利依赖未来模型效果，未验证。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>单月普跌或结构极端行情导致 10% 超额标签稀缺, 宏观突发导致风格因子瞬时失效</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>被模型选中的股票次月相对上证综指平均超额收益 &gt; 0, 策略在2015股灾期间回撤小于基准, 在资金分层实验中，容量 5000 万以内年化收益无明显衰减</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>代码仅完成样本构造，未来函数风险中等；如能规范分离训练与交易流程，可作为月度多因子增强策略的基础。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 明确信号阈值与持仓数；2) 修复潜在未来数据调用；3) 纳入流动性、市值等风险暴露控制；4) 加强因子去极端及横截面中性化。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>假设因子数据在月末收盘后即可完全获得且不含未来信息, 假设实盘将把样本构造与交易解耦，交易端不会调用未来价数据</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>6</td></tr>
+                <tr><td>滑点</td><td>3</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>3</td></tr>
+                <tr><td>综合可执行性</td><td>7.5</td></tr>
+                <tr><td>大资金不友好</td><td>5</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>4.8</td></tr>
+                <tr><td>总分</td><td>60.1</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;月度多因子10%超额收益分类模型&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;在每月月末收盘后，用当时可获得的5个风格/估值/成长因子（非线性市值、β、市净率倒数、盈利收益率、成长）对全部 A 股（剔除 ST/次新/停牌/北交所及科创板等）进行截面打分；随后以下一月个股相对上证综指的超额收益是否超过 +10% 作为标签，对历史 10 年的样本进行机器学习（代码中预留了 SVM/PCA/网格搜索等）；实盘中预期将用训练好的模型预测下月将大幅（&gt;10%）跑赢大盘的股票并买入，持有 1 个月后等权调仓，如此形成月度滚动的超额收益策略。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 因子数据：jqfactor 提供的 5 个横截面因子，日频更新。2) 价格数据：日线收盘价，用于计算月度涨跌幅及上证综指基准涨跌幅。3) 行业分类：申万行业（老17级/新28级），用于缺失值填充。&quot;,
+        &quot;stock_pool&quot;: &quot;以沪深 A 股（剔除 68/4/8 开头代码的科创板、北交所）为基础；过滤 ST、停牌、上市不足 3 个月及退市股票；无市值/流动性/涨跌停价过滤。&quot;,
+        &quot;buy_signals&quot;: [&quot;机器学习模型预测某股票下月相对上证综指超额收益 &gt;10% 的概率最高（具体阈值/TopN 未在代码中给出，须另行设定）&quot;],
+        &quot;sell_signals&quot;: [&quot;持股满 1 个月后例行调仓&quot;, &quot;个股被*ST/退市/长期停牌时被动卖出（代码未显式实现）&quot;],
+        &quot;position_and_risk&quot;: &quot;代码未给出资金规模、单票权重、持仓数或风险控制逻辑。通常做法是假设等权买入预测为 1 的股票。缺失信息/你的假设。&quot;,
+        &quot;trading_frequency&quot;: &quot;月度。每个自然月的最后一个交易日收盘后计算因子并预测，次一交易日集合竞价下单。（下单函数缺失）&quot;,
+        &quot;manual_execution_guide&quot;: &quot;1) 每月最后一个交易日收盘后运行脚本生成因子并调用训练好的模型得到选股名单；2) 次日 9:25 前挂集合竞价买入入选股票、卖出上期持仓；3) 过程中留意 ST/停牌/涨跌停限制；4) 每月重复。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;不确定&quot;,
+        &quot;risk_level&quot;: &quot;中&quot;,
+        &quot;risk_score&quot;: 6,
+        &quot;risk_score_reason&quot;: &quot;在同一脚本中用 get_price(..., date, date+1月) 计算下一月收益并立即写入数据。若用于在线训练/调仓而非仅离线样本生成，则存在日期前置、未来数据泄漏风险。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;使用 get_price(stockList, date, date_next) 在回测“当日”即可拿到未来 1 个月收盘价；若在 initialize/handle_data 中调用则为典型未来函数。&quot;,
+            &quot;financial_data_leak&quot;: &quot;因子通过 get_factor_values(count=1,end_date=date) 调用，理论上未穿透未来，但需确认 jqfactor 的 T+? 公布滞后处理；代码未做财报滞后处理，存在常见的财报发布日期泄漏风险。&quot;,
+            &quot;index_component_leak&quot;: &quot;get_index_stocks(index, begin_date=date) 默认可获取当日即将生效的成分，有轻微成分调整先知风险。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;脚本属于离线数据生成，无交易回测引擎调用；因此未直接触发引擎层面的 look-ahead，但若集成到回测需谨慎。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;1) 样本构造应在回测或生产环境外完成，确保预测时仅使用 T 时点数据；2) 在回测/实盘中调用预测时，不得再计算未来收益；3) 对于财报类因子需施加公告日延迟；4) 使用 is_suspend、涨跌停信息时需以次日可见数据为准；5) 确认 get_index_stocks 的生效日或改用提前公告日期。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;月末收盘后是否能即时拿到全部因子需确认数据延迟&quot;, &quot;训练集切割与超参数调优未封装交叉验证，可能高估效果&quot;, &quot;未考虑 survivorship bias：get_stock(&#x27;A&#x27;,date) 用历史成分但实际退市股最终可能被剔除&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 3,
+        &quot;slippage_reason&quot;: &quot;月度换仓且等权，多数股票流动性正常，集合竞价或开盘成交滑点低至中等。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;月度交易一次，换手率视选股数量而定，成本处于中低水平。&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;覆盖全部 A 股，若选股包含小盘股，则大资金需分批成交；中等难度。&quot;,
+        &quot;time_sensitivity_score&quot;: 3,
+        &quot;time_sensitivity_reason&quot;: &quot;只需月末收盘后至次日开盘前完成计算，下单时效要求不高。&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;月频+等权降低滑点与成本， 但需要完整因子库、机器学习部署及对小盘股流动性处理。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;几乎无障碍，可全仓买入预测个股。&quot;,
+            &quot;100w&quot;: &quot;若持股数量&gt;20 只，流动性仍够用；需控制单票占比。&quot;,
+            &quot;1000w&quot;: &quot;部分小市值股票成交有压力；需做分级风控或剔除流动性差品种。&quot;,
+            &quot;1y&quot;: &quot;策略容量受限，需要限制股票池至中大盘或分批建仓；可考虑指数增强思路。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;引入流动性/成交额过滤或权重优化，降低大资金冲击&quot;, &quot;实现实盘级下单模块（如 batch_order_target_percent）并设置成交/滑点模型&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 5,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;股票池含全市场且可能挑选小盘高波动股；中等容量。&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;主要依赖基本面/风格因子，弱利用情绪；部分阈值（10%超额）体现了人类主观设定。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;因子较通用且用 10 年训练，跨期有一定稳健性，但盈利依赖未来模型效果，未验证。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.7,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;单月普跌或结构极端行情导致 10% 超额标签稀缺&quot;, &quot;宏观突发导致风格因子瞬时失效&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;被模型选中的股票次月相对上证综指平均超额收益 &gt; 0&quot;, &quot;策略在2015股灾期间回撤小于基准&quot;, &quot;在资金分层实验中，容量 5000 万以内年化收益无明显衰减&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;代码仅完成样本构造，未来函数风险中等；如能规范分离训练与交易流程，可作为月度多因子增强策略的基础。&quot;,
+        &quot;recommendation&quot;: &quot;继续研究&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 明确信号阈值与持仓数；2) 修复潜在未来数据调用；3) 纳入流动性、市值等风险暴露控制；4) 加强因子去极端及横截面中性化。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 6,
+        &quot;slippage&quot;: 3,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 3,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 5,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 4.7
+    },
+    
+    &quot;assumptions&quot;: [&quot;假设因子数据在月末收盘后即可完全获得且不含未来信息&quot;, &quot;假设实盘将把样本构造与交易解耦，交易端不会调用未来价数据&quot;]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

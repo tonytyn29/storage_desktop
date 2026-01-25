@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可转债多因子 + 双低轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>可转债多因子 + 双低轮动</h1>
+        <p class="meta">
+            ID: fdffe85a | 
+            类型: 多因子选股（可转债） | 
+            来源: b2324_82.可转债知识总结.txt |
+            分析日期: 2026-01-11 18:30:12
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>先用成长/估值/动量/溢价/量能/偏度等六个子因子对全市场可转债打分，截取综合得分最高的 20 只；并辅以一套“收盘价+转股溢价率”加权的经典“双低”模型做月度轮动及日度布林带止盈，期望同时捕捉正股上涨带来的转债弹性和溢价率回归收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>聚宽可转债全量，过滤条件：①剔除房地产行业正股；②距到期≥1 年且上市≥1 周；③正股 PB&gt;1，PE≥10；④价格 &lt;130（双低部分）；⑤剔除 statDate 不满足的记录。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>月度：六因子综合排名前 20（convertible_selection）, 或双低得分（收盘价×债性偏好 + 溢价率×股性偏好）最小的前 20（basic_selection）</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>日度：转股溢价率 ≥ 均值 + 1.5×30 日滚动标准差（daily_prevention）, 月度调仓时目标池跌出前 20</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>代码只给出目标列表，未给出资金分配、加权方式、单票上限等信息 —— 缺失信息/你的假设：等权或自定义权重，单票≤5%，组合≤100%。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>主逻辑按月调仓；止盈触发时不定期换手（理论上日级）。调用场景在 before_trading 生成买卖清单后在开盘五分钟内下单。（缺失信息/你的假设）</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘后运行因子脚本得到 buy_list / backup_list；次日开盘集合竞价或 9:35 以后一次性成交；每天收盘后跑 daily_prevention 检查是否触发换手。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>get_fundamentals 使用 statDate（函数 SUE_factoring、epbp_factoring 第 3-4 段），在聚宽会直接返回整季终值而不校验发布日期，导致在财报正式披露前就获取到未来数据；属于典型未来函数。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>convertible_selection 把 start_date~end_date 区间数据求均值，若 end_date 取月初，包含了当月部分未来溢价率。, 未考虑涨跌停、停牌导致的无法成交。, 使用 curve_fit 对溢价率做反比例回归耗时较大，实盘需缓存。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小中资金较友好，指标计算耗时可接受，需解决未来函数后可回测落地。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>完全可执行，滑点&lt;0.3%，可转债池充足。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>需要拆单但总体无压力。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>部分标的（日成交额&lt;5000 万）需多日建仓，滑点≥1%。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>组合容量不足，可能持仓权重被动集中、冲击成本陡增，建议改为 ETF 或分层组合。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>低价、低溢价转债通常成交额有限，大资金会推高买价，容量上限有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>溢价率/动量因子部分捕捉情绪，但仍大量依赖基本面。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>可转债市场结构随发行潮显著变化；因子权重未经系统回测。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>正股单边大跌导致转债股性暴露, 市场强势炒作高价转债、低价转债流动性枯竭</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>组合整体转股溢价率将显著低于全市场中位数, 持仓正股 6 个月动量显著高于基准, 在历史样本中月度换手&lt;30%</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>逻辑完整、实施门槛不高，但存在明显未来函数，未经严谨回测暂不可直接实盘。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>修复所有 statDate 未来函数；完成 10 年滚动回测 + 交易成本仿真；引入涨跌停/停牌过滤。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供资金规模、手续费、下单类型、滑点模型，假设月度等权分仓、佣金万三、无滑点或 0.5% 估计。, 假设策略在 before_trading 运行，使用昨日收盘价进行调仓，真实成交按集合竞价完成。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>8</td></tr>
+                <tr><td>滑点</td><td>5</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>4</td></tr>
+                <tr><td>时间敏感性</td><td>2</td></tr>
+                <tr><td>综合可执行性</td><td>7.0</td></tr>
+                <tr><td>大资金不友好</td><td>6</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>4.9</td></tr>
+                <tr><td>总分</td><td>58.7</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;可转债多因子 + 双低轮动&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股（可转债）&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;先用成长/估值/动量/溢价/量能/偏度等六个子因子对全市场可转债打分，截取综合得分最高的 20 只；并辅以一套“收盘价+转股溢价率”加权的经典“双低”模型做月度轮动及日度布林带止盈，期望同时捕捉正股上涨带来的转债弹性和溢价率回归收益。&quot;,
+        &quot;data_and_indicators&quot;: &quot;①可转债行情：价格、成交量、转股溢价率（日频）；②正股行情：收盘价（日频、回溯 126 交易日）；③财务报表：营业收入、PE、PB（季频，以 statDate 抓取最新季报）；④基本面：到期日、发行日、行业分类（静态）。&quot;,
+        &quot;stock_pool&quot;: &quot;聚宽可转债全量，过滤条件：①剔除房地产行业正股；②距到期≥1 年且上市≥1 周；③正股 PB&gt;1，PE≥10；④价格 &lt;130（双低部分）；⑤剔除 statDate 不满足的记录。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;月度：六因子综合排名前 20（convertible_selection）&quot;,
+            &quot;或双低得分（收盘价×债性偏好 + 溢价率×股性偏好）最小的前 20（basic_selection）&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;日度：转股溢价率 ≥ 均值 + 1.5×30 日滚动标准差（daily_prevention）&quot;,
+            &quot;月度调仓时目标池跌出前 20&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;代码只给出目标列表，未给出资金分配、加权方式、单票上限等信息 —— 缺失信息/你的假设：等权或自定义权重，单票≤5%，组合≤100%。&quot;,
+        &quot;trading_frequency&quot;: &quot;主逻辑按月调仓；止盈触发时不定期换手（理论上日级）。调用场景在 before_trading 生成买卖清单后在开盘五分钟内下单。（缺失信息/你的假设）&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘后运行因子脚本得到 buy_list / backup_list；次日开盘集合竞价或 9:35 以后一次性成交；每天收盘后跑 daily_prevention 检查是否触发换手。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;是&quot;,
+        &quot;risk_level&quot;: &quot;高&quot;,
+        &quot;risk_score&quot;: 8,
+        &quot;risk_score_reason&quot;: &quot;get_fundamentals 使用 statDate（函数 SUE_factoring、epbp_factoring 第 3-4 段），在聚宽会直接返回整季终值而不校验发布日期，导致在财报正式披露前就获取到未来数据；属于典型未来函数。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;get_price(count=126,end_date) 未越界，问题较小&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals(...,statDate=) 多处调用（行号略）存在提前知道财务指标风险&quot;,
+            &quot;index_component_leak&quot;: &quot;无指数成分使用，风险低&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未用聚宽回测 API，暂无隐式穿透&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;用 date= 回溯模式或 fundamental_df = get_fundamentals(query, date=end_date)；并筛选 pubDate&lt;=end_date 数据。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;convertible_selection 把 start_date~end_date 区间数据求均值，若 end_date 取月初，包含了当月部分未来溢价率。&quot;,
+            &quot;未考虑涨跌停、停牌导致的无法成交。&quot;,
+            &quot;使用 curve_fit 对溢价率做反比例回归耗时较大，实盘需缓存。&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 5,
+        &quot;slippage_reason&quot;: &quot;可转债整体流动性中等，选股中包含价格&lt;130 且低溢价品种，盘面成交量往往不足 3000 万/日，集合竞价或一次性吃单易有 0.5%-1% 滑点。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;月度调仓 + 触发式止盈，换手率中低，佣金+过户费影响有限。&quot;,
+        &quot;execution_score&quot;: 4,
+        &quot;execution_reason&quot;: &quot;20 只债均摊 100 万以内基本能成交；若单票千万则需拆单、分时段成交。&quot;,
+        &quot;time_sensitivity_score&quot;: 2,
+        &quot;time_sensitivity_reason&quot;: &quot;日内价格波动对长期因子影响有限，次日执行即可。&quot;,
+        &quot;overall_executability&quot;: 7,
+        &quot;overall_reason&quot;: &quot;小中资金较友好，指标计算耗时可接受，需解决未来函数后可回测落地。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;完全可执行，滑点&lt;0.3%，可转债池充足。&quot;,
+            &quot;100w&quot;: &quot;需要拆单但总体无压力。&quot;,
+            &quot;1000w&quot;: &quot;部分标的（日成交额&lt;5000 万）需多日建仓，滑点≥1%。&quot;,
+            &quot;1y&quot;: &quot;组合容量不足，可能持仓权重被动集中、冲击成本陡增，建议改为 ETF 或分层组合。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;下单时采用 VWAP 分时算法控制冲击。&quot;,
+            &quot;对交易量、可用金额设置动态滤网提升容量。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 6,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;低价、低溢价转债通常成交额有限，大资金会推高买价，容量上限有限。&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;溢价率/动量因子部分捕捉情绪，但仍大量依赖基本面。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;可转债市场结构随发行潮显著变化；因子权重未经系统回测。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.5,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 稳健性30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;正股单边大跌导致转债股性暴露&quot;,
+            &quot;市场强势炒作高价转债、低价转债流动性枯竭&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;组合整体转股溢价率将显著低于全市场中位数&quot;,
+            &quot;持仓正股 6 个月动量显著高于基准&quot;,
+            &quot;在历史样本中月度换手&lt;30%&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;逻辑完整、实施门槛不高，但存在明显未来函数，未经严谨回测暂不可直接实盘。&quot;,
+        &quot;recommendation&quot;: &quot;继续研究&quot;,
+        &quot;optimization_suggestions&quot;: &quot;修复所有 statDate 未来函数；完成 10 年滚动回测 + 交易成本仿真；引入涨跌停/停牌过滤。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 8,
+        &quot;slippage&quot;: 5,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 4,
+        &quot;time_sensitivity&quot;: 2,
+        &quot;executability&quot;: 7,
+        &quot;effectiveness_a&quot;: 6,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 4.5
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供资金规模、手续费、下单类型、滑点模型，假设月度等权分仓、佣金万三、无滑点或 0.5% 估计。&quot;,
+        &quot;假设策略在 before_trading 运行，使用昨日收盘价进行调仓，真实成交按集合竞价完成。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

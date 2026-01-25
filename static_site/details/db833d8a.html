@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小市值高息低价轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>小市值高息低价轮动</h1>
+        <p class="meta">
+            ID: db833d8a | 
+            类型: 小市值轮动/多因子选股 | 
+            来源: b2324_22.菜场大妈皇城大妈年化108大妈吉祥.txt |
+            分析日期: 2026-01-11 15:07:42
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>每月从全市场中剔除科创、北交及风险标的后，先按过去一年股息率选取前 25% 的高分红股票，再用 PEG&lt;3、总市值≤100 亿、股价&lt;9 元等条件做二次筛选，得到最多 20 只候选股；按可用资金等权买入最多 10 只。持仓期间若前一日涨停当日被打开或当日放量(&gt;10 日均量 3 倍)但未封板则卖出，空闲资金立即回补到最新候选池。策略试图赚取小盘高息低价股的价值回归与事件性涨停溢价。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全 A 剔除代码首位 4/8 及 68 开头(北交+科创)，过滤 ST/停牌/涨跌停/股价&gt;9，市值≤100 亿。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>月初 9:30 产生的新候选池中未持有股票, 14:30 卖出腾出资金后再次检查候选池补仓</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>昨日封涨停，今日 14:00 前被打开, 当日成交量&gt;10 日均量 3 倍且未封板</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多 10 只等权，买入资金 = 可用现金 ÷ (10-现持仓)。无止损/止盈，仅有简易动量-成交量风控。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>买：月初一次 + 日内至多一次；卖：日内两次检查(14:00/14:30)。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前无需操作；14:00 看涨停打开即市价卖；14:30 复核放量未封板卖并按最新备选池等额买入；月初 9:25 前准备备选池并在 9:30 集合竞价买入。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>get_fundamentals(q, date=None) 在 9:30 调用会返回回测时已知的最新财报，真实交易日可能尚未公布——存在财务数据前视风险；未启用 set_option(&#x27;avoid_future_data&#x27;, True)。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>分红信息同样可能前视，需以股权登记日对应公告发布日期校准, 14:30 用分钟级量价指标靠近收盘，回测与实盘交易时间差异对收益影响未知, 0 滑点与极低佣金仅为跑分，美化了历史年化</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>个人或小资金可落地，需接受一定滑点与涨跌停成交不确定性。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>成交与冲击可忽略，基本可复现。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>多数股票仍可吃下，偶遇封单需拆单。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>部分标的成交量不足，需拉长成交周期或扩大股票数。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>流动性瓶颈明显，策略需改造或分批建仓否则冲击过大。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>只买 ≤100 亿且&lt;9 元的小盘股，容量有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>卖出信号基于封板溢价与放量恐慌，属于情绪利用，但占比不高。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>依赖分红+低价+小盘特征，牛熊阶段表现差异大；未见宏观切换逻辑。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>高频连续跌停行情, 价值股长期失宠、小盘流动性枯竭</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>高股息小盘在除权季前后有超额收益, 涨停打开次日大概率走弱, 放巨量未封板后 5 日收益为负</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>典型小盘高息轮动策略，逻辑简单但含前视隐患，历史年化可能被高估。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>修正未来函数问题、使用真实滑点成本、加入流动性因子与仓位动态调整</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未在代码中看到资金规模设定，分析以 &lt;1000 万资金为假设, 实际交易费率按万 3 佣金、千 1 印花税估算，与代码默认不同</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>6</td></tr>
+                <tr><td>滑点</td><td>5</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>6</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>6.1</td></tr>
+                <tr><td>大资金不友好</td><td>7</td></tr>
+                <tr><td>行为偏差利用</td><td>4</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>5.5</td></tr>
+                <tr><td>总分</td><td>57.8</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;小市值高息低价轮动&quot;,
+    &quot;strategy_type&quot;: &quot;小市值轮动/多因子选股&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;每月从全市场中剔除科创、北交及风险标的后，先按过去一年股息率选取前 25% 的高分红股票，再用 PEG&lt;3、总市值≤100 亿、股价&lt;9 元等条件做二次筛选，得到最多 20 只候选股；按可用资金等权买入最多 10 只。持仓期间若前一日涨停当日被打开或当日放量(&gt;10 日均量 3 倍)但未封板则卖出，空闲资金立即回补到最新候选池。策略试图赚取小盘高息低价股的价值回归与事件性涨停溢价。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 行情: 日线/分钟价、涨跌停价、成交量；2) 财务: valuation、indicator、分红表(STK_XR_XD)；3) 频率: 分红一年滚动、财务因子月度、行情日内。&quot;,
+        &quot;stock_pool&quot;: &quot;全 A 剔除代码首位 4/8 及 68 开头(北交+科创)，过滤 ST/停牌/涨跌停/股价&gt;9，市值≤100 亿。&quot;,
+        &quot;buy_signals&quot;: [&quot;月初 9:30 产生的新候选池中未持有股票&quot;, &quot;14:30 卖出腾出资金后再次检查候选池补仓&quot;],
+        &quot;sell_signals&quot;: [&quot;昨日封涨停，今日 14:00 前被打开&quot;, &quot;当日成交量&gt;10 日均量 3 倍且未封板&quot;],
+        &quot;position_and_risk&quot;: &quot;最多 10 只等权，买入资金 = 可用现金 ÷ (10-现持仓)。无止损/止盈，仅有简易动量-成交量风控。&quot;,
+        &quot;trading_frequency&quot;: &quot;买：月初一次 + 日内至多一次；卖：日内两次检查(14:00/14:30)。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前无需操作；14:00 看涨停打开即市价卖；14:30 复核放量未封板卖并按最新备选池等额买入；月初 9:25 前准备备选池并在 9:30 集合竞价买入。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;不确定&quot;,
+        &quot;risk_level&quot;: &quot;中&quot;,
+        &quot;risk_score&quot;: 6,
+        &quot;risk_score_reason&quot;: &quot;get_fundamentals(q, date=None) 在 9:30 调用会返回回测时已知的最新财报，真实交易日可能尚未公布——存在财务数据前视风险；未启用 set_option(&#x27;avoid_future_data&#x27;, True)。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;无直接 look-ahead，行情全部使用 previous_date 或当前时点。&quot;,
+            &quot;financial_data_leak&quot;: &quot;PEG、ROE/PB 等调用 get_fundamentals(q, date=None)；若回测日期早于财报发布日期，则存在前视。&quot;,
+            &quot;index_component_leak&quot;: &quot;无指数权重使用。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未发现 time-shift 操作，但未开启 avoid_future_data，属于隐式风险。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;1) set_option(&#x27;avoid_future_data&#x27;, True)；2) get_fundamentals(q, date=context.previous_date)；3) 对财务因子使用报告发布日期过滤。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;分红信息同样可能前视，需以股权登记日对应公告发布日期校准&quot;, &quot;14:30 用分钟级量价指标靠近收盘，回测与实盘交易时间差异对收益影响未知&quot;, &quot;0 滑点与极低佣金仅为跑分，美化了历史年化&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 5,
+        &quot;slippage_reason&quot;: &quot;目标股票多为 &lt;9 元小盘股，集合竞价/盘中挂单易被抢，且策略假设 0 滑点。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;月度调仓+日内补仓，换手中等；佣金模型低估真实成本。&quot;,
+        &quot;execution_score&quot;: 6,
+        &quot;execution_reason&quot;: &quot;10 只股票、单票等权，下单量可控，但部分个股涨跌停封单导致成交不确定。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;主要在 14:00-14:30 执行，分钟级时效要求。&quot;,
+        &quot;overall_executability&quot;: 6,
+        &quot;overall_reason&quot;: &quot;个人或小资金可落地，需接受一定滑点与涨跌停成交不确定性。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;成交与冲击可忽略，基本可复现。&quot;,
+            &quot;100w&quot;: &quot;多数股票仍可吃下，偶遇封单需拆单。&quot;,
+            &quot;1000w&quot;: &quot;部分标的成交量不足，需拉长成交周期或扩大股票数。&quot;,
+            &quot;1y&quot;: &quot;流动性瓶颈明显，策略需改造或分批建仓否则冲击过大。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;将买入触发移到集合竞价或分批 VWAP&quot;, &quot;设置实际滑点与分级费率评估真实收益&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 7,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;只买 ≤100 亿且&lt;9 元的小盘股，容量有限。&quot;,
+        &quot;behavioral_bias_score&quot;: 4,
+        &quot;behavioral_bias_reason&quot;: &quot;卖出信号基于封板溢价与放量恐慌，属于情绪利用，但占比不高。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;依赖分红+低价+小盘特征，牛熊阶段表现差异大；未见宏观切换逻辑。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.3,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;高频连续跌停行情&quot;, &quot;价值股长期失宠、小盘流动性枯竭&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;高股息小盘在除权季前后有超额收益&quot;, &quot;涨停打开次日大概率走弱&quot;, &quot;放巨量未封板后 5 日收益为负&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;典型小盘高息轮动策略，逻辑简单但含前视隐患，历史年化可能被高估。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;修正未来函数问题、使用真实滑点成本、加入流动性因子与仓位动态调整&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 6,
+        &quot;slippage&quot;: 5,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 6,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 6,
+        &quot;effectiveness_a&quot;: 7,
+        &quot;effectiveness_b&quot;: 4,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.3
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未在代码中看到资金规模设定，分析以 &lt;1000 万资金为假设&quot;,
+        &quot;实际交易费率按万 3 佣金、千 1 印花税估算，与代码默认不同&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

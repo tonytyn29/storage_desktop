@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>连板龙头跟风 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>连板龙头跟风</h1>
+        <p class="meta">
+            ID: b9173b65 | 
+            类型: 事件驱动 / 动量策略 | 
+            来源: b25_2连板龙头策略.txt |
+            分析日期: 2026-01-10 22:16:33
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>每天早盘把前一交易日‘涨停并且保持连板最高层数’的股票视为市场情绪龙头，按 5 日平均换手率从低到高选出最多 10 只买入，赌资金继续向连板龙头聚集，持有 1~2 个交易日，只要盈利或时间到且不再涨停则卖出，通过捕捉短期情绪溢价获取超额收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>A 股（剔除北交所、科创板、代码 4/8 开头、上市不足 50 日、ST、停牌股票）。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>上一交易日收盘价=涨停价（即涨停板）；并且其连续涨停天数等于市场最高连板数 M。, 在上述候选中按 VOL5 从小到大排序，空仓位数×单票市值（总资产/10）&gt;1 手市值。依次补齐空仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>14:50 当日不在涨停板且(已持有≥2 个交易日 或 账面盈利&gt;0%) 即以市价/限价全部卖出；, 不卖出：若当日仍然涨停则继续持有，最迟第 3 个交易日/打开涨停再评估。</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>最多 10 只等权，单票价值 = 总资产/10；无总仓位上限控制；无单票跌停无法卖出处理逻辑（除了不满足高限价）。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>每天开盘 09:30 买入，14:50 卖出；持仓周期 1~2 个交易日，高换手。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>1) 盘前（9:00 前）根据昨日涨停数据筛出目标；2) 开盘立即下单，若股票一字板需排涨停价单；3) 14:45 复查持仓，若满足卖出条件且未封板立刻市价清仓；4) 跌停无法卖出需次日继续排队。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有选股使用 context.previous_date（上一交易日）作为 end_date；盘中仅读取实时行情，不存在向后看。无使用 get_fundamentals 在 T 日获得 T+0 财报的路径；仅在注释区出现。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>use_real_price=True 可能导致回测以成交价成交，而实盘被排队无法成交，带来隐形未来成交价格优势。, 当日 09:30 如果使用 MarketOrderStyle 而给定 price=current_data.day_open，在回测中被忽略，与实盘行为可能不一致。, sell 逻辑对跌停无法卖出未做处理，可能造成回测与实盘偏差。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>仅适合几十万级以内的资金并配合自动化高频下单；人工和大资金均难以执行且滑点失真。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>可尝试；个股成交量相对资金量可接受，但仍面临买不到一字板的情况。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>部分个股流动性不足，排板成功率下降，需拆单，多数时买不到价位，收益衰减明显。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>基本无法在连板龙头有效建仓而不冲击价格；策略失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>不可行；目标股票容量远不足。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>标的为流通市值小、换手率低的高连板股，成交量有限，大资金难以进出。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>策略完全基于短期情绪/涨停板效应，赚取追涨心理溢价，利用行为偏差明显。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>连板行情阶段性强，牛市或高投机环境有效，熊市或监管趋严阶段几乎失效。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>连板监管严厉、涨停放量不连板的震荡市, 极端流动性枯竭或T+0禁售期间导致跌停无法退出</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>目标股在买入后 1-2 个交易日平均超额收益为正，显著高于基准。, 排板成功率与后续收益率高度相关，成功买到一字涨停的仓位收益显著大于未买到部分。, 连板最高梯队数量(M)大幅下降时，策略持仓下降且收益下滑。</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>策略抓情绪龙头思路明确，但回测与实盘差距巨大，成交与滑点是硬伤。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 引入真实排板成交模型和手续费估计；2) 增加止损及跌停应对；3) 丰富选股因子，降低单一情绪依赖；4) 探索隔日定量逻辑代替盘中抢板。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未在代码中指定手续费、滑点模型，假设使用聚宽股票默认费率（印花税千分之一、佣金万分之三单边，卖出千分之一过户费）。, 资金规模未给定，评分按默认 100 万规模估计；场景分析给出 10w-1 亿不同资金假设。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>8</td></tr>
+                <tr><td>成本</td><td>6</td></tr>
+                <tr><td>执行难度</td><td>4</td></tr>
+                <tr><td>时间敏感性</td><td>7</td></tr>
+                <tr><td>综合可执行性</td><td>4.6</td></tr>
+                <tr><td>大资金不友好</td><td>8</td></tr>
+                <tr><td>行为偏差利用</td><td>7</td></tr>
+                <tr><td>跨阶段稳健性</td><td>3</td></tr>
+                <tr><td>有效性总分</td><td>5.5</td></tr>
+                <tr><td>总分</td><td>51.3</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>{
+    &quot;strategy_name&quot;: &quot;连板龙头跟风&quot;,
+    &quot;strategy_type&quot;: &quot;事件驱动 / 动量策略&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;每天早盘把前一交易日‘涨停并且保持连板最高层数’的股票视为市场情绪龙头，按 5 日平均换手率从低到高选出最多 10 只买入，赌资金继续向连板龙头聚集，持有 1~2 个交易日，只要盈利或时间到且不再涨停则卖出，通过捕捉短期情绪溢价获取超额收益。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 日频行情：收盘价、涨跌停价、最低价、停牌标志；2) 基本信息：上市日期、ST 标识、上市板块代码；3) JQFactor: VOL5（过去 5 日平均换手率）；4) 当前盘中数据：last_price、high_limit、low_limit、day_open 用于下单决策。&quot;,
+        &quot;stock_pool&quot;: &quot;A 股（剔除北交所、科创板、代码 4/8 开头、上市不足 50 日、ST、停牌股票）。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;上一交易日收盘价=涨停价（即涨停板）；并且其连续涨停天数等于市场最高连板数 M。&quot;,
+            &quot;在上述候选中按 VOL5 从小到大排序，空仓位数×单票市值（总资产/10）&gt;1 手市值。依次补齐空仓。&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;14:50 当日不在涨停板且(已持有≥2 个交易日 或 账面盈利&gt;0%) 即以市价/限价全部卖出；&quot;,
+            &quot;不卖出：若当日仍然涨停则继续持有，最迟第 3 个交易日/打开涨停再评估。&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;最多 10 只等权，单票价值 = 总资产/10；无总仓位上限控制；无单票跌停无法卖出处理逻辑（除了不满足高限价）。&quot;,
+        &quot;trading_frequency&quot;: &quot;每天开盘 09:30 买入，14:50 卖出；持仓周期 1~2 个交易日，高换手。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;1) 盘前（9:00 前）根据昨日涨停数据筛出目标；2) 开盘立即下单，若股票一字板需排涨停价单；3) 14:45 复查持仓，若满足卖出条件且未封板立刻市价清仓；4) 跌停无法卖出需次日继续排队。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有选股使用 context.previous_date（上一交易日）作为 end_date；盘中仅读取实时行情，不存在向后看。无使用 get_fundamentals 在 T 日获得 T+0 财报的路径；仅在注释区出现。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;get_price / get_factor_values 均以 end_date=previous_date，回避未来数据；未见跨日写入再用。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未在运行代码里调财务数据；注释中的 get_fundamentals 不执行。&quot;,
+            &quot;index_component_leak&quot;: &quot;无指数成份选股或未来排名；VOL5 取上一日数据安全。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;use_real_price=True 但所有委托在当日 09:30 之后，不会提前知道当日收盘价；无回测器级别泄漏。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;1) 保留现状即可；2) 若后续加入财务因子需确认披露日。3) 将 buy 中对涨停用 LimitOrderStyle(high_limit) 更合理。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;use_real_price=True 可能导致回测以成交价成交，而实盘被排队无法成交，带来隐形未来成交价格优势。&quot;,
+            &quot;当日 09:30 如果使用 MarketOrderStyle 而给定 price=current_data.day_open，在回测中被忽略，与实盘行为可能不一致。&quot;,
+            &quot;sell 逻辑对跌停无法卖出未做处理，可能造成回测与实盘偏差。&quot;
+        ]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 8,
+        &quot;slippage_reason&quot;: &quot;策略专挑连板龙头，通常一字涨停开板成交量极小；排板成功概率低，溢价全靠开板抢筹，实盘极易高滑点或买不到。&quot;,
+        &quot;cost_score&quot;: 6,
+        &quot;cost_reason&quot;: &quot;平均持有 1~2 个交易日，换手率≈200%/周；若买卖都触及涨停/高挂单，成交不一定，但理论上成本偏高。&quot;,
+        &quot;execution_score&quot;: 4,
+        &quot;execution_reason&quot;: &quot;小资金可少量跟随，大资金极难进入；且需盘中快速下单、排板，成交不确定性高。&quot;,
+        &quot;time_sensitivity_score&quot;: 7,
+        &quot;time_sensitivity_reason&quot;: &quot;必须在 09:30 前后及时挂单，14:50 卖出决策也依赖实时行情；延迟几分钟可能错过涨停价队列。&quot;,
+        &quot;overall_executability&quot;: 4,
+        &quot;overall_reason&quot;: &quot;仅适合几十万级以内的资金并配合自动化高频下单；人工和大资金均难以执行且滑点失真。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;可尝试；个股成交量相对资金量可接受，但仍面临买不到一字板的情况。&quot;,
+            &quot;100w&quot;: &quot;部分个股流动性不足，排板成功率下降，需拆单，多数时买不到价位，收益衰减明显。&quot;,
+            &quot;1000w&quot;: &quot;基本无法在连板龙头有效建仓而不冲击价格；策略失效。&quot;,
+            &quot;1y&quot;: &quot;不可行；目标股票容量远不足。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;改为次日低开回封等更易成交的切入点，降低对涨停一字板的依赖。&quot;,
+            &quot;加入分笔跟单、动态撤单逻辑，提高成交率，并配置跌停无法卖出的风控（如跌停后次日集合竞价先行卖出）。&quot;
+        ]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 8,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;标的为流通市值小、换手率低的高连板股，成交量有限，大资金难以进出。&quot;,
+        &quot;behavioral_bias_score&quot;: 7,
+        &quot;behavioral_bias_reason&quot;: &quot;策略完全基于短期情绪/涨停板效应，赚取追涨心理溢价，利用行为偏差明显。&quot;,
+        &quot;cross_period_robustness_score&quot;: 3,
+        &quot;cross_period_robustness_reason&quot;: &quot;连板行情阶段性强，牛市或高投机环境有效，熊市或监管趋严阶段几乎失效。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.9,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;连板监管严厉、涨停放量不连板的震荡市&quot;, &quot;极端流动性枯竭或T+0禁售期间导致跌停无法退出&quot;],
+        &quot;verifiable_predictions&quot;: [
+            &quot;目标股在买入后 1-2 个交易日平均超额收益为正，显著高于基准。&quot;,
+            &quot;排板成功率与后续收益率高度相关，成功买到一字涨停的仓位收益显著大于未买到部分。&quot;,
+            &quot;连板最高梯队数量(M)大幅下降时，策略持仓下降且收益下滑。&quot;
+        ]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;策略抓情绪龙头思路明确，但回测与实盘差距巨大，成交与滑点是硬伤。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 引入真实排板成交模型和手续费估计；2) 增加止损及跌停应对；3) 丰富选股因子，降低单一情绪依赖；4) 探索隔日定量逻辑代替盘中抢板。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 8,
+        &quot;cost&quot;: 6,
+        &quot;execution&quot;: 4,
+        &quot;time_sensitivity&quot;: 7,
+        &quot;executability&quot;: 4,
+        &quot;effectiveness_a&quot;: 8,
+        &quot;effectiveness_b&quot;: 7,
+        &quot;effectiveness_c&quot;: 3,
+        &quot;effectiveness_total&quot;: 4.9
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未在代码中指定手续费、滑点模型，假设使用聚宽股票默认费率（印花税千分之一、佣金万分之三单边，卖出千分之一过户费）。&quot;,
+        &quot;资金规模未给定，评分按默认 100 万规模估计；场景分析给出 10w-1 亿不同资金假设。&quot;
+    ]
+}</pre>
+        </div>
+
+    </div>
+</body>
+</html>

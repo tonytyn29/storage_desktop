@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LH猪价日内-波段CTA - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>LH猪价日内-波段CTA</h1>
+        <p class="meta">
+            ID: d712413b | 
+            类型: 趋势跟踪/波段突破 | 
+            来源: b2324_63.生猪期货CTA策略.txt |
+            分析日期: 2026-01-11 18:24:18
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>以生猪主力合约(LH)为对象，在夜盘/日盘两个开盘时段先观察当日开盘价，再用最近5个交易日平均振幅(swing)设置上下突破阈值；若价格向上突破且MACD&gt;0且相关股票牧原股份(002714)呈上行，则做多；向下突破且MACD&lt;0且牧原下行则做空。持仓期间设置 ATR-类固损(≈5%或20日STD)、2×ATR 固盈，最多持仓7天或获利/止损/反向信号即平仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>仅期货 LH 主力合约，对应股票池为单只 002714 用于过滤；未做 ST/停牌等处理（非必需）。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>当日开盘价+Swing×buy_ration 被实时价格突破, MACD&gt;0 且牧原股份近5日收盘抬升</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>当日开盘价-Swing×sell_ration 被跌破, MACD&lt;0 且牧原近5日收盘走低, 既有多单跌破止损/达到止盈/7日到期, 既有空单反向信号或止损止盈</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>风险金额控制在账户权益1%，lots = int(0.01*总资产/绝对止损额)。止损≈5%或20日STD；止盈≈10%或2×STD；单方向最多一张 order；无组合风险控制。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>日内 tick 触发，一天最多开一次（突破后锁单）；平均持仓≤7天。下单函数位于 deal()，在 handle_tick (tick 级) 与 market_open(每bar) 调用。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前 8:50 运行 before_market_open 计算阈值；夜盘 21:00 和日盘 9:00 前关注阈值是否已算出；盘中若价格突破即按市价开/平；15:00 后查看 after_market_close 日志并取消订阅。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有指标均使用 end_date&lt;=T-1 (如 cacluate_ma、calculateMACD_oneday)，未见使用未来收盘价。唯一可能争议是 get_open_price 当天开盘价参与阈值，但开盘价已产生，非未来数据。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>dominant 合约切换日内可能变化，需锁定交易合约以免 “未来” 主力错用, StepRelatedSlippage(0) 过于理想，回测收益高估, lots 计算未考虑合约乘数，实盘需换算手数</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>中小资金可工程化实现；大资金需做成交拆分、滑点模拟。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>1%风险对应单笔500-800元，1-2手即可，流动性足。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>约10手，对盘口有可见但可接受冲击。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>百手级，下单需时间分散，否则滑点显著。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>千手级，合约深度不够，需对冲/分散品种；策略不再适用。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>单品种容量有限，突破时段成交集中。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>主要依赖技术动量与分歧放大，部分利用市场追涨杀跌情绪。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>规则简洁，止盈止损刚性，但 swing-threshold 和 MACD 参数未做自适应，可能失效于震荡市。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>窄幅震荡+频繁假突破, 极端跳空/涨跌停导致阈值计算失真</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>当价格突破开盘价±0.6~0.7×5日均振幅且MACD同向时，后续1-3日同方向延续概率&gt;55%, 5日均振幅&gt;10%时日内大幅波动更易出现假信号, 牧原股份价格方向与LH合约收益正相关</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>属于典型单品种技术突破策略，逻辑清晰但对滑点与流动性较敏感。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 加入乘数-动态仓位与隔夜保证金计算；2) 增加波动率过滤(如前一日高低幅&lt;阈值)减少假突破；3) 用衍生品组或跨品种分散风险。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未给出初始资金，假设100万人民币以评估仓位与费用, 滑点模型设为0(代码默认)，本报告按典型1-2跳假定滑点评分，实际需外部模型</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>3</td></tr>
+                <tr><td>滑点</td><td>6</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>7</td></tr>
+                <tr><td>综合可执行性</td><td>5.6</td></tr>
+                <tr><td>大资金不友好</td><td>6</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>5.4</td></tr>
+                <tr><td>总分</td><td>54.7</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;LH猪价日内-波段CTA&quot;,
+    &quot;strategy_type&quot;: &quot;趋势跟踪/波段突破&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;以生猪主力合约(LH)为对象，在夜盘/日盘两个开盘时段先观察当日开盘价，再用最近5个交易日平均振幅(swing)设置上下突破阈值；若价格向上突破且MACD&gt;0且相关股票牧原股份(002714)呈上行，则做多；向下突破且MACD&lt;0且牧原下行则做空。持仓期间设置 ATR-类固损(≈5%或20日STD)、2×ATR 固盈，最多持仓7天或获利/止损/反向信号即平仓。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) get_price(日线/300根)计算MA、MACD、20日STD；2) get_current_data()日开盘价；3) tick 数据实时触发进出；4) 相关资产收盘价用于趋势一致性。全部数据均为行情数据，分钟-Tick 级实时更新。&quot;,
+        &quot;stock_pool&quot;: &quot;仅期货 LH 主力合约，对应股票池为单只 002714 用于过滤；未做 ST/停牌等处理（非必需）。&quot;,
+        &quot;buy_signals&quot;: [&quot;当日开盘价+Swing×buy_ration 被实时价格突破&quot;, &quot;MACD&gt;0 且牧原股份近5日收盘抬升&quot;],
+        &quot;sell_signals&quot;: [&quot;当日开盘价-Swing×sell_ration 被跌破&quot;,&quot;MACD&lt;0 且牧原近5日收盘走低&quot;,&quot;既有多单跌破止损/达到止盈/7日到期&quot;,&quot;既有空单反向信号或止损止盈&quot;],
+        &quot;position_and_risk&quot;: &quot;风险金额控制在账户权益1%，lots = int(0.01*总资产/绝对止损额)。止损≈5%或20日STD；止盈≈10%或2×STD；单方向最多一张 order；无组合风险控制。&quot;,
+        &quot;trading_frequency&quot;: &quot;日内 tick 触发，一天最多开一次（突破后锁单）；平均持仓≤7天。下单函数位于 deal()，在 handle_tick (tick 级) 与 market_open(每bar) 调用。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前 8:50 运行 before_market_open 计算阈值；夜盘 21:00 和日盘 9:00 前关注阈值是否已算出；盘中若价格突破即按市价开/平；15:00 后查看 after_market_close 日志并取消订阅。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 3,
+        &quot;risk_score_reason&quot;: &quot;所有指标均使用 end_date&lt;=T-1 (如 cacluate_ma、calculateMACD_oneday)，未见使用未来收盘价。唯一可能争议是 get_open_price 当天开盘价参与阈值，但开盘价已产生，非未来数据。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;阈值 calculate_threshold 在 21:00/09:00 调用 get_open_price(当日)，随后用于当日内交易，未先见后算，无泄漏。&quot;,
+            &quot;financial_data_leak&quot;: &quot;无 get_fundamentals 等调用。&quot;,
+            &quot;index_component_leak&quot;: &quot;无成分/排名函数。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未使用 history_bars 等带 window 的当根函数。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;如担忧开盘价延迟，可改为前一交易日收盘价计算阈值再次确认；其余无需处理。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;dominant 合约切换日内可能变化，需锁定交易合约以免 “未来” 主力错用&quot;, &quot;StepRelatedSlippage(0) 过于理想，回测收益高估&quot;, &quot;lots 计算未考虑合约乘数，实盘需换算手数&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 6,
+        &quot;slippage_reason&quot;: &quot;猪价合约波动大、盘口深度有限，且策略用 tick 级市价 order。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;建仓平仓频次≈周级，手续费设置万0.23，但平今 0.23%，仍属中低换手。&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;单合约，容量 3-5 亿日均成交，但市价单在突破时冲击明显；需拆单或限价。&quot;,
+        &quot;time_sensitivity_score&quot;: 7,
+        &quot;time_sensitivity_reason&quot;: &quot;信号基于 tick 突破，几秒延迟可能错失价差。&quot;,
+        &quot;overall_executability&quot;: 5,
+        &quot;overall_reason&quot;: &quot;中小资金可工程化实现；大资金需做成交拆分、滑点模拟。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;1%风险对应单笔500-800元，1-2手即可，流动性足。&quot;,
+            &quot;100w&quot;: &quot;约10手，对盘口有可见但可接受冲击。&quot;,
+            &quot;1000w&quot;: &quot;百手级，下单需时间分散，否则滑点显著。&quot;,
+            &quot;1y&quot;: &quot;千手级，合约深度不够，需对冲/分散品种；策略不再适用。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;用限价单(阈值±1跳)替代市价单降低滑点&quot;,&quot;lots 计算加入LH合约乘数=16，风险更精确&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 6,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;单品种容量有限，突破时段成交集中。&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;主要依赖技术动量与分歧放大，部分利用市场追涨杀跌情绪。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;规则简洁，止盈止损刚性，但 swing-threshold 和 MACD 参数未做自适应，可能失效于震荡市。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.2,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40%+行为偏差30%+跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;窄幅震荡+频繁假突破&quot;,&quot;极端跳空/涨跌停导致阈值计算失真&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;当价格突破开盘价±0.6~0.7×5日均振幅且MACD同向时，后续1-3日同方向延续概率&gt;55%&quot;,&quot;5日均振幅&gt;10%时日内大幅波动更易出现假信号&quot;,&quot;牧原股份价格方向与LH合约收益正相关&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;属于典型单品种技术突破策略，逻辑清晰但对滑点与流动性较敏感。&quot;,
+        &quot;recommendation&quot;: &quot;小-中资金可尝试实盘+风控改进；大资金或严格风控建议继续仿真评估。&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 加入乘数-动态仓位与隔夜保证金计算；2) 增加波动率过滤(如前一日高低幅&lt;阈值)减少假突破；3) 用衍生品组或跨品种分散风险。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 3,
+        &quot;slippage&quot;: 6,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 7,
+        &quot;executability&quot;: 5,
+        &quot;effectiveness_a&quot;: 6,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.2
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未给出初始资金，假设100万人民币以评估仓位与费用&quot;,
+        &quot;滑点模型设为0(代码默认)，本报告按典型1-2跳假定滑点评分，实际需外部模型&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

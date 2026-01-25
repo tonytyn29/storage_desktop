@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月度小市值95股轮动 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>月度小市值95股轮动</h1>
+        <p class="meta">
+            ID: 53d21e5b | 
+            类型: 小市值轮动/基本面过滤 | 
+            来源: b2324_9.持仓95只大容量小市值，媲美金元顺安元启.txt |
+            分析日期: 2026-01-11 18:32:45
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>每月选取市值最小且基本面增长向上的 95 只 A 股，等权持有以获取小市值溢价；对前一交易日封板股票暂缓卖出，待涨停打开再卖以避免封板无法成交。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全 A 股（剔除科创板 &#x27;68&#x27;, 北交所 &#x27;4&#x27;,&#x27;8&#x27;、ST/退市标签股票、日内停牌股票）；未对上市天数、流动性、涨跌停做进一步过滤。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>月初 9:30 通过 get_fundamentals 按市值升序取前 95 名, 持仓不足 95 只且账户可用现金充足时等权买入</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>月初调仓时不在最新 95 只名单且前一日未涨停的持仓全部卖出, 若某持仓前一日涨停且今日 14:00 撬板，立即清仓卖出</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>理论总仓位 ≈100%；单票权重≈1/95≈1.05%；无止损、无行业/风格暴露约束，最大风险来自小市值波动和流动性。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>月度主调仓（run_monthly），日内可能因封板打开触发额外卖出；买入仅发生在月初。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>若手动执行：
+1) T-1 日收盘后拉取最新财报与市值数据；
+2) 当月第一个交易日 09:25-09:30 生成买卖清单；
+3) 盘中 14:00 关注前一日涨停个股是否开板并择机卖出；其余时间无需操作。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有因子均使用 context.previous_date 或默认 current_date（财报已公布的数据），无使用 hindsight API；仅实时价格属于当日已可观测信息。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>indicator.ocf_to_operating_profit&gt;5 筛选值较极端，回测中有效但可能因异常样本导致过拟合, filter_kcbj_stock 使用 list.remove 可能跳过元素，建议一次性生成新列表, 未考虑停牌连续涨跌停导致无法成交的真实摩擦成本</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>小资金可行，&gt;1000 万需关注冲击成本；超亿规模流动性瓶颈明显。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>非常容易成交，滑点可忽略。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>等权 ~10 万/票，绝大多数小票可成交，需避免高换手日买卖同一方向。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>单票 ~100 万，部分日成交不足 500 万的小票需拆单或分 T+N 完成。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>单票占用 ~1000 万，已超过许多小票日成交额 10-30%；冲击成本和换手成为瓶颈。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>依赖小市值溢价，容量上限低。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用市场对小票与高成长低关注度的定价偏差，同时蹭涨停惯性。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>基本面+市值逻辑较通用，但筛选阈值（ocf&gt;5）与 95 只固定数量可能对样本时期敏感。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>小盘股整体杀估值、流动性枯竭的熊市, 财报集中爆雷导致成长筛选失效</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>月初开盘小市值股票的超额收益应显著为正, 持仓组合对 000905 指数呈现高贝塔+高 alpha, 组合在高流动性溢价收缩时回撤显著增大</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>策略实现简单、思路清晰，适合小资金验证；大资金执行与阈值鲁棒性存疑。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 增加流动性和波动率过滤；2) 使用分层市值权重或市值上限；3) 调参（ocf&gt;5）并做滚动窗口可得性测试</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供资金规模、滑点模型、手续费率，假设为聚宽默认（买卖佣金万三+千分之一印花税，滑点 0）, 假设全部订单为市价委托，可完全成交；真实情况下需拆单或分批成交, 假设 get_fundamentals 使用的财务数据已在发布日后可见，且回测引擎正确处理可得性</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>6</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>5</td></tr>
+                <tr><td>综合可执行性</td><td>5.8</td></tr>
+                <tr><td>大资金不友好</td><td>7</td></tr>
+                <tr><td>行为偏差利用</td><td>6</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>5.9</td></tr>
+                <tr><td>总分</td><td>58.7</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;月度小市值95股轮动&quot;,
+    &quot;strategy_type&quot;: &quot;小市值轮动/基本面过滤&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;每月选取市值最小且基本面增长向上的 95 只 A 股，等权持有以获取小市值溢价；对前一交易日封板股票暂缓卖出，待涨停打开再卖以避免封板无法成交。&quot;,
+        &quot;data_and_indicators&quot;: &quot;1) 价格数据（日频，包含昨收、高开、涨跌停价） 2) 基本面数据（valuation、indicator 模块，财报更新节奏为季度）&quot;,
+        &quot;stock_pool&quot;: &quot;全 A 股（剔除科创板 &#x27;68&#x27;, 北交所 &#x27;4&#x27;,&#x27;8&#x27;、ST/退市标签股票、日内停牌股票）；未对上市天数、流动性、涨跌停做进一步过滤。&quot;,
+        &quot;buy_signals&quot;: [&quot;月初 9:30 通过 get_fundamentals 按市值升序取前 95 名&quot;, &quot;持仓不足 95 只且账户可用现金充足时等权买入&quot;],
+        &quot;sell_signals&quot;: [&quot;月初调仓时不在最新 95 只名单且前一日未涨停的持仓全部卖出&quot;, &quot;若某持仓前一日涨停且今日 14:00 撬板，立即清仓卖出&quot;],
+        &quot;position_and_risk&quot;: &quot;理论总仓位 ≈100%；单票权重≈1/95≈1.05%；无止损、无行业/风格暴露约束，最大风险来自小市值波动和流动性。&quot;,
+        &quot;trading_frequency&quot;: &quot;月度主调仓（run_monthly），日内可能因封板打开触发额外卖出；买入仅发生在月初。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;若手动执行：\n1) T-1 日收盘后拉取最新财报与市值数据；\n2) 当月第一个交易日 09:25-09:30 生成买卖清单；\n3) 盘中 14:00 关注前一日涨停个股是否开板并择机卖出；其余时间无需操作。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有因子均使用 context.previous_date 或默认 current_date（财报已公布的数据），无使用 hindsight API；仅实时价格属于当日已可观测信息。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;get_price() 取的是前一日收盘价；当日成交价在 9:30 以后已可获得 -&gt; 合规。&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals() 未指定日期，默认回测当天，但聚宽回测自动做财报可得性处理 -&gt; 无漏未来。&quot;,
+            &quot;index_component_leak&quot;: &quot;无使用未来成分或排名；排名基于当下信息。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未发现使用风险控制或 benchmark 等可能导致回测偏差的隐藏函数。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;若担心财报发布时间偏差，可显式指定 date=context.previous_date。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;indicator.ocf_to_operating_profit&gt;5 筛选值较极端，回测中有效但可能因异常样本导致过拟合&quot;, &quot;filter_kcbj_stock 使用 list.remove 可能跳过元素，建议一次性生成新列表&quot;, &quot;未考虑停牌连续涨跌停导致无法成交的真实摩擦成本&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 6,
+        &quot;slippage_reason&quot;: &quot;主要买卖对象为小市值低流通量股票；开盘买入+14:00 卖出面临流动性折价。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;月度换仓一次（≈200 单），换手不算极高；但分散 95 只股票仍产生佣金和过户费。&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;小票成交需要拆单且部分可能连续涨停或停牌；整体仍可在自动化系统内完成。&quot;,
+        &quot;time_sensitivity_score&quot;: 5,
+        &quot;time_sensitivity_reason&quot;: &quot;主逻辑日频（月频），但 14:00 的开板卖出需要盘中执行。&quot;,
+        &quot;overall_executability&quot;: 5,
+        &quot;overall_reason&quot;: &quot;小资金可行，&gt;1000 万需关注冲击成本；超亿规模流动性瓶颈明显。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;非常容易成交，滑点可忽略。&quot;,
+            &quot;100w&quot;: &quot;等权 ~10 万/票，绝大多数小票可成交，需避免高换手日买卖同一方向。&quot;,
+            &quot;1000w&quot;: &quot;单票 ~100 万，部分日成交不足 500 万的小票需拆单或分 T+N 完成。&quot;,
+            &quot;1y&quot;: &quot;单票占用 ~1000 万，已超过许多小票日成交额 10-30%；冲击成本和换手成为瓶颈。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;加入成交额/成交量过滤，淘汰极端 illiquid 股票&quot;, &quot;采用分时 VWAP 或拆单算法降低冲击成本&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 7,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;依赖小市值溢价，容量上限低。&quot;,
+        &quot;behavioral_bias_score&quot;: 6,
+        &quot;behavioral_bias_reason&quot;: &quot;利用市场对小票与高成长低关注度的定价偏差，同时蹭涨停惯性。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;基本面+市值逻辑较通用，但筛选阈值（ocf&gt;5）与 95 只固定数量可能对样本时期敏感。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.8,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;小盘股整体杀估值、流动性枯竭的熊市&quot;, &quot;财报集中爆雷导致成长筛选失效&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;月初开盘小市值股票的超额收益应显著为正&quot;, &quot;持仓组合对 000905 指数呈现高贝塔+高 alpha&quot;, &quot;组合在高流动性溢价收缩时回撤显著增大&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;策略实现简单、思路清晰，适合小资金验证；大资金执行与阈值鲁棒性存疑。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 增加流动性和波动率过滤；2) 使用分层市值权重或市值上限；3) 调参（ocf&gt;5）并做滚动窗口可得性测试&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 6,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 5,
+        &quot;executability&quot;: 5,
+        &quot;effectiveness_a&quot;: 7,
+        &quot;effectiveness_b&quot;: 6,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 5.8
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供资金规模、滑点模型、手续费率，假设为聚宽默认（买卖佣金万三+千分之一印花税，滑点 0）&quot;,
+        &quot;假设全部订单为市价委托，可完全成交；真实情况下需拆单或分批成交&quot;,
+        &quot;假设 get_fundamentals 使用的财务数据已在发布日后可见，且回测引擎正确处理可得性&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

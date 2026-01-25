@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETF回撤对冲增强 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>ETF回撤对冲增强</h1>
+        <p class="meta">
+            ID: c787959b | 
+            类型: 趋势+风险平滑 | 
+            来源: b2324_76.ETF-控制回撤性能拉满（国债ETF增强).txt |
+            分析日期: 2026-01-11 18:28:05
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>用沪深300指数的趋势/高点回落判断市场是否进入风险期(bad_sign)。风险期全仓国债ETF；非风险期按账户最大回撤分级，把仓位从70%债→50%债动态递增股票ETF比例，以期在安全时赚取股市收益、在回撤深时逆向加仓抄底，极端风险则全部退守债券ETF。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>固定 4 只宽基/跨境股票 ETF(510300,510220,513500,513100) + 1 只国债 ETF(511010)。无 ST/停牌过滤；涨跌停/停牌由 order_target_value 内部自动忽略。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>bad_sign=0 或 drawdown_status&gt;0 时，对股票 ETF 下达目标市值；, drawdown_status 越大(净值跌得越多)股票权重越高。</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>bad_sign=1 触发，立即把股票目标市值调至 0；, 每日 9:30 重新按 target_value 调仓，多余份额被动卖出。</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>仓位= stock_cash + debt_cash =100%总资产；股票ETF 0~50%，债券ETF 50%~100%。最大回撤监控(g.max_net)逐层调仓，无止损但有“全债”保护。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>理论上每日都会在 9:30 run_daily(market_open) 依据昨日日线做一次 target_value 调仓；若仓位未变动实际成交可为 0。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>只需在开盘前拿到昨收数据算仓位，9:30 按目标市值下单即可；使用市价或限价同样可行。盘后记录净值高点作为下一日输入。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>所有判断均基于 get_bars(...,count=60) 的历史收盘价。before_market_open 发生在盘前，不会拿到当天未来行情。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>before_open 取收盘价依赖聚宽数据落盘完毕，极少数节假日可能延迟。, 国债 ETF 流动性在极端行情(熔断、大幅赎回)可能骤降。, 动态加仓逆势抄底在极端熊市可能失效，需设置最大股票上限或止损。</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>低品种数+高流动性+日频调仓，可轻松人工或程序化执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>一次调仓金额 ≤5 万/ETF，几乎无冲击。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>单 ETF 50 万左右，对日成交额 &lt;0.1%，无压力。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>单 ETF 500 万左右，占成交 1% 以内，可用 TWAP 或拆单。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>单 ETF 5000 万，仍低于宽基 ETF 当日成交 5%，需分批但可执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>宽基 ETF 容量大，对十亿级资金仍友好。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用趋势下跌恐慌阶段的“退守债券”与回撤后逆向加仓，轻度行为偏差利用。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>规则简单但参数(0.92/0.85、20/40/60 均线)较经验化；在不同市场阶段需重新校准。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>慢熊+无显著回撤(单边震荡下跌)，bad_sign 频繁触发导致债券仓位高，错失反弹。, 急牛行情(2020 年 7 月)长时间处于 drawdown_status=0，股票仅 30%，收益落后。</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>当 HS300 近 10 日跌幅超过 8% 持续触发 bad_sign 时，组合波动应显著小于纯股票 ETF。, 组合在 2018 年、2022 年熊市的最大回撤低于 30%。, 在震荡向上行情中，drawdown_status 逐级加仓会带来略超 60/40 股债组合的收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>回撤友好、简单易执行的 ETF 动态股债策略，但收益上限受限且参数经验化。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 股票 ETF 权重上限可随趋势主动升降而非固定 50%；2) 引入波动率/动量多维度判定风险；3) 增加场内货币 ETF 替代空仓提高现金收益。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>回测/实盘均采用聚宽默认撮合：前复权成交价、撮合规则 T+0、无滑点；若不同需重新评估。, 策略初始资金、滑点模型、印花税/佣金费率除代码已设定部分均使用聚宽默认。</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>3</td></tr>
+                <tr><td>成本</td><td>4</td></tr>
+                <tr><td>执行难度</td><td>8</td></tr>
+                <tr><td>时间敏感性</td><td>4</td></tr>
+                <tr><td>综合可执行性</td><td>6.3</td></tr>
+                <tr><td>大资金不友好</td><td>3</td></tr>
+                <tr><td>行为偏差利用</td><td>3</td></tr>
+                <tr><td>跨阶段稳健性</td><td>5</td></tr>
+                <tr><td>有效性总分</td><td>3.9</td></tr>
+                <tr><td>总分</td><td>50.0</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;ETF回撤对冲增强&quot;,
+    &quot;strategy_type&quot;: &quot;趋势+风险平滑&quot;,
+
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;用沪深300指数的趋势/高点回落判断市场是否进入风险期(bad_sign)。风险期全仓国债ETF；非风险期按账户最大回撤分级，把仓位从70%债→50%债动态递增股票ETF比例，以期在安全时赚取股市收益、在回撤深时逆向加仓抄底，极端风险则全部退守债券ETF。&quot;,
+        &quot;data_and_indicators&quot;: &quot;仅用指数价格(日线): 60 日收盘价、20/40/60 日简单均线、10/20 日最高价。每日盘前(before_open)更新一次。&quot;,
+        &quot;stock_pool&quot;: &quot;固定 4 只宽基/跨境股票 ETF(510300,510220,513500,513100) + 1 只国债 ETF(511010)。无 ST/停牌过滤；涨跌停/停牌由 order_target_value 内部自动忽略。&quot;,
+        &quot;buy_signals&quot;: [
+            &quot;bad_sign=0 或 drawdown_status&gt;0 时，对股票 ETF 下达目标市值；&quot;,
+            &quot;drawdown_status 越大(净值跌得越多)股票权重越高。&quot;
+        ],
+        &quot;sell_signals&quot;: [
+            &quot;bad_sign=1 触发，立即把股票目标市值调至 0；&quot;,
+            &quot;每日 9:30 重新按 target_value 调仓，多余份额被动卖出。&quot;
+        ],
+        &quot;position_and_risk&quot;: &quot;仓位= stock_cash + debt_cash =100%总资产；股票ETF 0~50%，债券ETF 50%~100%。最大回撤监控(g.max_net)逐层调仓，无止损但有“全债”保护。&quot;,
+        &quot;trading_frequency&quot;: &quot;理论上每日都会在 9:30 run_daily(market_open) 依据昨日日线做一次 target_value 调仓；若仓位未变动实际成交可为 0。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;只需在开盘前拿到昨收数据算仓位，9:30 按目标市值下单即可；使用市价或限价同样可行。盘后记录净值高点作为下一日输入。&quot;
+    },
+
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;所有判断均基于 get_bars(...,count=60) 的历史收盘价。before_market_open 发生在盘前，不会拿到当天未来行情。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;未使用当日尚未产生的价格；[-1] 取到的是上一交易日收盘价，安全。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未用财务数据。无泄漏。&quot;,
+            &quot;index_component_leak&quot;: &quot;使用固定 ETF，无成分排名等未来信息。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;未用 history 或 pipeline 滞后问题；回测引擎无隐式提前量。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;保持 get_bars 索引方式 [-1] ，不要改成[-0]；如需分钟级可切换在 15:00 后运行。&quot;,
+        &quot;gray_area_warnings&quot;: [
+            &quot;before_open 取收盘价依赖聚宽数据落盘完毕，极少数节假日可能延迟。&quot;,
+            &quot;国债 ETF 流动性在极端行情(熔断、大幅赎回)可能骤降。&quot;,
+            &quot;动态加仓逆势抄底在极端熊市可能失效，需设置最大股票上限或止损。&quot;
+        ]
+    },
+
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 3,
+        &quot;slippage_reason&quot;: &quot;大部分宽基 ETF 日均成交额几十亿，9:30 市价挂单 slippage 远低于 5bp。&quot;,
+        &quot;cost_score&quot;: 4,
+        &quot;cost_reason&quot;: &quot;理论上每日调仓一遍，但仓位变化取决于净值与 HS300 走势，大多时候换手&lt;10%。佣金千 3、印花税卖出千 1，成本中等偏低。&quot;,
+        &quot;execution_score&quot;: 8,
+        &quot;execution_reason&quot;: &quot;标的流动性好、单一品种少，易拆单成交。&quot;,
+        &quot;time_sensitivity_score&quot;: 4,
+        &quot;time_sensitivity_reason&quot;: &quot;信号基于昨收，无需分秒必争，只要开盘后在首个价位成交即可。&quot;,
+        &quot;overall_executability&quot;: 8,
+        &quot;overall_reason&quot;: &quot;低品种数+高流动性+日频调仓，可轻松人工或程序化执行。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;一次调仓金额 ≤5 万/ETF，几乎无冲击。&quot;,
+            &quot;100w&quot;: &quot;单 ETF 50 万左右，对日成交额 &lt;0.1%，无压力。&quot;,
+            &quot;1000w&quot;: &quot;单 ETF 500 万左右，占成交 1% 以内，可用 TWAP 或拆单。&quot;,
+            &quot;1y&quot;: &quot;单 ETF 5000 万，仍低于宽基 ETF 当日成交 5%，需分批但可执行。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [
+            &quot;加入 min_turnover 判断，低成交日推迟调仓降低冲击。&quot;,
+            &quot;对股票 ETF 使用盘口滑点模型或 VWAP 分时执行进一步减少成本。&quot;
+        ]
+    },
+
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 3,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;宽基 ETF 容量大，对十亿级资金仍友好。&quot;,
+        &quot;behavioral_bias_score&quot;: 3,
+        &quot;behavioral_bias_reason&quot;: &quot;利用趋势下跌恐慌阶段的“退守债券”与回撤后逆向加仓，轻度行为偏差利用。&quot;,
+        &quot;cross_period_robustness_score&quot;: 5,
+        &quot;cross_period_robustness_reason&quot;: &quot;规则简单但参数(0.92/0.85、20/40/60 均线)较经验化；在不同市场阶段需重新校准。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.2,
+        &quot;weight_explanation&quot;: &quot;大资金友好40%+行为偏差30%+跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [
+            &quot;慢熊+无显著回撤(单边震荡下跌)，bad_sign 频繁触发导致债券仓位高，错失反弹。&quot;,
+            &quot;急牛行情(2020 年 7 月)长时间处于 drawdown_status=0，股票仅 30%，收益落后。&quot;
+        ],
+        &quot;verifiable_predictions&quot;: [
+            &quot;当 HS300 近 10 日跌幅超过 8% 持续触发 bad_sign 时，组合波动应显著小于纯股票 ETF。&quot;,
+            &quot;组合在 2018 年、2022 年熊市的最大回撤低于 30%。&quot;,
+            &quot;在震荡向上行情中，drawdown_status 逐级加仓会带来略超 60/40 股债组合的收益。&quot;
+        ]
+    },
+
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;回撤友好、简单易执行的 ETF 动态股债策略，但收益上限受限且参数经验化。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 股票 ETF 权重上限可随趋势主动升降而非固定 50%；2) 引入波动率/动量多维度判定风险；3) 增加场内货币 ETF 替代空仓提高现金收益。&quot;
+    },
+
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 3,
+        &quot;cost&quot;: 4,
+        &quot;execution&quot;: 8,
+        &quot;time_sensitivity&quot;: 4,
+        &quot;executability&quot;: 8,
+        &quot;effectiveness_a&quot;: 3,
+        &quot;effectiveness_b&quot;: 3,
+        &quot;effectiveness_c&quot;: 5,
+        &quot;effectiveness_total&quot;: 4.2
+    },
+
+    &quot;assumptions&quot;: [
+        &quot;回测/实盘均采用聚宽默认撮合：前复权成交价、撮合规则 T+0、无滑点；若不同需重新评估。&quot;,
+        &quot;策略初始资金、滑点模型、印花税/佣金费率除代码已设定部分均使用聚宽默认。&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

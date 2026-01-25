@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSRS价值–PE反转双模切换 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>RSRS价值–PE反转双模切换</h1>
+        <p class="meta">
+            ID: 655f325a | 
+            类型: 多因子选股 + 动量切换 | 
+            来源: b2324_85.价值策略重开，再次向Jqz1226致敬.txt |
+            分析日期: 2026-01-11 18:31:03
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>当沪深300整体估值上行但仍低于历史中位数时（认为市场出现估值修复机会），转为“模式2”，捕捉短期 7 日涨幅&gt;20% 的强势股（动量/情绪）。否则落回“模式1”，先用 RSRS 斜率判断大盘趋势，若趋势安全则在全市场中筛选低 PE、盈利增长、应收账款周转率高等价值因子最优的 10 只股票进行均衡持仓。遇到账户暴涨且出现『黄昏之星』形态则整体降仓，并以货币 ETF(511880) 临时停泊。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>全部 A 股；过滤 ST/*ST/退市、停牌、跌停/涨停开盘；模式1 进一步剔除金融、地产、公用、居民服务行业及上市 &lt;500 天；模式2 剔除上市 &lt;120 天、科创(688)、龙虎榜净流入&lt;-1 亿。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>模式1：RSRS_Z &gt; 0.7 且财务打分靠前的前 10 名股票, 模式2：沪深300 PE 月序列出现上行拐点且个股 7 日涨幅&gt;20% 的前 5 名</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>模式切换导致股票不再位于 buy_list, 账户 2 周前后收益暴涨且出现大盘/个股黄昏之星, 模式2 个股盘中跌幅&gt;6% 或全天未涨到 4%, 尾盘清仓 511880(周一~周四)</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>Mode1 均值 = 总资产/10(代码中 buy_value=total/5 但 buy_list=10，存在实现与注释矛盾)；Mode2 = 总资产/2；可用现金&gt;1/3 买入额才下单；统一使用 0.91*昨收 清仓 &amp; 1.02*昨收 买入 限价；账户 15 日监控暴涨&gt;10% 触发 g.risk_flag；g.risky_stocks 30 日内禁买。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>月初计算 PE 走势；每周一更新周度确认；每日 09:16 清仓/调仓卖出，09:26~09:30 买入复核，盘中(10:30…14:30) mode2 止损，14:50 ETF 资金管理；实际日频交易。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘前 09:00~09:30 完成全部竞价下单；开盘后观察 mode2 止损信号；10:00 若有闲置资金买入 511880；14:50 卖出 511880，周五可保留；收盘后记录持仓。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>mode1_controlReport 通过 get_fundamentals(statDate=&#x27;XXXXqX&#x27;) 直接调用未来尚未披露的财报，属于典型‘未来函数’；未使用 publish_date 过滤。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>财报 T+N 披露延迟导致实盘与回测差异, 0.91 限价清仓在跌停日无法成交, 10:00 买 ETF – 14:50 卖出可能因流动性折损</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>中小资金(&lt;1000 万) 可通过拆单完成；大额、弱流动性时滑点显著；未来函数未修复前不建议实盘。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>成交无压力；ETF 成本可忽略。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>Mode2 动量股可能需排队；仍可执行。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>部分价值小票日成交额&lt;500w，买入后或致股价触板；需要长时间分批。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>几乎无法在小票中建仓；策略容量受限 &lt;2 亿。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>价值环节小市值集中；动量票更偏题材股，容量有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>Mode2 显著利用短期情绪(7 日 20% 追涨)，并配龙虎榜过滤</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>依赖估值上行窗口 + RSRS 阈值硬编码；不同市场阶段切换频繁。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>震荡市且估值横盘，模式频繁切换造成高换手, 流动性危机或连续跌停无法执行 0.91 限价卖出</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>沪深300 PE 下探至历史低位并拐头时组合收益突增, 模式2 个股次日平均高开幅度&gt;1.5%, 账户暴涨10% 后若触发黄昏之星降仓能显著降低回撤</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>逻辑上结合价值与动量，但存在前视财报重大缺陷，且执行依赖集合竞价限价，真实收益存疑。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>1) 修复财报可得性问题；2) 统一 stock_num 与 buy_list 数量；3) 引入成交额过滤 + 市价/冰山单；4) 将风险控制从形态学改为量化波动或期权对冲。</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>未提供资金规模、默认按聚宽最小交易单位成交；评估中假设单笔≤组合目标市值/股票数, 未提供滑点模型；聚宽默认等价市价成交，分析中假设集合竞价 1.02/0.91 限价可完全成交</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>8</td></tr>
+                <tr><td>滑点</td><td>6</td></tr>
+                <tr><td>成本</td><td>6</td></tr>
+                <tr><td>执行难度</td><td>5</td></tr>
+                <tr><td>时间敏感性</td><td>7</td></tr>
+                <tr><td>综合可执行性</td><td>5.2</td></tr>
+                <tr><td>大资金不友好</td><td>7</td></tr>
+                <tr><td>行为偏差利用</td><td>6</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>5.5</td></tr>
+                <tr><td>总分</td><td>53.2</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;RSRS价值–PE反转双模切换&quot;,
+    &quot;strategy_type&quot;: &quot;多因子选股 + 动量切换&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;当沪深300整体估值上行但仍低于历史中位数时（认为市场出现估值修复机会），转为“模式2”，捕捉短期 7 日涨幅&gt;20% 的强势股（动量/情绪）。否则落回“模式1”，先用 RSRS 斜率判断大盘趋势，若趋势安全则在全市场中筛选低 PE、盈利增长、应收账款周转率高等价值因子最优的 10 只股票进行均衡持仓。遇到账户暴涨且出现『黄昏之星』形态则整体降仓，并以货币 ETF(511880) 临时停泊。&quot;,
+        &quot;data_and_indicators&quot;: &quot;价格数据(日线/周线、高低收), 沪深300成份, 财报(收入、扣非净利、资产负债表多字段、PE), 龙虎榜净流入。RSRS 采用 800×18 回归；PE 序列按月、周计算；财报跨 6 个季度；价格涨跌停、当日涨幅。&quot;,
+        &quot;stock_pool&quot;: &quot;全部 A 股；过滤 ST/*ST/退市、停牌、跌停/涨停开盘；模式1 进一步剔除金融、地产、公用、居民服务行业及上市 &lt;500 天；模式2 剔除上市 &lt;120 天、科创(688)、龙虎榜净流入&lt;-1 亿。&quot;,
+        &quot;buy_signals&quot;: [&quot;模式1：RSRS_Z &gt; 0.7 且财务打分靠前的前 10 名股票&quot;, &quot;模式2：沪深300 PE 月序列出现上行拐点且个股 7 日涨幅&gt;20% 的前 5 名&quot;],
+        &quot;sell_signals&quot;: [&quot;模式切换导致股票不再位于 buy_list&quot;, &quot;账户 2 周前后收益暴涨且出现大盘/个股黄昏之星&quot;, &quot;模式2 个股盘中跌幅&gt;6% 或全天未涨到 4%&quot;, &quot;尾盘清仓 511880(周一~周四)&quot;],
+        &quot;position_and_risk&quot;: &quot;Mode1 均值 = 总资产/10(代码中 buy_value=total/5 但 buy_list=10，存在实现与注释矛盾)；Mode2 = 总资产/2；可用现金&gt;1/3 买入额才下单；统一使用 0.91*昨收 清仓 &amp; 1.02*昨收 买入 限价；账户 15 日监控暴涨&gt;10% 触发 g.risk_flag；g.risky_stocks 30 日内禁买。&quot;,
+        &quot;trading_frequency&quot;: &quot;月初计算 PE 走势；每周一更新周度确认；每日 09:16 清仓/调仓卖出，09:26~09:30 买入复核，盘中(10:30…14:30) mode2 止损，14:50 ETF 资金管理；实际日频交易。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘前 09:00~09:30 完成全部竞价下单；开盘后观察 mode2 止损信号；10:00 若有闲置资金买入 511880；14:50 卖出 511880，周五可保留；收盘后记录持仓。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;是&quot;,
+        &quot;risk_level&quot;: &quot;高&quot;,
+        &quot;risk_score&quot;: 8,
+        &quot;risk_score_reason&quot;: &quot;mode1_controlReport 通过 get_fundamentals(statDate=&#x27;XXXXqX&#x27;) 直接调用未来尚未披露的财报，属于典型‘未来函数’；未使用 publish_date 过滤。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;未见使用今日收盘价/未来价格；history/attribute_history 均以 prev_date 为基准，风险低&quot;,
+            &quot;financial_data_leak&quot;: &quot;get_fundamentals(statDate) 在 09:10 即能读取整季报，存在严重前视 (函数名: mode1_controlReport, 行~280)&quot;,
+            &quot;index_component_leak&quot;: &quot;get_index_stocks(sector, date) 使用目标日期参数，符合历史成份，风险低&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;无使用 pipeline 或 context 未来值；风险低&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;1) 使用 finance.run_query 并加入 publication_date &lt;= context.previous_date 过滤；2) 或使用 get_fundamentals_continuously API 保证 ‘可得性’ 时间；3) 回测重新验证。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;财报 T+N 披露延迟导致实盘与回测差异&quot;, &quot;0.91 限价清仓在跌停日无法成交&quot;, &quot;10:00 买 ETF – 14:50 卖出可能因流动性折损&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 6,
+        &quot;slippage_reason&quot;: &quot;大量二三线小市值价值票 + 动量追涨，且所有买单用 1.02*昨收 限价，易买不到或以涨停价格成交；卖单 0.91*昨收 在高波动日可能挂不到或整天未成交。&quot;,
+        &quot;cost_score&quot;: 6,
+        &quot;cost_reason&quot;: &quot;日内多次委托 + 清 ETF + mode2 止损，换手率偏高；但仍为日内 ≤10 笔，费用中等偏上。&quot;,
+        &quot;execution_score&quot;: 5,
+        &quot;execution_reason&quot;: &quot;均价资金分配、限价逻辑简单；但对冲单 ETF 量化买卖易触发成交价偏离；需要拆单/市价 fallback。&quot;,
+        &quot;time_sensitivity_score&quot;: 7,
+        &quot;time_sensitivity_reason&quot;: &quot;核心下单集中在集合竞价和开盘前 4 分钟；错过将改变当日信号。&quot;,
+        &quot;overall_executability&quot;: 5,
+        &quot;overall_reason&quot;: &quot;中小资金(&lt;1000 万) 可通过拆单完成；大额、弱流动性时滑点显著；未来函数未修复前不建议实盘。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;成交无压力；ETF 成本可忽略。&quot;,
+            &quot;100w&quot;: &quot;Mode2 动量股可能需排队；仍可执行。&quot;,
+            &quot;1000w&quot;: &quot;部分价值小票日成交额&lt;500w，买入后或致股价触板；需要长时间分批。&quot;,
+            &quot;1y&quot;: &quot;几乎无法在小票中建仓；策略容量受限 &lt;2 亿。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;改用 VWAP 或开盘后 2–5 分钟市价成交以减少挂单失败&quot;, &quot;增加流动性过滤(如近 20 日成交额&gt;2 亿) 以提高容量&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 7,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;价值环节小市值集中；动量票更偏题材股，容量有限。&quot;,
+        &quot;behavioral_bias_score&quot;: 6,
+        &quot;behavioral_bias_reason&quot;: &quot;Mode2 显著利用短期情绪(7 日 20% 追涨)，并配龙虎榜过滤&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;依赖估值上行窗口 + RSRS 阈值硬编码；不同市场阶段切换频繁。&quot;,
+        &quot;effectiveness_total_score&quot;: 5.4,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为利用30% + 跨期稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;震荡市且估值横盘，模式频繁切换造成高换手&quot;, &quot;流动性危机或连续跌停无法执行 0.91 限价卖出&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;沪深300 PE 下探至历史低位并拐头时组合收益突增&quot;, &quot;模式2 个股次日平均高开幅度&gt;1.5%&quot;, &quot;账户暴涨10% 后若触发黄昏之星降仓能显著降低回撤&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;逻辑上结合价值与动量，但存在前视财报重大缺陷，且执行依赖集合竞价限价，真实收益存疑。&quot;,
+        &quot;recommendation&quot;: &quot;继续研究&quot;,
+        &quot;optimization_suggestions&quot;: &quot;1) 修复财报可得性问题；2) 统一 stock_num 与 buy_list 数量；3) 引入成交额过滤 + 市价/冰山单；4) 将风险控制从形态学改为量化波动或期权对冲。&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 8,
+        &quot;slippage&quot;: 6,
+        &quot;cost&quot;: 6,
+        &quot;execution&quot;: 5,
+        &quot;time_sensitivity&quot;: 7,
+        &quot;executability&quot;: 5,
+        &quot;effectiveness_a&quot;: 7,
+        &quot;effectiveness_b&quot;: 6,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 5.4
+    },
+    
+    &quot;assumptions&quot;: [
+        &quot;未提供资金规模、默认按聚宽最小交易单位成交；评估中假设单笔≤组合目标市值/股票数&quot;,
+        &quot;未提供滑点模型；聚宽默认等价市价成交，分析中假设集合竞价 1.02/0.91 限价可完全成交&quot;
+    ]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>

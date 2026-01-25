@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单ETF动量轮动+盘中MA止损 - 策略详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .section p, .section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #ccc;
+        }
+        pre {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← 返回列表</a>
+        <h1>单ETF动量轮动+盘中MA止损</h1>
+        <p class="meta">
+            ID: 8614305d | 
+            类型: 动量策略 / 趋势跟踪 | 
+            来源: b2324_64.ETF轮动策略升级-增加盘中止损.txt |
+            分析日期: 2026-01-11 18:24:22
+        </p>
+
+        <div class="section">
+            <h2>策略逻辑概要</h2>
+            <p>每日收盘后在预设 ETF 池中计算 13 日动量和 10 日均线过滤，只买入既有正动量又处于均线上方的品种，并且只持有排名第一的本土股票类 ETF；盘中 60 分钟跌破 MA20 立即止损。逻辑假设强势品种短期内继续领涨，而 MA/动量双过滤能剔除震荡和下跌行情，盘中止损控制单日踩空。</p>
+        </div>
+
+        <div class="section">
+            <h2>股票池</h2>
+            <p>固定白名单 ETF 列表（24 只左右），before_market_open 中排除上市不足 13 个交易日的基金；未对停牌/涨跌停/流动性/ST 做进一步过滤。</p>
+        </div>
+
+        <div class="section">
+            <h2>买入信号</h2>
+            <p>13 日动量 &gt; 0, 当日收盘价 &gt; 10 日 MA</p>
+        </div>
+
+        <div class="section">
+            <h2>卖出信号</h2>
+            <p>不再满足买入条件或被新 Top1 替代（次日 9:32 全仓卖出）, 盘中 13:30 60 分钟收盘价 &lt; 20 期 MA（即时清仓）</p>
+        </div>
+
+        <div class="section">
+            <h2>仓位管理</h2>
+            <p>g.type_num =1 → 最多持 1 只 ETF，仓位≈100%；止损为 60m 跌破 MA20；无其它风险层面（如资金管理/分散度）设置。</p>
+        </div>
+
+        <div class="section">
+            <h2>交易频率</h2>
+            <p>信号每日 21:00 计算；次日 9:32 交易；盘中 13:30 检查一次止损。</p>
+        </div>
+
+        <div class="section">
+            <h2>手动执行指南</h2>
+            <p>盘后 21:00 生成计划；次日开盘后 9:32 市价或限价跟随买卖；午后 13:30 若触发止损需及时平仓。需保证 API 可用或人工盯盘。</p>
+        </div>
+
+        <div class="section">
+            <h2>代码审计详情</h2>
+            <p>全部信号在收盘后生成，交易在下一交易日执行；仅使用 get_price/attribute_history 等合规接口。</p>
+        </div>
+
+        <div class="section">
+            <h2>灰色区域警告</h2>
+            <p>attribute_history(&#x27;60m&#x27;) 在 13:30 可能取到未闭合的 K 线，实盘与回测结果略有差异, 仅持 1 只 ETF，尾盘跌停或流动性骤降时止损可能失败, 未考虑停牌导致无法交易的情形</p>
+        </div>
+
+        <div class="section">
+            <h2>执行分析</h2>
+            <p>百万元量级较易落地，千万以上需关注部分小规模 ETF 流动性。</p>
+        </div>
+
+        <div class="section">
+            <h2>10万资金场景</h2>
+            <p>流动性充裕，基本无冲击。</p>
+        </div>
+
+        <div class="section">
+            <h2>100万资金场景</h2>
+            <p>主流 ETF 可一次成交，主题 ETF 需拆单。</p>
+        </div>
+
+        <div class="section">
+            <h2>1000万资金场景</h2>
+            <p>仅限 510300/159915 等宽基 ETF 可接受冲击成本；主题 ETF 可能冲击 &gt;10bp。</p>
+        </div>
+
+        <div class="section">
+            <h2>1亿资金场景</h2>
+            <p>1 亿资金需限制在极大市值 ETF 并拆单，策略容量明显不足。</p>
+        </div>
+
+        <div class="section">
+            <h2>大资金不友好原因</h2>
+            <p>仅持 1 只 ETF，部分标的日成交额 &lt; 3 亿，无足够容量。</p>
+        </div>
+
+        <div class="section">
+            <h2>行为偏差利用原因</h2>
+            <p>利用动量/趋势追涨及跟风行为，但逻辑简单。</p>
+        </div>
+
+        <div class="section">
+            <h2>跨阶段稳健性原因</h2>
+            <p>动量窗口短且固定，容易受市场节奏影响；跨牛熊需验证。</p>
+        </div>
+
+        <div class="section">
+            <h2>最差环境</h2>
+            <p>单日快速反转、宽幅震荡行情, 所有 ETF 同步下跌导致无法找到合格标的</p>
+        </div>
+
+        <div class="section">
+            <h2>可验证预测</h2>
+            <p>正动量且站上 10 日 MA 的 ETF 次日收益大于全市场平均, 盘中跌破 60m MA20 后尾盘收益显著转负, 单 ETF 轮动组合夏普率 &gt; 同权持有池子</p>
+        </div>
+
+        <div class="section">
+            <h2>一句话总结</h2>
+            <p>简洁易实现的小资金 ETF 动量轮动，风控粗糙且容量有限。</p>
+        </div>
+
+        <div class="section">
+            <h2>优化建议</h2>
+            <p>提高品种数分散风险、引入流动性过滤、动态调参（动量/均线长度）</p>
+        </div>
+
+        <div class="section">
+            <h2>假设条件</h2>
+            <p>资金规模未给出，默认回测全仓买入, 成交模型采用 FixedSlippage(0) 和 5bp 手续费，与实盘可能存在差异</p>
+        </div>
+
+        <div class="section">
+            <h2>评分汇总</h2>
+            <table>
+                <tr><th>指标</th><th>分数</th></tr>
+                <tr><td>未来函数风险</td><td>2</td></tr>
+                <tr><td>滑点</td><td>3</td></tr>
+                <tr><td>成本</td><td>3</td></tr>
+                <tr><td>执行难度</td><td>6</td></tr>
+                <tr><td>时间敏感性</td><td>3</td></tr>
+                <tr><td>综合可执行性</td><td>7.2</td></tr>
+                <tr><td>大资金不友好</td><td>5</td></tr>
+                <tr><td>行为偏差利用</td><td>5</td></tr>
+                <tr><td>跨阶段稳健性</td><td>4</td></tr>
+                <tr><td>有效性总分</td><td>4.5</td></tr>
+                <tr><td>总分</td><td>57.4</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>原始AI响应</h2>
+            <pre>```json
+{
+    &quot;strategy_name&quot;: &quot;单ETF动量轮动+盘中MA止损&quot;,
+    &quot;strategy_type&quot;: &quot;动量策略 / 趋势跟踪&quot;,
+    
+    &quot;strategy_explanation&quot;: {
+        &quot;core_logic&quot;: &quot;每日收盘后在预设 ETF 池中计算 13 日动量和 10 日均线过滤，只买入既有正动量又处于均线上方的品种，并且只持有排名第一的本土股票类 ETF；盘中 60 分钟跌破 MA20 立即止损。逻辑假设强势品种短期内继续领涨，而 MA/动量双过滤能剔除震荡和下跌行情，盘中止损控制单日踩空。&quot;,
+        &quot;data_and_indicators&quot;: &quot;行情：基金日频收盘价（close）用于 10 日 MA 与 13 日动量；盘中：60 分钟 close 用于 20 期 MA。数据频率分别为日 1 次、60m 1 次（13:30）。无财务、因子数据。&quot;,
+        &quot;stock_pool&quot;: &quot;固定白名单 ETF 列表（24 只左右），before_market_open 中排除上市不足 13 个交易日的基金；未对停牌/涨跌停/流动性/ST 做进一步过滤。&quot;,
+        &quot;buy_signals&quot;: [&quot;13 日动量 &gt; 0&quot;, &quot;当日收盘价 &gt; 10 日 MA&quot;],
+        &quot;sell_signals&quot;: [&quot;不再满足买入条件或被新 Top1 替代（次日 9:32 全仓卖出）&quot;, &quot;盘中 13:30 60 分钟收盘价 &lt; 20 期 MA（即时清仓）&quot;],
+        &quot;position_and_risk&quot;: &quot;g.type_num =1 → 最多持 1 只 ETF，仓位≈100%；止损为 60m 跌破 MA20；无其它风险层面（如资金管理/分散度）设置。&quot;,
+        &quot;trading_frequency&quot;: &quot;信号每日 21:00 计算；次日 9:32 交易；盘中 13:30 检查一次止损。&quot;,
+        &quot;manual_execution_guide&quot;: &quot;盘后 21:00 生成计划；次日开盘后 9:32 市价或限价跟随买卖；午后 13:30 若触发止损需及时平仓。需保证 API 可用或人工盯盘。&quot;
+    },
+    
+    &quot;future_function_detection&quot;: {
+        &quot;has_future_function&quot;: &quot;否&quot;,
+        &quot;risk_level&quot;: &quot;低&quot;,
+        &quot;risk_score&quot;: 2,
+        &quot;risk_score_reason&quot;: &quot;全部信号在收盘后生成，交易在下一交易日执行；仅使用 get_price/attribute_history 等合规接口。&quot;,
+        &quot;detailed_analysis&quot;: {
+            &quot;price_data_leak&quot;: &quot;get_price end_date=current_time(21:00) 仅拿到当日收盘价，无未来泄漏。&quot;,
+            &quot;financial_data_leak&quot;: &quot;未使用财务数据。&quot;,
+            &quot;index_component_leak&quot;: &quot;固定白名单，无未来成分调用。&quot;,
+            &quot;backtest_engine_leak&quot;: &quot;run_daily 调度合理，无跨日混用。&quot;
+        },
+        &quot;fix_suggestions&quot;: &quot;若担心 60m 未收完 K 线提前泄漏，可改为使用已经结束的上一根 60m bar。&quot;,
+        &quot;gray_area_warnings&quot;: [&quot;attribute_history(&#x27;60m&#x27;) 在 13:30 可能取到未闭合的 K 线，实盘与回测结果略有差异&quot;, &quot;仅持 1 只 ETF，尾盘跌停或流动性骤降时止损可能失败&quot;, &quot;未考虑停牌导致无法交易的情形&quot;]
+    },
+    
+    &quot;execution_difficulty&quot;: {
+        &quot;slippage_score&quot;: 3,
+        &quot;slippage_reason&quot;: &quot;大多数宽基／热门主题 ETF 深度充足；9:32 成交价接近开盘后真实成交价，影响有限。&quot;,
+        &quot;cost_score&quot;: 3,
+        &quot;cost_reason&quot;: &quot;单次买卖手续费 5bp；平均换手周级左右。&quot;,
+        &quot;execution_score&quot;: 6,
+        &quot;execution_reason&quot;: &quot;一次性用满仓买单 ETF，若选择冷门主题 ETF（光伏 50 等）百万元以上资金可能冲击盘面。&quot;,
+        &quot;time_sensitivity_score&quot;: 3,
+        &quot;time_sensitivity_reason&quot;: &quot;交易点固定 9:32，不需毫秒级；但需在指定时段完成。&quot;,
+        &quot;overall_executability&quot;: 7,
+        &quot;overall_reason&quot;: &quot;百万元量级较易落地，千万以上需关注部分小规模 ETF 流动性。&quot;,
+        &quot;scenario_analysis&quot;: {
+            &quot;10w&quot;: &quot;流动性充裕，基本无冲击。&quot;,
+            &quot;100w&quot;: &quot;主流 ETF 可一次成交，主题 ETF 需拆单。&quot;,
+            &quot;1000w&quot;: &quot;仅限 510300/159915 等宽基 ETF 可接受冲击成本；主题 ETF 可能冲击 &gt;10bp。&quot;,
+            &quot;1y&quot;: &quot;1 亿资金需限制在极大市值 ETF 并拆单，策略容量明显不足。&quot;
+        },
+        &quot;improvement_suggestions&quot;: [&quot;将 g.type_num 调整为 &gt;1 分散仓位以降低冲击&quot;, &quot;加入实时盘口滑点模型、拆单逻辑&quot;]
+    },
+    
+    &quot;effectiveness&quot;: {
+        &quot;large_fund_unfriendly_score&quot;: 5,
+        &quot;large_fund_unfriendly_reason&quot;: &quot;仅持 1 只 ETF，部分标的日成交额 &lt; 3 亿，无足够容量。&quot;,
+        &quot;behavioral_bias_score&quot;: 5,
+        &quot;behavioral_bias_reason&quot;: &quot;利用动量/趋势追涨及跟风行为，但逻辑简单。&quot;,
+        &quot;cross_period_robustness_score&quot;: 4,
+        &quot;cross_period_robustness_reason&quot;: &quot;动量窗口短且固定，容易受市场节奏影响；跨牛熊需验证。&quot;,
+        &quot;effectiveness_total_score&quot;: 4.5,
+        &quot;weight_explanation&quot;: &quot;大资金不友好40% + 行为偏差30% + 跨阶段稳健30%&quot;,
+        &quot;worst_environments&quot;: [&quot;单日快速反转、宽幅震荡行情&quot;, &quot;所有 ETF 同步下跌导致无法找到合格标的&quot;],
+        &quot;verifiable_predictions&quot;: [&quot;正动量且站上 10 日 MA 的 ETF 次日收益大于全市场平均&quot;, &quot;盘中跌破 60m MA20 后尾盘收益显著转负&quot;, &quot;单 ETF 轮动组合夏普率 &gt; 同权持有池子&quot;]
+    },
+    
+    &quot;conclusion&quot;: {
+        &quot;verdict&quot;: &quot;简洁易实现的小资金 ETF 动量轮动，风控粗糙且容量有限。&quot;,
+        &quot;recommendation&quot;: &quot;小仓实测&quot;,
+        &quot;optimization_suggestions&quot;: &quot;提高品种数分散风险、引入流动性过滤、动态调参（动量/均线长度）&quot;
+    },
+    
+    &quot;score_summary&quot;: {
+        &quot;future_function_risk&quot;: 2,
+        &quot;slippage&quot;: 3,
+        &quot;cost&quot;: 3,
+        &quot;execution&quot;: 6,
+        &quot;time_sensitivity&quot;: 3,
+        &quot;executability&quot;: 7,
+        &quot;effectiveness_a&quot;: 5,
+        &quot;effectiveness_b&quot;: 5,
+        &quot;effectiveness_c&quot;: 4,
+        &quot;effectiveness_total&quot;: 4.5
+    },
+    
+    &quot;assumptions&quot;: [&quot;资金规模未给出，默认回测全仓买入&quot;, &quot;成交模型采用 FixedSlippage(0) 和 5bp 手续费，与实盘可能存在差异&quot;]
+}
+```</pre>
+        </div>
+
+    </div>
+</body>
+</html>
