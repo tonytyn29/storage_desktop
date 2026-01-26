@@ -1,0 +1,31 @@
+{
+  "defaultPreset": "verbal_basic",
+  "presets": {
+    "verbal_basic": [
+      [
+        "o3",
+        "laozhang",
+        "FALSE",
+        "FALSE"
+      ],
+      [
+        "o3",
+        "laozhang",
+        "TRUE",
+        "FALSE"
+      ],
+      [
+        "gpt-5-high",
+        "laozhang",
+        "FALSE",
+        "TRUE"
+      ],
+      [
+        "gpt-4o",
+        "laozhang",
+        "TRUE",
+        "FALSE"
+      ]
+    ]
+  }
+}
