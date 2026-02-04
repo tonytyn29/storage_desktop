@@ -1,0 +1,5 @@
+https://www.joinquant.com/algorithm/backtest/detail?backtestId  = ef89c1d112abe6964f884dcb46fd1fa6
+https://www.joinquant.com/algorithm/backtest/detail?backtestId=42aafa95a15d51a7f0fdc9f383cf9f3f
+https://www.joinquant.com/algorithm/backtest/detail?backtestId=d3137271756674029e8509ba2896b5a0
+https://www.joinquant.com/algorithm/backtest/detail?backtestId=8013c1a646330efaaebec09d7f9a7cd8
+https://www.joinquant.com/algorithm/backtest/detail?backtestId=3a82c8b6aa38ee8189b4de7696e0eb8d
