@@ -2,21 +2,50 @@
 :: 设置字符集为 UTF-8，确保中文不乱码
 chcp 65001 >nul
 
-:: 1. 自动定位到脚本所在的文件夹
+:: 1. 定位到脚本所在文件夹
 cd /d "%~dp0"
 
-:: 2. 获取并格式化当前时间 (例如: 2026-01-26_09-15-05)
+:: 2. 设置大文件阈值 (单位: 字节)
+:: 50MB = 50 * 1024 * 1024 = 52428800 字节
+set /a max_size=52428800
+
+:: 3. 获取并格式化当前时间 (2026-01-26_09-15-05)
 set datetime=%date:~0,4%-%date:~5,2%-%date:~8,2%_%time:~0,2%-%time:~3,2%-%time:~6,2%
-:: 如果小时是个位数，Windows 会在前面留空格，这里将空格替换为0
 set datetime=%datetime: =0%
 
 echo ========================================
-echo [开始备份] 当前目录: %cd%
-echo [提交时间] %datetime%
+echo [开始备份] 目录: %cd%
+echo [大文件限制] %max_size% 字节 (约50MB)
 echo ========================================
 
-:: 3. 执行 Git 标准三部曲
-echo [1/3] 正在添加所有文件...
+:: 4. 动态扫描大文件并加入 .gitignore
+echo [工具] 正在扫描超大文件...
+
+:: 创建空的 .gitignore 如果它不存在
+if not exist .gitignore type nul > .gitignore
+
+:: 遍历当前文件夹及子文件夹下所有文件
+for /r %%i in (*) do (
+    :: 排除 .git 文件夹内的内容和 .gitignore 自身
+    echo %%i | findstr /i "\.git\\" >nul
+    if errorlevel 1 (
+        if not "%%~nxi"==".gitignore" (
+            :: 比较文件大小
+            if %%~zi GTR %max_size% (
+                :: 检查是否已经在 .gitignore 中，不在则添加
+                findstr /x /c:"%%~nxi" .gitignore >nul 2>&1
+                if errorlevel 1 (
+                    echo %%~nxi>>.gitignore
+                    echo [忽略] 已拉黑大文件: %%~nxi (大小: %%~zi 字节)
+                )
+            )
+        )
+    )
+)
+
+:: 5. 执行 Git 标准三部曲
+echo.
+echo [1/3] 正在添加文件 (已自动跳过大文件)...
 git add .
 
 echo [2/3] 正在本地提交 (Commit)...
@@ -29,5 +58,5 @@ echo ========================================
 echo 备份完成！
 echo ========================================
 
-:: 4. 保持窗口开启，直到按下回车键
+:: 6. 保持窗口开启
 pause

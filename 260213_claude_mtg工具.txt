@@ -1,0 +1,641 @@
+
+❯ =['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Main1 ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (8):
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=None, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=None, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Main1 ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (8):
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  STACK[27] (1):
+    [P1] Deep-Cavern Bat (iid=309)
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Main1 ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (8):
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  STACK[27] (1):
+    [P1] Deep-Cavern Bat (iid=309)
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Main1 ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  STACK[27] (1):
+    [P1] grpId:169561 (iid=312)
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Main1 ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  STACK[27] (1):
+    [P1] grpId:169561 (iid=312)
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Main1 ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  STACK[27] (1):
+    [P1] grpId:169561 (iid=312)
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Main1 ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  STACK[27] (1):
+    [P1] grpId:169561 (iid=312)
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Main1 ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  STACK[27] (1):
+    [P1] grpId:169561 (iid=312)
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Main1 ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Main1 ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Combat ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Combat ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Combat ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Combat ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Combat ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Combat ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Main2 ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Main2 ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Ending ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=6 PHASE=Phase_Ending ACTIVE=1
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=True, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=True, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+
+  ============================================================
+  === TURN 7  PHASE=Phase_Beginning  ACTIVE=2 ===
+  ============================================================
+  TURN=7 PHASE=Phase_Beginning ACTIVE=2
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=None, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=None, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=None, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=None, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=None, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=7 PHASE=Phase_Beginning ACTIVE=2
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=None, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=None, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=None, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=None, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=None, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=7 PHASE=Phase_Beginning ACTIVE=2
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=None, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=None, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=None, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=None, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=None, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=7 PHASE=Phase_Beginning ACTIVE=2
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=None, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=None, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=None, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=None, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=None, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365
+  ----------------------------------------
+  TURN=7 PHASE=Phase_Main1 ACTIVE=2
+  LIFE: P1=14  P2=18
+  MY_HAND[31] (0):
+  BATTLEFIELD[28] (9):
+    [P1] Deep-Cavern Bat 1/1 (iid=309, tapped=None, summoningSick=True, types=['CardType_Creature'],
+  subtypes=['SubType_Bat'], colors=['CardColor_Black'])
+    [P2] grpId:97328 1/2 (iid=306, tapped=None, summoningSick=None, types=['SuperType_Legendary',
+  'CardType_Creature'], subtypes=['SubType_Human', 'SubType_Peasant', 'SubType_Ally'], colors=['CardColor_Blue'])
+
+    [P2] Spirebluff Canal (iid=305, tapped=None, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] Restless Reef (iid=297, tapped=True, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P2] Riverpyre Verge (iid=289, tapped=None, summoningSick=None, types=['CardType_Land'], subtypes=[],
+  colors=None)
+    [P1] grpId:68740 (iid=285, tapped=True, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Swamp'], colors=None)
+    [P2] Stormchaser's Talent (iid=280, tapped=None, summoningSick=None, types=['CardType_Enchantment'],
+  subtypes=['SubType_Class'], colors=['CardColor_Blue'])
+    [P2] Steam Vents (iid=279, tapped=None, summoningSick=None, types=['CardType_Land'],
+  subtypes=['SubType_Island', 'SubType_Mountain'], colors=None)
+    [P2] grpId:91865 1/1 (iid=283, tapped=None, summoningSick=None, types=['CardType_Creature'],
+  subtypes=['SubType_Otter'], colors=['CardColor_Blue', 'CardColor_Red'])
+  MY_GRAVEYARD[33] (1): grpId:98365这是前5-6回合的一些输出。问题：（1）仍然太长。我希望等一个回合结束后，再直接展示
+  场面上的信息。（2）依然没有场面上和手牌中卡牌的名字。（包括坟场、放逐和对手手牌能看到的、和我的手牌等）

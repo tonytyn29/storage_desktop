@@ -1,0 +1,203 @@
+def unified_send_request(endpoint: str, model: str, user_message: str, max_retries=3, delay=2) -> str:
+        endpoints_info = {
+            "laozhang": {
+                "url": "https://api.laozhang.ai/v1/chat/completions",
+                "api_key": "sk-zHKiyuo8GkU5BKyf50963cDf19Dd41B89aE6F31cAe73235a"
+            },
+            "poe": {
+                "url": "https://api.poe.com/v1/chat/completions",
+                "api_key": "vckcyvATpucnNfNne4ESXS1bsAcn7Myff2E5xyce3v0"
+            },
+            "yyds": {
+                "url": "https://ai-yyds.com/v1/chat/completions",
+                "api_key": "sk-KZw5hQpbZNAnRtAOB3Ba667264C64d1c9bBf7e2314E56fEd"
+            },
+            "pro": {
+                "url": "https://pro.aiskt.com/v1/chat/completions",
+                "api_key": "sk-c2FPm9GKWVXVeJg7CdF64cF943784aA0858e2a7303380f20"
+            },
+            "aihk": {
+                "url": "https://api.openai-hk.com/v1/chat/completions",
+                "api_key": "hk-y7nrnu1000047794311a7c3256c7755ced39bbd488913924"
+            },
+            "duck": {
+                "url": "https://api.duckagi.com/v1/chat/completions",
+                "api_key": "sk-FdRrPSdKf3XxZtrRhQPHbR66nUsKmapmWK5lfofsOxmMxz3a"
+            },
+            "us": {
+                "url": "https://www.gptapi.us/v1/chat/completions",
+                "api_key": "sk-jutGGILLVaOhy9fX14F90e19A42a49C1B12f115eEa6cD29a"
+            },
+            "apiyi": {
+                "url": "https://www.apiyi.com/v1/chat/completions",
+                "api_key": "sk-nftGOS33m4ZNhPfu575984D2Ed6e4aB9B2627b1c799FcA3"
+            },
+            "router": {
+                "url": "https://openrouter.ai/api/v1/chat/completions",
+                "api_key": "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"
+            }
+        }
+        # 定义轮动优先级：先用用户选择的endpoint，再依次尝试其他预设顺序
+        fallback_order = ["laozhang", "router", "aihk", "poe"]
+        endpoints_to_try = []
+        if endpoint in endpoints_info:
+            endpoints_to_try.append(endpoint)
+        for ep in fallback_order:
+            if ep not in endpoints_to_try and ep in endpoints_info:
+                endpoints_to_try.append(ep)
+
+        import random, time, json, requests, logging
+        last_error = ""
+        for ep in endpoints_to_try:
+            url = endpoints_info[ep]["url"]
+            api_key_local = endpoints_info[ep]["api_key"]
+            headers = {
+                "Authorization": f"Bearer {api_key_local}",
+                "Content-Type": "application/json"
+            }
+            max_tokens = 5000 if model == "gpt-4o" else 20000
+            payload = {
+                "model": model,
+                "messages": [
+                    {"role": "user", "content": user_message}
+                ],
+                "max_completion_tokens": max_tokens
+            }
+            for attempt in range(max_retries):
+                # 加入随机延时，避免请求过快被服务器拒绝
+                time.sleep(random.uniform(0.2, 1.0))
+                try:
+                    start_time = time.time()
+                    response = requests.post(url, headers=headers, data=json.dumps(payload))
+                    if response.status_code == 200:
+                        end_time = time.time()
+                        print(f"[unified_send_request] Endpoint {ep} succeeded in {end_time - start_time:.2f}s")
+                        try:
+                            return response.json()["choices"][0]["message"]["content"]
+                        except (KeyError, IndexError) as e:
+                            last_error = f"Error parsing response from endpoint {ep}: {e}"
+                    else:
+                        last_error = f"Error: Endpoint {ep} status code={response.status_code}, detail={response.text}"
+                except Exception as e:
+                    last_error = f"Exception from endpoint {ep}: {str(e)}"
+                # 指数退避延时
+                time.sleep(delay * (2 ** attempt))
+            print(f"Endpoint {ep} failed after {max_retries} attempts. Trying next endpoint...")
+        return f"Exception: All endpoints failed. Last error: {last_error}"
+
+
+    def encode_image(image_path):
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
+
+    def extract_content(response_json):
+        try:
+            content = response_json['choices'][0]['message']['content']
+            return content
+        except (KeyError, IndexError) as e:
+            print(f"Error extracting content: {e}")
+            return None
+
+    def unified_process_image(endpoint: str, model: str, user_message: str, image_path: str, max_retries=3,
+                              delay=2) -> str:
+        endpoints_info = {
+            "laozhang": {
+                "url": "https://api.laozhang.ai/v1/chat/completions",
+                "api_key": "sk-zHKiyuo8GkU5BKyf50963cDf19Dd41B89aE6F31cAe73235a"
+            },
+            "poe": {
+                "url": "https://api.poe.com/v1/chat/completions",
+                "api_key": "vckcyvATpucnNfNne4ESXS1bsAcn7Myff2E5xyce3v0"
+            },
+            "yyds": {
+                "url": "https://ai-yyds.com/v1/chat/completions",
+                "api_key": "sk-KZw5hQpbZNAnRtAOB3Ba667264C64d1c9bBf7e2314E56fEd"
+            },
+            "pro": {
+                "url": "https://pro.aiskt.com/v1/chat/completions",
+                "api_key": "sk-c2FPm9GKWVXVeJg7CdF64cF943784aA0858e2a7303380f20"
+            },
+            "aihk": {
+                "url": "https://api.openai-hk.com/v1/chat/completions",
+                "api_key": "hk-y7nrnu1000047794311a7c3256c7755ced39bbd488913924"
+            },
+            "duck": {
+                "url": "https://api.duckagi.com/v1/chat/completions",
+                "api_key": "sk-FdRrPSdKf3XxZtrRhQPHbR66nUsKmapmWK5lfofsOxmMxz3a"
+            },
+            "us": {
+                "url": "https://www.gptapi.us/v1/chat/completions",
+                "api_key": "sk-jutGGILLVaOhy9fX14F90e19A42a49C1B12f115eEa6cD29a"
+            },
+            "apiyi": {
+                "url": "https://www.apiyi.com/v1/chat/completions",
+                "api_key": "sk-nftGOS33m4ZNhPfu575984D2Ed6e4aB9B2627b1bC799FcA3"
+            },
+            "router": {
+                "url": "https://openrouter.ai/api/v1/chat/completions",
+                "api_key": "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"
+            }
+        }
+
+        endpoint_config = endpoints_info.get(endpoint)
+        if not endpoint_config:
+            raise ValueError(f"Unknown endpoint '{endpoint}'. Valid options: {list(endpoints_info.keys())}")
+
+        url = endpoint_config["url"]
+        api_key = endpoint_config["api_key"]
+
+        base64_image = encode_image(image_path)
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        }
+
+        payload = {
+            "model": model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": user_message
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{base64_image}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "max_tokens": 4500
+        }
+
+        attempt = 0
+        while attempt < max_retries:
+            try:
+                start_time = time.time()
+                response = requests.post(url, headers=headers, json=payload)
+                response.raise_for_status()
+                extracted = extract_content(response.json())
+                end_time = time.time()
+                print(f"[process_pic] 耗时: {end_time - start_time:.2f}s")
+                return extracted
+            except requests.HTTPError as e:
+                print(f"HTTP error: {e}. Attempt {attempt + 1} of {max_retries}.")
+                if response.status_code == 503:
+                    attempt += 1
+                    if attempt < max_retries:
+                        time.sleep(delay * (2 ** attempt))  # Exponential backoff
+                else:
+                    raise
+            except requests.RequestException as e:
+                print(f"Request failed: {e}. Attempt {attempt + 1} of {max_retries}.")
+                attempt += 1
+                if attempt < max_retries:
+                    time.sleep(delay * (2 ** attempt))  # Exponential backoff
+
+        raise RuntimeError(f"Request to {endpoint} failed after {max_retries} attempts.")
+
